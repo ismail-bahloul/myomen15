@@ -117,14 +117,19 @@ daemon actually does here is unverified. The investigation script is kept at
   carries the VFIO entry).
 - **TPM** is disabled in the BIOS.
 
-## EC access (still open)
+## EC access (mapped, partially)
 
-`ec_probe` (register dump/read/write, plus `acpi_call`) and `nbfc` are available,
-so the EC is reachable. `hp-wmi` also exposes
-`/sys/class/platform-profile/platform-profile-0/` with `cool | balanced |
-performance` (currently `balanced`) and a hwmon with `fan1_input` / `fan2_input`
-/ `pwm1_enable`. Mapping EC registers to the platform power limits is unexplored
-and is the remaining lead for firmware-level behaviour.
+The EC is reachable through `ec_probe` (based on `ec_sys`), and its fan and
+temperature registers are now identified and verified — see
+[`ec-map.md`](ec-map.md). `nbfc` already drives the fan setpoints through the same
+path, so the write half has a working reference.
+
+What was tested and **ruled out**: the EC does not hold the SMU power limits.
+Dumping the EC before and after a `ryzenadj` write, with a no-op control run to
+account for telemetry drift, produces indistinguishable diffs — the limits live
+in the SMU only. So the [platform profile
+reset](#power-limits-they-stay-put-but-writing-platform_profile-resets-them) is not
+the EC re-asserting a stored limit.
 
 ---
 

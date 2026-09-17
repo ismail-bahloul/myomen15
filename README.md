@@ -68,9 +68,10 @@ is visible.
 
 What has not been tried yet, ordered by how much it would unlock:
 
-- **Map the EC.** `ec_probe` can dump and poke registers; the link between them
-  and the platform power / thermal limits is unexplored. This is the remaining
-  lead for making firmware-level settings stick.
+- **Finish the EC map.** Fans and temperatures are identified
+  ([`ec-map.md`](ec-map.md)), and the power limits were shown *not* to live in
+  the EC. The unidentified registers (`0x40`-`0x49`, the volatile `0x80` row)
+  remain, and would need a controlled thermal ramp to pin down.
 - **POST and the thermal mode.** The BIOS power menu is inert, but HP's own
   thermal mode (the one Windows exposes through its OEM tooling) has not been
   located on the Linux side.
@@ -84,6 +85,7 @@ What has not been tried yet, ordered by how much it would unlock:
 
 | Path | What it is |
 |---|---|
+| [`ec-map.md`](ec-map.md) | The mapped embedded-controller registers (fans, temperatures), how each was verified, and what is not in the EC. |
 | [`firmware-limits.md`](firmware-limits.md) | The living reference — current conclusions only: BIOS power semantics, the Curve Optimizer gate, Sure Start, what resets an OS-written profile, and what is unsupported. |
 | [`record/`](record/) | The point-in-time investigation, kept as written. Start with the Linux report, then the Windows verdict. |
 | [`evidence/`](evidence/) | Tooling and raw data: the SMU prober (`smu.cs`), the load generator (`load.cs`), all 26 benchmark runs, and the two A/B CSVs. |
