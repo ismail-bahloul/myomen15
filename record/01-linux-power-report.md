@@ -19,7 +19,7 @@ The immediate question this document exists to answer:
 
 | Item | Value |
 |---|---|
-| Laptop | HP OMEN Laptop 15-en1xxx (15-en1022nf) |
+| Laptop | HP OMEN Laptop 15-en1037nf (product 4J8B4EA) |
 | Board | HP 88D2 |
 | BIOS | AMI **F.30**, released **2025-10-21** |
 | Firmware security | **HP Sure Start active** |

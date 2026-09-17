@@ -7,8 +7,9 @@ layer of this machine I managed to reach, every layer that refused — and how e
 conclusion was measured. It is a running log, not a tutorial: the wrong turns are
 kept, because the method is the point.
 
-**Machine:** HP OMEN Laptop 15-en1xxx · AMD Ryzen 7 5800H (Cezanne) · BIOS AMI
-F.30 (2025-10-21) · NVIDIA RTX 3070 Mobile · dual-boot CachyOS + Windows 11.
+**Machine:** HP OMEN Laptop 15-en1037nf (product 4J8B4EA) · AMD Ryzen 7 5800H
+(Cezanne) · BIOS AMI F.30 (2025-10-21) · NVIDIA RTX 3070 Mobile · dual-boot
+CachyOS + Windows 11. The serial number is deliberately not recorded here.
 
 ## The control surface
 
@@ -100,6 +101,12 @@ What has not been tried yet, ordered by how much it would unlock:
 - **"It was written" is not "it took effect".** One finding in here is a write
   that succeeds and echoes a constant back, which is why every claim about a
   write is backed by a read-back.
+
+## Resources
+
+- HP product support for this SKU (product `4J8B4EA`, model id `2100371391`):
+  drivers, BIOS updates, and the maintenance and service guide —
+  <https://support.hp.com/my-en/product/troubleshooting/omen-15.6-inch-gaming-laptop-pc-15-en1000/model/2100371391>
 
 ## Related
 
