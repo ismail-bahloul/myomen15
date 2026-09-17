@@ -1,0 +1,9 @@
+2026-09-16T10:21:58+01:00 === stopping the power-profile guard (it would mask the revert) ===
+2026-09-16T10:21:58+01:00 === PHASE A: nbfc RUNNING ===
+2026-09-16T10:22:08+01:00 phase A: wrote 35000/42000/35000
+2026-09-16T10:32:10+01:00 phase A: done
+2026-09-16T10:32:10+01:00 === PHASE B: nbfc STOPPED (EC controls the fans) ===
+2026-09-16T10:32:40+01:00 phase B: wrote 35000/42000/35000
+2026-09-16T10:42:41+01:00 phase B: done
+2026-09-16T10:42:41+01:00 === restoring normal operation ===
+2026-09-16T10:42:43+01:00 restored. DONE
