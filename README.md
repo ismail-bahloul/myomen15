@@ -1,12 +1,33 @@
-# HP OMEN 15-en1xxx — firmware, power and undervolt notes
+# HP OMEN 15-en1xxx — machine exploration
 
 ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
 
-What the firmware on this laptop actually allows, how each conclusion was
-established — and what it refused.
+How far can one laptop actually be controlled? This repository documents every
+layer of this machine I managed to reach, every layer that refused — and how each
+conclusion was measured. It is a running log, not a tutorial: the wrong turns are
+kept, because the method is the point.
 
 **Machine:** HP OMEN Laptop 15-en1xxx · AMD Ryzen 7 5800H (Cezanne) · BIOS AMI
 F.30 (2025-10-21) · NVIDIA RTX 3070 Mobile · dual-boot CachyOS + Windows 11.
+
+## The control surface
+
+Where control sits, layer by layer. The detailed evidence for each row is in
+[`firmware-limits.md`](firmware-limits.md).
+
+| Layer | What we can do | State |
+|---|---|---|
+| CPU power limits (SMU) | Write STAPM / PPT / Tctl via `ryzenadj`; they persist | ✅ **controlled** (one caveat: a `platform_profile` write resets them) |
+| Fan control | `nbfc` (EC) and `hp-wmi` `pwm1_enable` | ✅ **controlled** |
+| BIOS power menu (AMD CBS) | Nothing — it only seeds POST values the HP EC overrides | ⚪ **inert** |
+| BIOS hidden menus | Reachable with SmokelessUMAF / SREP (`SuppressIf` patch) | 🟡 **partial** — but `Custom Core Pstates` stays empty |
+| CPU undervolt / Curve Optimizer | Nothing — the SMU refuses the whole OC/CO family on **both** OSes | 🔴 **locked** |
+| BIOS modification / flashing | Nothing — HP Sure Start is active, payload not even extractable | 🔴 **blocked** |
+| Embedded controller (EC) | Reachable (`ec_probe`, `nbfc`), but register → limit mapping unknown | 🟡 **open** |
+| Battery charge thresholds | `BCTC` / `BMNC` are read-only, writes go to an opaque SMM handler | 🔴 **unsupported** |
+| TPM | Disabled in the BIOS | ⚪ **off** |
+
+Legend: ✅ controlled · 🟡 partial or open · ⚪ no effect · 🔴 refused.
 
 ## The short version
 
@@ -43,6 +64,22 @@ is visible.
   force *before* the OS writes anything. That is what proved the BIOS power
   setting does nothing.
 
+## Open fronts
+
+What has not been tried yet, ordered by how much it would unlock:
+
+- **Map the EC.** `ec_probe` can dump and poke registers; the link between them
+  and the platform power / thermal limits is unexplored. This is the remaining
+  lead for making firmware-level settings stick.
+- **POST and the thermal mode.** The BIOS power menu is inert, but HP's own
+  thermal mode (the one Windows exposes through its OEM tooling) has not been
+  located on the Linux side.
+- **The BIOS update payload.** Sure Start blocks *flashing*, but extracting and
+  inspecting the payload is a separate question, and it is what would say whether
+  the OC/CO gate lives in firmware data or in the EC.
+- **Closed, do not chase:** Curve Optimizer (see above), BIOS flashing, battery
+  charge thresholds.
+
 ## What is in this repository
 
 | Path | What it is |
@@ -65,5 +102,5 @@ is visible.
 ## Related
 
 The configuration all of this was measured on — the CachyOS setup, VFIO GPU
-passthrough, pro-audio chain, and the boot-time work — lives in
+passthrough, pro-audio chain, and the boot tuning — lives in
 [ismail-bahloul/dotfiles](https://github.com/ismail-bahloul/dotfiles).
