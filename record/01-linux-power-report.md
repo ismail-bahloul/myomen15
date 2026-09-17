@@ -275,13 +275,14 @@ Recorded for completeness; none of it affects Windows.
 - **Dotfiles repo** (`chezmoi`): all French content translated to English
   (README, comments, scripts); personal data stripped (desktop layout,
   geolocation, hardcoded paths) with the full git history rewritten
-  (`git-filter-repo`); repository moved to **private**.
-- **Boot time: 114 s → 23 s.** The firmware was spending **~100 s** in POST
-  because the UEFI `BootOrder` had two dead entries ahead of the real one (a
-  `Limine` pointing at a GPT partition that no longer existed, and a "Windows
-  Boot Manager" label pointing at a deleted `\EFI\cachyos\grubx64.efi`). Both
-  were removed. Remaining: firmware 9.2 s + loader 1.3 s + kernel 0.9 s +
-  initrd 6.5 s + userspace 5.4 s.
+  (`git-filter-repo`); repository published.
+- **Stale UEFI boot entries removed.** The `BootOrder` had two dead entries
+  ahead of the real one (a `Limine` pointing at a GPT partition that no longer
+  existed, and a "Windows Boot Manager" label pointing at a deleted
+  `\EFI\cachyos\grubx64.efi`); both were removed, and Limine is kept early in
+  `BootOrder`. Note: `systemd-analyze`'s *firmware* phase counts from power-on,
+  so any figure captured after a BIOS visit is inflated and was not a valid
+  before/after metric here.
 - **Initramfs slimmed 248 MB → 55 MB** by dropping `nouveau` and its
   per-chipset NVIDIA GSP firmware (the `kms` hook pulls in ~140 MiB of it), and
   by keeping the NVIDIA modules out of the initramfs (~33 MiB, plus ~2.9 s of
