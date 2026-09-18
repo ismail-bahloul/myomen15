@@ -18,3 +18,7 @@ nvram-dump.txt
 # The ones worth keeping live in evidence/tpm-experiment/ and ARE versioned.
 /setupdiff-*.json
 /tpmstate-*.json
+
+# Python bytecode
+__pycache__/
+*.pyc
