@@ -84,6 +84,47 @@ discrepancy to explain; there was a misread of which field held which value.
 `0x84` at 100.000 may be a second thermal limit. The four floats at
 `0x68`–`0x74` are probably clocks or voltage planes. Not attributed yet.
 
+## The per-core groups, and the limit of the instrument
+
+Five 8-float groups are indexed by **physical core id** (0..7), not by logical
+CPU. Confirmed by pinning a busy loop to one thread at a time:
+
+```
+taskset -c 0  yes  ->  0x400 index 0 = 100.0000   (cpu0  = core 0)
+taskset -c 14 yes  ->  0x400 index 7 = 100.0000   (cpu14 = core 7)
+```
+
+with every other index staying at its own load. `evidence/pmtable-cores.py`
+dumps them.
+
+| Offset | Index base | Reading |
+|---|---|---|
+| `0x3a0` | 232 | ~4–6, rises only slightly with load — unattributed |
+| `0x3c0` | 240 | frequency-like: ≈3.175 on a saturated core |
+| `0x3e0` | 248 | frequency-like: ≈3.175 saturated, ~0.1–0.9 when idle |
+| `0x400` | 256 | **core busy %** — exactly 100.0000 when saturated |
+| `0x5c0` | 368 | scales strongly with load — unattributed |
+
+`0x3c0+i` and `0x3e0+i` both read ≈3.175 GHz on a fully loaded core and both
+fall when the core's clock is capped, so they look like (requested, effective)
+clocks. But that is **not** established, and the reason is worth recording.
+
+### `scaling_cur_freq` is not a usable reference on this machine
+
+The obvious ground truth, `cpufreq`, does not work here:
+
+```
+scaling_driver = amd-pstate-epp      (status: active)
+write min=max=2000000 to core 0
+scaling_cur_freq reads 2.535 GHz     (not 2.0)
+```
+
+Under `amd-pstate-epp` in `active` mode the attribute does not track the
+delivered clock, so a correlation against it can only ever look "close but never
+equal" — which is what the earlier reading found. A decisive measurement needs
+an independent clock: `perf stat -e cycles` (or `turbostat`), **not installed
+here yet**. Naming those two groups is the next step, and it waits on that.
+
 ## Why it matters
 
 This is the **instrument the Windows side lacked**. The Windows investigation
