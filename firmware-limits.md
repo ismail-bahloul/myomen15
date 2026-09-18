@@ -85,9 +85,10 @@ difference — which is itself the confirmation. Don't spend time on that menu; 
 firmware-level limits are ever needed for Windows, the lever to look at is HP's
 own thermal mode, not AMD CBS.
 
-## Undervolt / Curve Optimizer: locked by HP (dead end)
+## Undervolt / Curve Optimizer: locked on the SMU path (dead end *there*)
 
-Not possible on this machine — on **either** OS. Six independent confirmations:
+Not possible through the **SMU mailbox** on this machine — on **either** OS. Six
+independent confirmations:
 
 1. `ryzenadj --set-coall`, `--set-coper` and `--set-cogfx` all return
    **`rejected by SMU`**, including for the neutral value `0`. `--enable-oc`,
@@ -123,6 +124,43 @@ points 3–5 and with HP Sure Start.
 
 **Do not** install ZenTune (ex-UXTU4Linux) hoping for CO, and **do not** patch
 `ryzenadj` for it.
+
+### But there is a second road, and it has not been tried
+
+Every confirmation above goes through the **SMU mailbox** (`ryzenadj` on Linux,
+PawnIO → `RyzenSMU.bin` on Windows). SSDT2 declares a second `PNP0C14` device,
+`\AOD`, with a command table that says, in literal strings, `Set Curve
+Optimizer`. Its handler does not use the mailbox at all:
+
+```
+Method (R308, 1, NotSerialized)          // ACMD 0x0005000A
+{
+    CreateDWordField (Arg0, 0x04, SVAL)
+    MBVS = 0x05
+    COPS = SVAL
+    MBCB = 0x00100032
+    ASMI (0xB9)                          // writes I/O port 0xB2 -> SMM -> BIOS
+}
+```
+
+That is the path HP's own tuning software uses, and it asks the **BIOS**, not
+the SMU. The same table exposes `Set PPT Limit`, `Set TDC/EDC Limit`, `Set
+Scalar`, `Set IOD VDDG`, and `Set Soc TDC/EDC`.
+
+**This is not a claim that it works.** The SMM handler may forward straight to
+the SMU and get the same `FAILED`. What is now established is only that the
+interface exists, that the firmware documents it down to the command ID, and
+that it has never been exercised. The conclusion above stands for the mailbox;
+it does not cover this.
+
+The read path is not usable as a check — `\AOD.AM04` returns zeros — so any
+test here would have to be judged by **effect**, not by return value. Given this
+repo has already been caught once by a write that succeeded and did nothing,
+that is worth stating plainly rather than discovering. Detail:
+[`acpi-bridge.md`](acpi-bridge.md).
+
+`\AOD.AM01` answers `0x5` and `\AOD.AM03` returns the command table today, so
+the interface is live.
 
 ## BIOS modding: not possible (HP Sure Start)
 
@@ -241,6 +279,48 @@ never a discrepancy. `0x00` is STAPM and `0x10` is PPT-slow; reading a triple as
 - **EFI variable writes**: every variable carries `EFI_VARIABLE_RUNTIME_ACCESS`
   and refuses `O_RDWR` with `EPERM`.
 - **TPM**: currently set to `Hidden` — disabled and not detected at POST.
+
+## The firmware ships a generic EC / I-O bridge
+
+SSDT12 declares byte-level access to **any** EC register and **any** I/O port:
+
+```
+\_SB.PCI0.SBRG.EC0.M040 <offset>         read  any EC byte
+\_SB.PCI0.SBRG.EC0.M041 <offset> <val>   write any EC byte
+\_SB.PCI0.SBRG.EC0.M31A <port>           read  any I/O port byte
+\_SB.PCI0.SBRG.EC0.M319 <port> <val>     write any I/O port byte
+```
+
+Verified exhaustively against `ec_probe`: **256 of 256 registers agree**. Two
+consequences worth noting:
+
+- It is a **fourth independent path to the EC** (after `ec_sys`, `hp-wmi` and the
+  `H2RA` memory region), so a disagreement between paths is detectable.
+- `M319` reaches **any I/O port, including `0xB2`**, the AMD SMM command channel
+  — the same one `\AOD` uses. Nothing in the kernel exposes that.
+
+Tooling: `evidence/ecbridge.py`, read-only unless `--yes`. Detail:
+[`acpi-bridge.md`](acpi-bridge.md).
+
+## HP's performance mode, located (in the EC)
+
+The earlier note here said HP's thermal mode "has not been located on the Linux
+side". It is at two adjacent EC registers:
+
+| Register | Offset | Meaning |
+|---|---|---|
+| `OCPC` | `0xBA` | current performance profile (0–6) |
+| `OCPS` | `0xBB` | highest selectable profile |
+
+Currently `OCPC = 0x01`, `OCPS = 0x07`. `PWLC` (DSDT 17344) maps the profile to
+dGPU power limits in mW through `\DPTC` — profile 0 gives 54/65/54 W, profile 6
+gives 15 W. It is switched by EC query events (`_Q8C` applies, `_Q8E` cycles up),
+not by a WMI command.
+
+So this is a **live, writable mode selector in the EC**, and `\DPTC` is callable
+directly. It drives the dGPU rather than the CPU, so it is not the CPU thermal
+mode the earlier note was chasing — but it is the same family of control, and it
+was previously recorded as not found.
 
 ## EC access (mapped further)
 

@@ -12,11 +12,15 @@ This page exists so the same ground is not re-covered, and so a surface that is
 |---|---|---|
 | SMU power limits | `ryzen_smu` + `ryzenadj` | STAPM / PPT / Tctl, writes persist |
 | **SMU PM table** | `/sys/kernel/ryzen_smu_drv/pm_table` | 2372 B of `float32`; 9 limits + 9 live values. See [`pm-table.md`](pm-table.md) |
-| EC registers | `ec_probe`, `/sys/kernel/debug/ec/ec0/io` | `write_support=Y`; fans, three temperatures |
+| EC registers | `ec_probe`, `/sys/kernel/debug/ec/ec0/io`, **and the ACPI bridge** | `write_support=Y`; fans, three temperatures |
+| **ACPI EC/I-O bridge** | `acpi_call` → `M040`/`M041`/`M31A`/`M319` | Any EC byte, any I/O port. Verified 256/256 vs `ec_probe`. See [`acpi-bridge.md`](acpi-bridge.md) |
 | **Memory-mapped fan tachos** | `/dev/mem` at `0xfe700000` (`H2RA`) | A third, independent path. See [`h2ra-region.md`](h2ra-region.md) |
 | Fan control | `nbfc` (EC), `hp-wmi` `pwm1_enable` | `pwm1_enable=2` (auto) |
 | Platform profile | `/sys/class/platform-profile/` | `cool` / `balanced` / `performance` |
 | **Battery charge control** | `acpi_call` → `SBCC` / `GBCC` | Decoded, **not written**. See [`battery-charge-control.md`](battery-charge-control.md) |
+| **AMD overclocking (`\AOD`)** | `acpi_call` → `\AOD.WMAA` | PPT/TDC/EDC/Scalar/Curve Optimizer via SMM. Never tried. See [`acpi-bridge.md`](acpi-bridge.md) |
+| **Performance mode** | EC `OCPC` (0xBA) / `OCPS` (0xBB) | Maps to dGPU power limits via `\DPTC` |
+| **Keyboard RGB (4 zones)** | `acpi_call` → `\_SB.WMID.LM03` / `LM05` | Data in `H2RA` 0xEE3 / 0xEF0. Unexplored |
 | EFI setup answers | `/sys/firmware/efi/efivars/` | 137 vars, read-only. See [`efi-nvram.md`](efi-nvram.md) |
 | DSDT / 16 SSDT | `/sys/firmware/acpi/tables/` | 95 KB DSDT, disassembles cleanly with `iasl` |
 

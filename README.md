@@ -20,15 +20,20 @@ Where control sits, layer by layer. The detailed evidence for each row is in
 |---|---|---|
 | CPU power limits (SMU) | Write STAPM / PPT / Tctl via `ryzenadj`; they persist | ✅ **controlled** (one caveat: a `platform_profile` write resets them) |
 | SMU telemetry (PM table) | 2372 bytes of `float32` — 9 limits + 9 live values, one file read | ✅ **decoded** |
-| Fan control | `nbfc` (EC), `hp-wmi` `pwm1_enable`, and a memory-mapped tacho at `0xfe700000` | ✅ **controlled** (three independent paths) |
+| Fan control | `nbfc` (EC), `hp-wmi`, memory-mapped tacho at `0xfe700000`, and the ACPI bridge | ✅ **controlled** (four independent paths) |
+| EC registers | Four paths: `ec_sys`, `hp-wmi`, `H2RA`, and firmware `M040`/`M041` | ✅ **controlled** |
+| I/O ports | Firmware `M31A`/`M319` reaches any port, including SMM `0xB2` | ✅ **accessible** |
 | EFI setup answers | **Readable** at runtime as plain EFI variables; also stored in clear twice in the flash | ✅ **read** |
-| Battery charge control | `GBCC` / `SBCC` reachable through `acpi_call`; decoded, **not** written | 🟡 **open** |
+| Keyboard RGB | 4 zones, in `H2RA`; writable via the WMI `LM03` method | 🟡 **open** |
+| Performance mode (`OCPC`) | In the EC; maps to dGPU power limits via `\DPTC` | 🟡 **open** |
+| Curve Optimizer (SMM path) | `\AOD` command `0x0005000A` — a second road, never tried | 🟡 **open** |
+| Battery charge control | `GBCC` / `SBCC` reachable; decoded, **not** written | 🟡 **open** |
 | Memory tuning (SPD profiles) | Firmware ships non-QVL SPD profiles by part number, reachable via `AMD CBS > UMC` | 🟡 **open** |
 | BIOS power menu (AMD CBS) | Nothing — it only seeds POST values the HP EC overrides | ⚪ **inert** |
 | BIOS hidden menus | Reachable with SmokelessUMAF / SREP (`SuppressIf` patch) | 🟡 **partial** — but `Custom Core Pstates` stays empty |
-| CPU undervolt / Curve Optimizer | Nothing — the SMU refuses the whole OC/CO family on **both** OSes | 🔴 **locked** |
+| CPU undervolt / Curve Optimizer (**SMU path**) | The SMU refuses the whole OC/CO family on **both** OSes | 🔴 **locked** |
 | BIOS modification / flashing | Nothing — HP Sure Start is active, the payload is PSS-signed | 🔴 **blocked** |
-| Embedded controller (EC) | Reachable (`ec_probe`, `nbfc`); fans and three temperature registers mapped | 🟡 **partial** — see [`ec-map.md`](ec-map.md) |
+| Embedded controller (EC) registers | Fans, three temperatures, and the named control offsets mapped | 🟡 **partial** — see [`ec-map.md`](ec-map.md) |
 | TPM | `Hidden` — disabled and not detected at POST | ⚪ **off** |
 
 Legend: ✅ controlled · 🟡 partial or open · ⚪ no effect · 🔴 refused.
@@ -37,12 +42,14 @@ Legend: ✅ controlled · 🟡 partial or open · ⚪ no effect · 🔴 refused.
 
 | Question | Answer |
 |---|---|
-| Can I undervolt, or use Curve Optimizer? | **No.** The SMU refuses the whole OC/CO command family — on Linux *and* on Windows. |
-| Can I read what the SMU is actually doing? | **Yes.** The PM table decodes to 9 limits + 9 live values in one `read()`. This is the instrument the Windows side lacked. |
-| Can I read the BIOS settings from the running OS? | **Yes.** They are plain EFI variables (`AMD_PBS_SETUP`, `AmdSetup`, `Setup`) — and identical in the flash chip, twice. |
-| Can I cap battery charging? | **Mechanism found and decoded** (`SBCC` writes `EC0.MBDC`), but the battery reports no cap mode available. Unverified. |
-| Can I set a power limit in the BIOS? | That setting is **inert** on this machine; the HP EC owns those values. |
-| Do power limits written by the OS stick? | **Yes** — with one exception: writing `platform_profile` makes the EC re-apply its own. |
+| Can I undervolt, or use Curve Optimizer? | **The SMU says no** — proven on both OSes. But an untested second road exists (`\AOD`, via SMM), which is what HP's own software uses. |
+| Can I read what the SMU is actually doing? | **Yes.** The PM table decodes to 9 limits + 9 live values in one `read()`. |
+| Can I read the BIOS settings from the running OS? | **Yes.** Plain EFI variables — and identical in the flash chip, twice. |
+| Can I talk to any EC register or I/O port? | **Yes.** The firmware ships a generic byte bridge (`M040`/`M041`/`M31A`/`M319`), verified 256/256 against `ec_probe`. |
+| Can I cap battery charging? | **Mechanism decoded** (`SBCC` writes `EC0.MBDC`), but the battery reports no cap mode. Unverified. |
+| Can I control the keyboard lighting? | **Yes** — 4-zone RGB via the WMI `LM03` method. Unexplored. |
+| Can I set a power limit in the BIOS? | That setting is **inert**; the HP EC owns those values. |
+| Do power limits written by the OS stick? | **Yes** — except a `platform_profile` write makes the EC re-apply its own. |
 | Can I modify the BIOS? | **No** — HP Sure Start is active, and the payload is PSS-signed. |
 
 ## What is actually interesting here
@@ -87,6 +94,22 @@ is visible.
   a named EC register, and `acpi_call` reaches it. Decoded in full — arguments,
   bit encodings, the guard, the completion flag, the return codes. Not written to,
   and why. → [`battery-charge-control.md`](battery-charge-control.md)
+- **The firmware ships a generic EC/I-O bridge, and nothing uses it.** SSDT12
+  declares `M040`/`M041` (read/write any EC byte) and `M31A`/`M319` (read/write
+  any I/O port). Verified against `ec_probe`: **256 of 256 registers agree**.
+  `M319` reaches I/O port `0xB2`, the AMD SMM channel. → [`acpi-bridge.md`](acpi-bridge.md)
+- **The Curve Optimizer gate has an untested second road.** The repo's central
+  negative result — CO refused — was measured through the **SMU mailbox**, on both
+  OSes. SSDT2 declares `\AOD` with a literal `Set Curve Optimizer` command
+  (`0x0005000A`) that does **not** use the mailbox: it pokes SMM via I/O `0xB2`,
+  the way HP's own software does. It may well be refused by the same SMU, but it
+  has never been tried. → [`acpi-bridge.md`](acpi-bridge.md) §2
+- **HP's performance mode, located.** The README listed it as "not found on the
+  Linux side". It is in the EC: `OCPC` (0xBA) is the current profile, `OCPS`
+  (0xBB) the maximum, and the DSDT maps 0–6 to dGPU power limits in mW. →
+  [`acpi-bridge.md`](acpi-bridge.md) §3
+- **The keyboard is 4-zone RGB and Linux exposes none of it.** `\_SB.WMID.LM03`
+  writes the data (`H2RA` 0xEE3 / 0xEF0, 12 bytes each) and commits it.
 - **A method I proposed, and the experiment that killed it.** Toggle one BIOS
   option, diff the tables, name the offset — that was the plan. A three-way TPM
   toggle (`off` → `on` → `off` → `Hidden`) showed it does not work: saving the
@@ -130,6 +153,7 @@ What has not been tried yet, ordered by how much it would unlock:
 | Path | What it is |
 |---|---|
 | [`firmware-limits.md`](firmware-limits.md) | The living reference — current conclusions only: BIOS power semantics, the Curve Optimizer gate, Sure Start, what resets an OS-written profile, and what is unsupported. |
+| [`acpi-bridge.md`](acpi-bridge.md) | The SSDTs decoded: the firmware's generic EC/I-O bridge, the `\AOD` overclocking interface, and HP's performance-mode selector. |
 | [`access-surface.md`](access-surface.md) | Everything reachable on this machine, everything measured as blocked, and what is reachable but not yet used. |
 | [`pm-table.md`](pm-table.md) | The SMU PM table decoded: 9 limits + 9 live values as `float32`, and the "50 vs 54" question it settles. |
 | [`ec-map.md`](ec-map.md) | The mapped embedded-controller registers (fans, three temperatures), how each was verified, and what is not in the EC. |
@@ -138,7 +162,7 @@ What has not been tried yet, ordered by how much it would unlock:
 | [`efi-nvram.md`](efi-nvram.md) | The EFI variable store: the BIOS answers as readable variables, the clear-text copies in the flash, and what the image does and does not expose. |
 | [`BIOS_arborescence_OMEN.md`](BIOS_arborescence_OMEN.md) | The full SmokelessUMAF menu tree, transcribed from the 133 photos. |
 | [`record/`](record/) | The point-in-time investigation, kept as written. Start with the Linux report, then the Windows verdict. |
-| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`. |
+| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`. |
 | [`img_smokelessUMAF/`](img_smokelessUMAF/) | The 133 photographs of the SmokelessUMAF menus, kept as primary evidence. |
 
 ## Caveats
