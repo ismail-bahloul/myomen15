@@ -21,10 +21,10 @@ Where control sits, layer by layer. The detailed evidence for each row is in
 | CPU power limits (SMU) | Write STAPM / PPT / Tctl via `ryzenadj`; they persist | ✅ **controlled** (one caveat: a `platform_profile` write resets them) |
 | SMU telemetry (PM table) | 2372 bytes of `float32` — 9 limits + 9 live values, one file read | ✅ **decoded** |
 | Fan control | `nbfc` (EC), `hp-wmi`, memory-mapped tacho at `0xfe700000`, and the ACPI bridge | ✅ **controlled** (four independent paths) |
-| EC registers | Four paths: `ec_sys`, `hp-wmi`, `H2RA`, and firmware `M040`/`M041` | ✅ **controlled** |
+| EC registers | Four paths: `ec_sys`, `hp-wmi`, `H2RA`, and firmware `M040`/`M041` (verified 256/256) | ✅ **controlled** |
 | I/O ports | Firmware `M31A`/`M319` reaches any port, including SMM `0xB2` | ✅ **accessible** |
 | EFI setup answers | **Readable** at runtime as plain EFI variables; also stored in clear twice in the flash | ✅ **read** |
-| Keyboard RGB | 4 zones, in `H2RA`; writable via the WMI `LM03` method | 🟡 **open** |
+| Keyboard RGB | The EC publishes 4-zone RGB state in `H2RA`; **writes there don't control it** | 🟡 **found, not controllable** |
 | Performance mode (`OCPC`) | In the EC; maps to dGPU power limits via `\DPTC` | 🟡 **open** |
 | Curve Optimizer (SMM path) | `\AOD` command `0x0005000A` — a second road, never tried | 🟡 **open** |
 | Battery charge control | `GBCC` / `SBCC` reachable; decoded, **not** written | 🟡 **open** |
@@ -109,7 +109,14 @@ is visible.
   (0xBB) the maximum, and the DSDT maps 0–6 to dGPU power limits in mW. →
   [`acpi-bridge.md`](acpi-bridge.md) §3
 - **The keyboard is 4-zone RGB and Linux exposes none of it.** `\_SB.WMID.LM03`
-  writes the data (`H2RA` 0xEE3 / 0xEF0, 12 bytes each) and commits it.
+  writes the data (`H2RA` 0xEE3 / 0xEF0, 12 bytes each) and commits it. The
+  control itself is inside the EC, and **writing `H2RA` has no effect on it**.
+- **A control surface that looked open, and was not.** `H2RA` at `0xfe700000` is
+  writable, and the firmware declares fan setpoints there (`SFS1`/`SFS2`) that it
+  never writes — which looked like an unwired control. A controlled test on the
+  keyboard backlight says otherwise: **writes there are ignored**, including via
+  the firmware's own `LM05` method. `H2RA` is a one-way publication. That closes
+  the hope of driving the fans through it. → [`h2ra-region.md`](h2ra-region.md)
 - **A method I proposed, and the experiment that killed it.** Toggle one BIOS
   option, diff the tables, name the offset — that was the plan. A three-way TPM
   toggle (`off` → `on` → `off` → `Hidden`) showed it does not work: saving the
@@ -162,7 +169,7 @@ What has not been tried yet, ordered by how much it would unlock:
 | [`efi-nvram.md`](efi-nvram.md) | The EFI variable store: the BIOS answers as readable variables, the clear-text copies in the flash, and what the image does and does not expose. |
 | [`BIOS_arborescence_OMEN.md`](BIOS_arborescence_OMEN.md) | The full SmokelessUMAF menu tree, transcribed from the 133 photos. |
 | [`record/`](record/) | The point-in-time investigation, kept as written. Start with the Linux report, then the Windows verdict. |
-| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`. |
+| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`, `omenkbd.py`, `omenwatch.py`. |
 | [`img_smokelessUMAF/`](img_smokelessUMAF/) | The 133 photographs of the SmokelessUMAF menus, kept as primary evidence. |
 
 ## Caveats
