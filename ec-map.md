@@ -111,7 +111,7 @@ The two diffs are indistinguishable, and none of the changed bytes encodes
 31/43/33. So the SMU limits live in the SMU and nowhere else on the EC side; the
 volatile registers are telemetry (fans, temperatures). This rules out "the EC
 owns the limits" as an explanation for the [platform profile
-reset](firmware-limits.md#power-limits-they-stay-put-but-writing-platform_profile-resets-them).
+reset](firmware-limits.md#power-limits-what-resets-them-is-not-established).
 
 ## A full dump, for reference
 

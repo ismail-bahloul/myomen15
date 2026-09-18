@@ -143,6 +143,15 @@ def main():
     print("watching %s and the SMU limits (now %s)"
           % (PROFILE, describe(known)), flush=True)
 
+    # Establish a known-good state before watching for changes. Without this, a
+    # watcher started while the limits are already off-target would adopt the
+    # wrong values as "known" and never correct them -- it only reacts to
+    # changes. Safe with respect to a manual PERF mode: `power-profile guard`
+    # refuses to apply while the performance governor is active.
+    apply_profile("startup")
+    known = limits()
+    print("baseline after startup apply: %s" % describe(known), flush=True)
+
     while _running:
         # 1. an explicit platform_profile write
         r, _, _ = select.select([fd], [], [], POLL)

@@ -175,94 +175,106 @@ The image itself, though, is not opaque — see
 above. The payload on the ESP is a 16 MiB AMI firmware image with two complete
 copies of the flash, and the parts that hold *state* are in clear.
 
-## Power limits: they stay put, but writing `platform_profile` resets them
+## Power limits: what resets them is **not** established
 
-`ryzenadj` writes **do** take (writing `37/44/37` reads back `37/44/37`
-immediately and still after 27 s), and a controlled A/B run with the guard
-disabled shows they **stay put**: an OS-written `35/42/35` held unchanged for
-**10 minutes with `nbfc` running and 10 minutes with `nbfc` stopped**, with no
-reversion at all (`evidence/nbfc_{on,off}.csv`, 287 samples each).
+This section has now been wrong in three different ways, so it is written as
+the current state of the evidence rather than as a conclusion.
 
-The one thing that *does* clobber them is a **write to the EC-facing platform
-profile**. Reproduced, with the write caught by inotify and the limits read from
-the PM table at the same instant:
+### What is solid
+
+`ryzenadj` writes take and hold. Writing `37/44/37` reads back `37/44/37`, and
+the two 10-minute A/B runs (`evidence/nbfc_{on,off}.csv`) showed no reversion.
+
+### The three claims, in order
+
+| # | Claim | Status |
+|---|---|---|
+| 1 | "The EC periodically reverts the limits, hence the 5-minute timer" | **not reproduced** in the A/B run |
+| 2 | "A `platform_profile` write makes the EC re-apply its own limits" | **measured once, then contradicted** |
+| 3 | "Claim 2 is wrong" (an earlier over-correction in this file) | itself wrong: the test that produced it never set a distinctive value first |
+
+The one measurement that looked decisive:
 
 ```
 [18:48:08] platform_profile MODIFY -> 'balanced'
-[18:48:09] LIMITS CHANGED: 35/42/35 -> 54/65/54   -> EC / POST stock
+[18:48:09] LIMITS CHANGED: 35/42/35 -> 54/65/54
 ```
 
-A later end-to-end run through the fix below shows the same thing from the other
-side: writing `performance` puts the limits at `54/65/54` inside 50 ms, and they
-are back at `35/42/35` by the next sample.
+### What contradicts it
 
-So the HP EC re-applies its own limits (`54/65/54` here) whenever
-`/sys/class/platform-profile/platform-profile-0/profile` is written — **even when
-writing back the value it already has**.
+With every power-profile unit **stopped** and no other writer present, writing
+`platform_profile` was measured over 5 seconds of 100 ms polling, for all three
+profiles (`cool`, `balanced`, `performance`), and **the limits did not move**:
 
-### A mistake made while re-measuring this, kept for the method
+```
+depart  : (37, 44, 37)
+write platform_profile = 'performance'
+final   : (37, 44, 37)      after 5 s
+```
 
-This page was briefly "corrected" to say the platform-profile reset was *false*,
-on the strength of a test that wrote `balanced` and saw the limits unchanged. The
-test was worthless: the limits were **already** at `54/65/54` when it started, so
-"no change" proved nothing. Measuring a reset without first setting a distinctive
-value is not a measurement.
+So the write alone does not reset them. Something else in the earlier test did,
+and the most likely candidate is now visible in the configuration:
 
-That is the second time this repo has gone wrong on this exact question — the
-first was the `nbfc`/periodic-revert theory, this was the over-correction. Both
-times the fault was the same: reading a value without establishing what it was
-*before*.
+### `54/65/54` is this machine's own PERF profile
 
-### One observation that does not fit, recorded rather than explained
+```
+/usr/local/bin/power-profile:53
+    ryzenadj --stapm-limit=54000 --fast-limit=65000 --slow-limit=54000 \
+             --apu-slow-limit=42000 --tctl-temp=90
+```
 
-During the tests the limits were seen at **`50/65/54`** twice, with **no**
-`platform_profile` write in the inotify log — once during a monitored run, once
-while running the TUI. A 12-minute monitored run in between showed nothing. So
-there is a **second, rarer mechanism**: the EC re-asserting on its own, which is
-what §5 originally claimed. `50/65/54` is a **different value** from the one the
-platform-profile path produces (`54/65/54`), which is what makes them separable —
-and it is invisible to inotify, so it cannot be caught the same way.
+`54/65/54` is not an EC value at all — it is what `apply_perf()` writes, chosen
+to match the stock/POST values. So a `54/65/54` reading means **PERF was applied
+by the script**, not that firmware clobbered anything.
 
-### The 5-minute window, and closing it
+That does not by itself explain the 18:48 event (no caller of `power-profile
+perf` exists in `/etc`, and the governor was `powersave`, so `apply_perf` should
+not have run). It does mean the number was misattributed.
 
-The Linux setup re-applies the profile every **5 minutes**
-(`power-profile.timer`, `OnUnitActiveSec=5min`). That is a coarse safety net: the
-machine can sit at the EC's limits for almost five minutes before being
-corrected.
+### Still unexplained
 
-**Fix: watch, and react, instead of polling the clock.** Two detectors, because
-the two mechanisms have different signatures:
+`50/65/54` was seen twice, with no `platform_profile` write logged. It is:
+
+- **not** in `/usr/local/bin/power-profile` (which only writes 54/65/54, 35/42/35
+  and 15/18/15),
+- **not** in any platform-profile attribute,
+- **not** in any of the 256 addressable EC registers (the `50`s found there are
+  the fan setpoint at `0x2C` and two unrelated bytes).
+
+`STAPM` is a *sustained* limit with a 275 s time constant, so a smaller value
+under load is at least plausible as SMU behaviour rather than an override — but
+that is a hypothesis, not a measurement.
+
+### The practical position
+
+Whatever the mechanism, the fix does not depend on identifying it:
 
 | Mechanism | Signature | Detection |
 |---|---|---|
-| `platform_profile` write | EC re-applies `54/65/54` | inotify on the attribute |
-| EC re-asserting alone | `50/65/54`, nothing written | read the PM table |
+| `platform_profile` write | `54/65/54` | inotify on the attribute |
+| anything else | any other drift | read the PM table once a second |
 
-Reading the limits is nearly free — the PM table is one `read()` of 2372 bytes,
-no SMU command and no ACPI call — so it is polled once a second and the profile
-is applied **only when the values actually move**. Measured:
-
-```
-echo performance > platform_profile
-  -> 54/65/54 within 50 ms
-  -> 35/42/35 within 0.12 s
-
-ryzenadj --stapm-limit=50000 ...   (standing in for the silent EC re-assert)
-  -> 50/65/54
-  -> 35/42/35 within 1 s
-```
-
-The window goes from "up to 5 minutes" to "about one second" for the silent
-case and "about a tenth of a second" for the visible one. The profile itself
-costs 0.13 s, so the applied work is bounded by a 3-second minimum interval.
+Reading the limits is nearly free (one `read()` of 2372 bytes, no SMU command,
+no ACPI call), so the profile is applied **only when the values move**, plus
+once at startup so a watcher beginning from a wrong state still corrects it.
+Measured: 0.12 s for a `platform_profile` write, 1 s for a silent drift, against
+a 5-minute timer before.
 
 The pieces are `evidence/power-profile-watch` and
-`evidence/power-profile-watch.service`; they delegate the actual apply to
+`evidence/power-profile-watch.service`; they delegate the apply to
 `systemctl start power-profile.service`, so there is one implementation of the
-profile and it cannot drift.
+profile. `power-profile.timer` stays as a third backstop.
 
-`power-profile.timer` is kept as a backstop for anything neither detector
-notices.
+### The lesson, kept
+
+Three claims, three retractions, and both errors had the same shape: a value was
+read without first establishing what it was. The original "EC reverts" theory
+and the "platform_profile is innocent" correction failed the same way. The
+`54/65/54` attribution then failed a third way — by not checking whether the
+number was written by *our own script*.
+
+Before attributing a value to firmware, set a distinctive one and check who else
+writes it.
 
 The investigation script is `evidence/limitwatch.py`; the original A/B is
 `evidence/ec-revert-ab-test.sh`.
@@ -403,7 +415,7 @@ What was tested and **ruled out**: the EC does not hold the SMU power limits.
 Dumping the EC before and after a `ryzenadj` write, with a no-op control run to
 account for telemetry drift, produces indistinguishable diffs — the limits live
 in the SMU only. So the [platform profile
-reset](#power-limits-they-stay-put-but-writing-platform_profile-resets-them) is not
+reset](#power-limits-what-resets-them-is-not-established) is not
 the EC re-asserting a stored limit.
 
 ### The EFI variables that carry the setup
