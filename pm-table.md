@@ -84,7 +84,7 @@ discrepancy to explain; there was a misread of which field held which value.
 `0x84` at 100.000 may be a second thermal limit. The four floats at
 `0x68`–`0x74` are probably clocks or voltage planes. Not attributed yet.
 
-## The per-core groups, and the limit of the instrument
+## The per-core groups, decoded
 
 Five 8-float groups are indexed by **physical core id** (0..7), not by logical
 CPU. Confirmed by pinning a busy loop to one thread at a time:
@@ -94,24 +94,40 @@ taskset -c 0  yes  ->  0x400 index 0 = 100.0000   (cpu0  = core 0)
 taskset -c 14 yes  ->  0x400 index 7 = 100.0000   (cpu14 = core 7)
 ```
 
-with every other index staying at its own load. `evidence/pmtable-cores.py`
-dumps them.
+`evidence/pmtable-cores.py` dumps them.
 
-| Offset | Index base | Reading |
+| Offset | Index base | Meaning |
 |---|---|---|
-| `0x3a0` | 232 | ~4–6, rises only slightly with load — unattributed |
-| `0x3c0` | 240 | frequency-like: ≈3.175 on a saturated core |
-| `0x3e0` | 248 | frequency-like: ≈3.175 saturated, ~0.1–0.9 when idle |
+| `0x3a0` | 232 | scales only slightly with load (~3.7–6.2) — unattributed |
+| `0x3c0` | 240 | per-core clock in GHz: the operating point the core is set to |
+| `0x3e0` | 248 | per-core **effective** clock in GHz: equals `0x3c0` under load, falls to ~0 when idle |
 | `0x400` | 256 | **core busy %** — exactly 100.0000 when saturated |
-| `0x5c0` | 368 | scales strongly with load — unattributed |
+| `0x5c0` | 368 | scales with load and clock — unattributed |
 
-`0x3c0+i` and `0x3e0+i` both read ≈3.175 GHz on a fully loaded core and both
-fall when the core's clock is capped, so they look like (requested, effective)
-clocks. But that is **not** established, and the reason is worth recording.
+### How the clocks were confirmed
 
-### `scaling_cur_freq` is not a usable reference on this machine
+`cpufreq` could not serve as the reference (see below), so the reference was
+`perf`, counting real core cycles while one core ran pinned under a known cap:
 
-The obvious ground truth, `cpufreq`, does not work here:
+| Core 0 capped at | `perf stat -C 0 -e cycles` | `0x3c0[0]` | `0x3e0[0]` |
+|---|---|---|---|
+| 2.0 GHz | 2.394 GHz | 2.393 | 2.388 |
+| 3.2 GHz | 3.169 GHz | 3.175 | 3.175 |
+
+Both fields match the measured frequency to under 0.3 % under sustained load.
+They differ only once the core stops working:
+
+```
+sustained load :  0x3c0 = 0x3e0 = 3.175
+load ends      :  0x3c0 = 2.40   0x3e0 = 0.07
+```
+
+So `0x3c0` is the clock the core is *set to* and `0x3e0` the clock it actually
+delivers. (Whether `0x3c0` is best named "requested" or "last decided P-state"
+is not settled; what is settled is that it is not an average — it held its value
+across the whole idle sample instead of decaying.)
+
+### Why `cpufreq` could not be the reference
 
 ```
 scaling_driver = amd-pstate-epp      (status: active)
@@ -119,11 +135,11 @@ write min=max=2000000 to core 0
 scaling_cur_freq reads 2.535 GHz     (not 2.0)
 ```
 
-Under `amd-pstate-epp` in `active` mode the attribute does not track the
+Under `amd-pstate-epp` in `active` mode `scaling_cur_freq` does not track the
 delivered clock, so a correlation against it can only ever look "close but never
-equal" — which is what the earlier reading found. A decisive measurement needs
-an independent clock: `perf stat -e cycles` (or `turbostat`), **not installed
-here yet**. Naming those two groups is the next step, and it waits on that.
+equal" — which is exactly what the earlier reading found. `perf` (or
+`turbostat`) gives the real number; installing `perf` is the step that unlocked
+the attribution above.
 
 ## Why it matters
 

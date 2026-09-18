@@ -6,12 +6,16 @@ Five 8-float groups in the SMU PM table are indexed by *physical* core id
 time: `taskset -c 0 yes` saturates index 0, `taskset -c 14 yes` saturates index
 7 (core 7). See pm-table.md.
 
-  byte offset   index base   reading
-  0x3a0         232          unattributed (~4-6, rises only slightly)
-  0x3c0         240          frequency-like: ~3.175 on a saturated core
-  0x3e0         248          frequency-like: ~3.175 saturated, ~0.1-0.9 idle
+  byte offset   index base   meaning
+  0x3a0         232          unattributed (~3.7-6.2, rises only slightly)
+  0x3c0         240          per-core clock in GHz (operating point)
+  0x3e0         248          per-core effective clock in GHz (= 0x3c0 under load,
+                              ~0 when idle)
   0x400         256          core busy % -- exactly 100.0000 when saturated
-  0x5c0         368          unattributed, scales strongly with load
+  0x5c0         368          unattributed, scales with load and clock
+
+Both clocks were confirmed against `perf stat -C N -e cycles` on a core pinned
+under a known cap: within 0.3 % under sustained load.
 
 Read-only: open the PM table and unpack float32, no SMU command involved.
 
