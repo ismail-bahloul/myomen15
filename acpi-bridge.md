@@ -151,7 +151,93 @@ callable directly. On this platform it drives the dGPU's power limit rather than
 the CPU's — so it is not the CPU "thermal mode" the README was looking for, but
 it is the same family of control, and it is a live, writable register.
 
-## 4. Also found
+## 4. The `\AOD` read path, and the crash it led to
+
+The write conclusion in §2 was reached without ever reading what `\AOD`
+currently holds. There *is* a read path, and finding it cost a kernel panic —
+which is the part worth recording.
+
+### The read path exists
+
+`AM05` fills a 200-byte output structure (`OBUF`) with the current state and
+returns it. The fields are declared explicitly in the ASL, including the ones
+this repo could not read through the SMU:
+
+```
+BCOS 0x57   curve optimizer scalar      BPPL 0x6C   PPT limit
+BPPT 0x8C   PPT                          BTDL 0x70   TDC limit
+BTDC 0x90   TDC                          BEDL 0x74   EDC limit
+BEDM 0x94   EDC                          BPCS 0xA1   curve optimizer (COPS)
+BSCA 0x98   scalar
+```
+
+The method is callable, and `acpi_call` accepts a buffer argument:
+
+```
+printf '%s' '\AOD.AM05 {0x01,0x00,0x01,0x00}' > /proc/acpi/call
+cat /proc/acpi/call
+-> {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, ... }
+```
+
+`AM01` answers `0x5` and `AM03` returns the command table, so the device is live.
+
+### Why it cannot be read, yet
+
+`acpi_call` copies the result into a fixed **256-byte** kernel buffer, so the
+reply is cut off at roughly **42 buffer values — offsets `0x00`–`0x29`**. Every
+field above `0x2A` is unreachable, and that includes both curve-optimizer
+fields. The power limits at `0x6C`–`0x94` are also cut off — but those are
+already available from the [PM table](pm-table.md), so the real loss is the
+curve optimizer, which nothing else exposes.
+
+The region those fields actually live in, `AODT` at `0xB6EA5018`, cannot be read
+directly either: `/dev/mem` refuses it with `EPERM`, as it does all ACPI-resident
+storage on this kernel.
+
+### The attempt that panicked the machine
+
+Enlarging that 256-byte buffer looks like a one-line fix. It is a DKMS module, the
+source is right there, and the constant is unmissable:
+
+```
+/usr/src/acpi_call-1.2.2/acpi_call.c:27:#define BUFFER_SIZE 256
+```
+
+It was raised to 8192, the module rebuilt and reloaded, and the first call
+returned normally — still truncated at 253 characters, so the module had not
+taken the change. It was rebuilt again with `dkms build --force`.
+
+**The machine then panicked: the screen died and the Caps Lock LED blinked.**
+That blink is the kernel-panic indicator on this platform.
+
+After the reboot the system had **rolled itself back**: `acpi_call.c` was back to
+`BUFFER_SIZE 256`, the installed module was the original, and `pacman -Qkk
+acpi_call-dkms` reported `0 altered files`. So the damage did not persist — but
+it did happen, and the machine had to restart.
+
+### What to take from it
+
+1. **`acpi_call` is not a safe module to modify here.** Its buffers are passed
+   into ACPI evaluation; changing their size changes what the kernel tells the
+   firmware to write into. Bumping one constant is not a local change.
+2. **A panic can look like success first.** The reloaded module answered a call
+   correctly before the machine died. "It responded" was not evidence it was
+   sane.
+3. **The truncation stands.** There is no read-back for the curve optimizer on
+   this machine through this tool, and the obvious workaround is the one that
+   just crashed it.
+
+### Where that leaves the curve-optimizer question
+
+The SMU path (§2) is refused, proven on both OSes. The `\AOD`/SMM write path is
+reachable and **still untested** — but it now has no read-back, and the reason is
+not a firmware gate but a tooling limit that is dangerous to lift. Testing a
+write there would mean judging it by effect alone, with no way to verify, on a
+mechanism that already knocked the machine over once.
+
+That is the honest state: not "impossible", and not "worth it either".
+
+## 5. Also found
 
 | Path | What it does | R/W |
 |---|---|---|
@@ -169,7 +255,7 @@ The RGB one is notable: the keyboard is 4-zone RGB, the data lives in `H2RA` at
 `0xEE3` and `0xEF0` (two 12-byte copies) with a commit bit at `0xEE0` bit 5, and
 `hp-wmi` on Linux exposes none of it.
 
-## 5. What is untested, and why
+## 6. What is untested, and why
 
 Everything in sections 2–4 that writes has been left alone. Three reasons, in
 order:

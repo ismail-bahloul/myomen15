@@ -98,12 +98,19 @@ is visible.
   declares `M040`/`M041` (read/write any EC byte) and `M31A`/`M319` (read/write
   any I/O port). Verified against `ec_probe`: **256 of 256 registers agree**.
   `M319` reaches I/O port `0xB2`, the AMD SMM channel. → [`acpi-bridge.md`](acpi-bridge.md)
-- **The Curve Optimizer gate has an untested second road.** The repo's central
-  negative result — CO refused — was measured through the **SMU mailbox**, on both
-  OSes. SSDT2 declares `\AOD` with a literal `Set Curve Optimizer` command
-  (`0x0005000A`) that does **not** use the mailbox: it pokes SMM via I/O `0xB2`,
-  the way HP's own software does. It may well be refused by the same SMU, but it
-  has never been tried. → [`acpi-bridge.md`](acpi-bridge.md) §2
+- **The Curve Optimizer gate has an untested second road, with a catch.** The
+  repo's central negative result — CO refused — was measured through the **SMU
+  mailbox**, on both OSes. SSDT2 declares `\AOD` with a literal `Set Curve
+  Optimizer` command that does **not** use the mailbox: it pokes SMM via I/O
+  `0xB2`, the way HP's own software does. It may well be refused by the same SMU,
+  but it has never been tried. → [`acpi-bridge.md`](acpi-bridge.md) §2
+- **A crash that this repo caused, and kept.** Chasing a read-back for the above
+  meant reading `\AOD`'s full state, which `acpi_call` truncates at 42 values.
+  Enlarging that buffer means editing the `acpi_call` DKMS module — and doing so
+  **panicked the machine** (screen dead, Caps Lock blinking). It rolled back on
+  reboot and `pacman -Qkk` confirms nothing persisted, but it happened. The
+  truncation stands, and the curve optimizer has no read-back here. →
+  [`acpi-bridge.md`](acpi-bridge.md) §4
 - **HP's performance mode, located.** The README listed it as "not found on the
   Linux side". It is in the EC: `OCPC` (0xBA) is the current profile, `OCPS`
   (0xBB) the maximum, and the DSDT maps 0–6 to dGPU power limits in mW. →
@@ -169,7 +176,7 @@ What has not been tried yet, ordered by how much it would unlock:
 | [`efi-nvram.md`](efi-nvram.md) | The EFI variable store: the BIOS answers as readable variables, the clear-text copies in the flash, and what the image does and does not expose. |
 | [`BIOS_arborescence_OMEN.md`](BIOS_arborescence_OMEN.md) | The full SmokelessUMAF menu tree, transcribed from the 133 photos. |
 | [`record/`](record/) | The point-in-time investigation, kept as written. Start with the Linux report, then the Windows verdict. |
-| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`, `omenkbd.py`, `omenwatch.py`. |
+| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`, `omenkbd.py`, `omenwatch.py`, `aodread.py`. |
 | [`img_smokelessUMAF/`](img_smokelessUMAF/) | The 133 photographs of the SmokelessUMAF menus, kept as primary evidence. |
 
 ## Caveats
