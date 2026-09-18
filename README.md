@@ -58,6 +58,20 @@ Not the answers — those are small. What is interesting is that they are
 *measured*, and that the wrong turns are kept, because that is where the method
 is visible.
 
+- **The same question went wrong twice, the same way.** Whether the EC reverts
+  OS-written power limits was first answered "yes, periodically", then
+  "no, only via `platform_profile`". Re-measuring it produced a *third* answer —
+  the second one was itself an over-correction, and the mistake both times was
+  reading a value without first setting a distinctive one. →
+  [`firmware-limits.md`](firmware-limits.md)
+- **A 5-minute blind spot, and a 0.1-second fix.** The profile could be clobbered
+  and stay clobbered for minutes. inotify turned out to work on the sysfs
+  attribute, so the machine now reacts to the write rather than polling for it.
+  → [`evidence/power-profile-watch`](evidence/power-profile-watch)
+- **A kernel panic this repo caused.** Chasing a read-back for the Curve
+  Optimizer meant editing the `acpi_call` DKMS module; resizing its buffer
+  panicked the machine (screen dead, Caps Lock blinking). It rolled back and
+  nothing persisted, but it happened. → [`acpi-bridge.md`](acpi-bridge.md)
 - **The Curve Optimizer gate is firmware-side, and proving it took more than
   trusting a tool.** UXTU on Windows *appears* to apply a CO offset — it updates
   its UI and looks like it worked. Its own diagnostic log records **20 failures
@@ -176,7 +190,8 @@ What has not been tried yet, ordered by how much it would unlock:
 | [`efi-nvram.md`](efi-nvram.md) | The EFI variable store: the BIOS answers as readable variables, the clear-text copies in the flash, and what the image does and does not expose. |
 | [`BIOS_arborescence_OMEN.md`](BIOS_arborescence_OMEN.md) | The full SmokelessUMAF menu tree, transcribed from the 133 photos. |
 | [`record/`](record/) | The point-in-time investigation, kept as written. Start with the Linux report, then the Windows verdict. |
-| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`, `omenkbd.py`, `omenwatch.py`, `aodread.py`. |
+| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`, `omenkbd.py`, `omenwatch.py`, `aodread.py`, plus `omenmon.py` (live power/thermal TUI) and `limitwatch.py` (what resets the SMU limits). |
+| [`evidence/power-profile-watch`](evidence/power-profile-watch) | Re-applies the power profile the instant `platform_profile` is written — the 5-minute re-apply window, closed. |
 | [`img_smokelessUMAF/`](img_smokelessUMAF/) | The 133 photographs of the SmokelessUMAF menus, kept as primary evidence. |
 
 ## Caveats

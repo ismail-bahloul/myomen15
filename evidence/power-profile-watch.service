@@ -1,0 +1,16 @@
+[Unit]
+Description=Power profile - re-apply the instant platform_profile is written
+Documentation=file:///usr/local/bin/power-profile-watch
+# Ordering only; the watcher retries nothing and exits if the target is absent.
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/power-profile-watch
+Restart=always
+RestartSec=2
+# It only reads a sysfs attribute and asks systemd to start another unit.
+Nice=-5
+
+[Install]
+WantedBy=multi-user.target

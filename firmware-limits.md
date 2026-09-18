@@ -184,25 +184,71 @@ disabled shows they **stay put**: an OS-written `35/42/35` held unchanged for
 reversion at all (`evidence/nbfc_{on,off}.csv`, 287 samples each).
 
 The one thing that *does* clobber them is a **write to the EC-facing platform
-profile**:
+profile**. Reproduced, with the write caught by inotify and the limits read from
+the PM table at the same instant:
 
 ```
-write 35/42/35                  -> 35.000 42.000 35.000
-write platform_profile=cool     -> 54.000 65.000 54.000    # clobbered
-write platform_profile=balanced -> 54.000 65.000 54.000
+[18:48:08] platform_profile MODIFY -> 'balanced'
+[18:48:09] LIMITS CHANGED: 35/42/35 -> 54/65/54   -> EC / POST stock
 ```
 
-So the HP EC re-applies its own limits (`54/65/54` here, seen as `50/65/54` in
-one earlier sample) whenever
-`/sys/class/platform-profile/platform-profile-0/profile` is written — **even
-when writing back the value it already has**.
+A later end-to-end run through the fix below shows the same thing from the other
+side: writing `performance` puts the limits at `54/65/54` inside 50 ms, and they
+are back at `35/42/35` by the next sample.
 
-An earlier conclusion in this repo — *"the EC periodically reverts the limits,
-hence the 5-minute re-apply timer"* — was **wrong**. Those reverts were the
-platform-profile writes performed by hand during the investigation, and `nbfc`
-was never the cause. What `power-profile.timer` still protects against is
-anything that writes `platform_profile` on a power-state change; whether any
-daemon actually does here is unverified. The investigation script is kept at
+So the HP EC re-applies its own limits (`54/65/54` here) whenever
+`/sys/class/platform-profile/platform-profile-0/profile` is written — **even when
+writing back the value it already has**.
+
+### A mistake made while re-measuring this, kept for the method
+
+This page was briefly "corrected" to say the platform-profile reset was *false*,
+on the strength of a test that wrote `balanced` and saw the limits unchanged. The
+test was worthless: the limits were **already** at `54/65/54` when it started, so
+"no change" proved nothing. Measuring a reset without first setting a distinctive
+value is not a measurement.
+
+That is the second time this repo has gone wrong on this exact question — the
+first was the `nbfc`/periodic-revert theory, this was the over-correction. Both
+times the fault was the same: reading a value without establishing what it was
+*before*.
+
+### One observation that does not fit, recorded rather than explained
+
+During the tests the limits were seen at **`50/65/54`** once, at 18:24:29, with
+**no** `platform_profile` write in the inotify log. A 12-minute run afterwards
+showed no such event. So there may be a second, rarer mechanism — the EC
+re-asserting on its own, which is what §5 originally claimed — but one
+observation is not enough to say so, and `50/65/54` is not the same value the
+platform-profile path produces (`54/65/54`). Noted, not concluded.
+
+### The 5-minute window, and closing it
+
+The Linux setup re-applies the profile every **5 minutes**
+(`power-profile.timer`, `OnUnitActiveSec=5min`). That is a coarse safety net: the
+machine can sit at the EC's `54/65/54` for almost five minutes before being
+corrected.
+
+**Fix: react to the write instead of polling.** inotify does work on this sysfs
+attribute (verified — `MODIFY` then `CLOSE_WRITE`), so a watcher can re-apply the
+moment the file is touched:
+
+```
+echo performance > platform_profile
+  -> 54/65/54 within 50 ms
+  -> 35/42/35 within 0.12 s   (power-profile-watch journal)
+```
+
+The window goes from "up to 5 minutes" to "about 0.1 second". The pieces are
+`evidence/power-profile-watch` and `evidence/power-profile-watch.service`;
+they delegate the actual apply to `systemctl start power-profile.service`, so
+there is one implementation of the profile and it cannot drift.
+
+`power-profile.timer` is kept as a backstop for anything that changes the EC's
+limits **without** touching `platform_profile` — which is exactly the unresolved
+case above.
+
+The investigation script is `evidence/limitwatch.py`; the original A/B is
 `evidence/ec-revert-ab-test.sh`.
 
 ## Battery charge thresholds: reachable, not exposed
