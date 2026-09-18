@@ -2,25 +2,30 @@
 # =============================================================================
 # power-profile-watch — re-apply the power profile the instant it is clobbered
 #
-# Two ways the limits get undone on this machine, and they need different
-# detection because their signatures differ.
+# Two independent ways the limits can leave the profile values, and they need
+# different detection because their signatures differ.
 #
-# 1. A write to /sys/class/platform-profile/platform-profile-0/profile makes the
-#    HP EC re-apply its own SMU limits. Measured, with inotify catching the write
-#    and the PM table read at the same instant:
+# 1. A write to /sys/class/platform-profile/platform-profile-0/profile. Cheap and
+#    reliable to catch, because inotify does work on that attribute. The write is
+#    watched regardless of *why* the limits move: a clean test with every
+#    power-profile unit stopped showed the write alone does not move them, so it
+#    is not the cause. See firmware-limits.md, "The three claims, in order".
 #
-#        [18:48:08] platform_profile MODIFY -> 'balanced'
-#        [18:48:09] LIMITS CHANGED: 35/42/35 -> 54/65/54
+# 2. The drift, with NOTHING written. Only caught once this watcher was
+#    instrumented well enough to log it with timestamps:
 #
-#    Caught by watching the attribute — inotify does work on it.
+#        19:10:34  baseline after startup apply: 35/42/35
+#        19:11:21  limits moved 35/42/35 -> 50/42/35   (STAPM 35 -> 50)
+#        19:12:06  limits moved 35/42/54 -> 35/42/35   (PPT slow 35 -> 54)
 #
-# 2. The EC sometimes re-applies them on its own, with NOTHING written:
+#    It follows an apply within a minute or two, then settles. No writer was
+#    identified and no EC register carries those values, so it is invisible to
+#    inotify and must be detected by reading the limits. The mechanism is an open
+#    question; the EC re-asserting a stored limit is *not* the explanation.
 #
-#        50/65/54 seen twice with no platform_profile write in the inotify log
-#
-#    Note that is a *different* value from case 1 (54/65/54), so these really
-#    are two mechanisms. This one is invisible to inotify and must be detected by
-#    reading the limits.
+#    A `54/65/54` reading is ambiguous: apply_perf() in
+#    /usr/local/bin/power-profile writes exactly that, so the value alone does
+#    not say whether PERF was applied or the drift landed on all three fields.
 #
 # Reading the limits is nearly free: the SMU PM table is one read() of 2372
 # bytes, no SMU command, no ACPI call. So polling it costs far less than running
