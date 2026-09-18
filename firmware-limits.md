@@ -189,8 +189,8 @@ the two 10-minute A/B runs (`evidence/nbfc_{on,off}.csv`) showed no reversion.
 
 | # | Claim | Status |
 |---|---|---|
-| 1 | "The EC periodically reverts the limits, hence the 5-minute timer" | **not reproduced** in the A/B run |
-| 2 | "A `platform_profile` write makes the EC re-apply its own limits" | **measured once, then contradicted** |
+| 1 | "The EC periodically reverts the limits, hence the 5-minute timer" | **confirmed, finally** — see the timestamped journal below |
+| 2 | "A `platform_profile` write makes the EC re-apply its own limits" | **measured once, then contradicted** — not supported |
 | 3 | "Claim 2 is wrong" (an earlier over-correction in this file) | itself wrong: the test that produced it never set a distinctive value first |
 
 The one measurement that looked decisive:
@@ -212,10 +212,49 @@ write platform_profile = 'performance'
 final   : (37, 44, 37)      after 5 s
 ```
 
-So the write alone does not reset them. Something else in the earlier test did,
-and the most likely candidate is now visible in the configuration:
+So the write alone does not reset them, and claim 2 is not supported.
 
-### `54/65/54` is this machine's own PERF profile
+### But the drift is real, regular, and now timestamped
+
+The watcher was finally instrumented well enough to catch it, and it caught
+**two** events within 45 seconds of each other, right after its own startup
+apply. From its journal:
+
+```
+19:10:34  baseline after startup apply: 35/42/35
+19:11:21  limits moved 35/42/35 -> 50/42/35      STAPM 35 -> 50
+19:11:21  re-applied after silent limit change in 0.12s
+19:12:06  limits moved 35/42/54 -> 35/42/35      PPT slow 35 -> 54
+19:12:06  re-applied after silent limit change in 0.12s
+```
+
+Then it stopped — no further events. So it is not a fight in a loop, but it is
+neither rare nor periodic: it happens in the minute or two **following an
+apply**, and then settles.
+
+This is the original §5 observation, finally measured with timestamps rather
+than inferred: the limits **are** rewritten, and the code that was blamed
+(`platform_profile`) was not the writer.
+
+### And it explains `50/65/54`
+
+`50` is `STAPM`, and `54` is `PPT slow`. Both were seen leaving the profile
+values and heading back toward the stock ones:
+
+| Field | Profile sets | Drifts to |
+|---|---|---|
+| `STAPM` | 35 | **50** |
+| `PPT fast` | 42 | (65, seen in the earlier readings) |
+| `PPT slow` | 35 | **54** |
+
+So `50/65/54` was never a single "EC profile" — it is the three fields
+drifting back to their stock values, not necessarily at the same moment. The
+`50/65/54` reading in §5 and the one in the TUI were two of these, captured
+mid-drift.
+
+### `54/65/54` is still this machine's own PERF profile
+
+Independently of the above:
 
 ```
 /usr/local/bin/power-profile:53
@@ -223,27 +262,20 @@ and the most likely candidate is now visible in the configuration:
              --apu-slow-limit=42000 --tctl-temp=90
 ```
 
-`54/65/54` is not an EC value at all — it is what `apply_perf()` writes, chosen
-to match the stock/POST values. So a `54/65/54` reading means **PERF was applied
-by the script**, not that firmware clobbered anything.
+`apply_perf()` writes exactly `54/65/54`, chosen to match the stock values. So
+a `54/65/54` reading is ambiguous: it can be PERF being applied, or the drift
+landing on all three fields at once. The number alone does not say which.
 
-That does not by itself explain the 18:48 event (no caller of `power-profile
-perf` exists in `/etc`, and the governor was `powersave`, so `apply_perf` should
-not have run). It does mean the number was misattributed.
+### Still not known: the mechanism
 
-### Still unexplained
+What is established is **that** the fields drift back, that it follows an apply
+within a minute or two, and which fields (`STAPM` -> 50, `PPT slow` -> 54). What
+is not established is **why** — no writer has been identified, no EC register
+carries those values, and the drift is invisible to inotify.
 
-`50/65/54` was seen twice, with no `platform_profile` write logged. It is:
-
-- **not** in `/usr/local/bin/power-profile` (which only writes 54/65/54, 35/42/35
-  and 15/18/15),
-- **not** in any platform-profile attribute,
-- **not** in any of the 256 addressable EC registers (the `50`s found there are
-  the fan setpoint at `0x2C` and two unrelated bytes).
-
-`STAPM` is a *sustained* limit with a 275 s time constant, so a smaller value
-under load is at least plausible as SMU behaviour rather than an override — but
-that is a hypothesis, not a measurement.
+`STAPM` is a *sustained* limit with a 275 s time constant, so the SMU
+re-deriving it would be a natural explanation; `PPT slow` heading to its stock
+54 at the same time is harder to fit to that. Recorded as an open question.
 
 ### The practical position
 
@@ -251,14 +283,17 @@ Whatever the mechanism, the fix does not depend on identifying it:
 
 | Mechanism | Signature | Detection |
 |---|---|---|
-| `platform_profile` write | `54/65/54` | inotify on the attribute |
-| anything else | any other drift | read the PM table once a second |
+| `platform_profile` write | limits reset, inotify event | inotify on the attribute |
+| the drift | field(s) leaving the profile values | read the PM table once a second |
 
 Reading the limits is nearly free (one `read()` of 2372 bytes, no SMU command,
 no ACPI call), so the profile is applied **only when the values move**, plus
 once at startup so a watcher beginning from a wrong state still corrects it.
-Measured: 0.12 s for a `platform_profile` write, 1 s for a silent drift, against
-a 5-minute timer before.
+Measured: 0.12 s per correction, against a 5-minute timer before.
+
+Two events in the observed window means the machine would otherwise have spent
+up to five minutes at `50/42/35` or `35/42/54` — the timer alone was not enough,
+and this is the first time that has been demonstrated rather than assumed.
 
 The pieces are `evidence/power-profile-watch` and
 `evidence/power-profile-watch.service`; they delegate the apply to
@@ -267,17 +302,28 @@ profile. `power-profile.timer` stays as a third backstop.
 
 ### The lesson, kept
 
-Three claims, three retractions, and both errors had the same shape: a value was
-read without first establishing what it was. The original "EC reverts" theory
-and the "platform_profile is innocent" correction failed the same way. The
-`54/65/54` attribution then failed a third way — by not checking whether the
-number was written by *our own script*.
+This question was answered wrongly three times before it was answered right, and
+the three failures had two shapes:
 
-Before attributing a value to firmware, set a distinctive one and check who else
-writes it.
+1. **A value read without establishing what it was first.** The 10-minute A/B
+   that "disproved" the drift ran while the guard was disabled and caught a quiet
+   period; the re-test that "disproved" the `platform_profile` cause started with
+   the limits *already* at `54/65/54`, so "no change" proved nothing.
+2. **A number attributed without checking who wrote it.** `54/65/54` was blamed
+   on the EC for two sessions. It is written by `apply_perf()` in
+   `/usr/local/bin/power-profile`, in this machine's own configuration.
 
-The investigation script is `evidence/limitwatch.py`; the original A/B is
-`evidence/ec-revert-ab-test.sh`.
+What finally worked was instrumenting the watcher well enough to log the drift
+with timestamps, and reading the PM table fast enough to catch fields leaving one
+at a time. Both are cheap; neither was the first thing tried.
+
+Two rules kept from it:
+
+- **Set a distinctive value before measuring whether something resets it.**
+- **Before attributing a value to firmware, `grep` your own configuration.**
+
+The investigation scripts are `evidence/limitwatch.py` and
+`evidence/limitrace.py`; the original A/B is `evidence/ec-revert-ab-test.sh`.
 
 ## Battery charge thresholds: reachable, not exposed
 
