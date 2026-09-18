@@ -1,26 +1,38 @@
 #!/usr/bin/env python3
-"""Re-apply the power profile the instant the platform profile is written.
-
-Why this exists: writing `/sys/class/platform-profile/.../profile` makes the HP EC
-re-apply its own SMU limits, silently clobbering whatever the OS set. Measured on
-this machine:
-
-    write 35/42/35
-    echo balanced > platform_profile
-    -> limits are 54/65/54 again, within a second
-
-`power-profile.timer` re-applies every 5 minutes, so the machine can sit at the
-EC's limits for almost that long. This closes the window to the time it takes to
-run the apply, by watching the file instead of polling.
-
-inotify does work on this sysfs attribute (verified: MODIFY then CLOSE_WRITE),
-which is what makes this possible -- polling the limits would be both slower and
-heavier.
-
-Nothing is written here. This only *notices*; the actual apply is delegated to
-`systemctl start power-profile.service`, so there is one implementation of the
-profile and this cannot drift from it.
-"""
+# =============================================================================
+# power-profile-watch — re-apply the power profile the instant it is clobbered
+#
+# Why this exists
+# ---------------
+# Writing /sys/class/platform-profile/platform-profile-0/profile makes the HP EC
+# re-apply its own SMU limits, silently undoing what power-profile set. Measured
+# on a 15-en1xxx, with inotify catching the write and the SMU PM table read at
+# the same instant:
+#
+#     [18:48:08] platform_profile MODIFY -> 'balanced'
+#     [18:48:09] LIMITS CHANGED: 35/42/35 -> 54/65/54
+#
+# power-profile.timer re-applies every 5 minutes, so the machine could sit at
+# the EC's limits for almost that long. Watched here instead:
+#
+#     echo performance > platform_profile
+#       -> 54/65/54 within 50 ms
+#       -> 35/42/35 within 0.12 s
+#
+# inotify does work on this sysfs attribute (MODIFY then CLOSE_WRITE), which is
+# what makes this possible at all — polling the limits would be slower, heavier,
+# and would still miss the exact moment.
+#
+# What it does NOT do
+# -------------------
+# It notices, and nothing else. The apply is delegated to
+# `systemctl start power-profile.service`, so there is exactly one
+# implementation of the profile and this cannot drift from it.
+#
+# The timer is kept as a backstop: it covers changes that alter the EC's limits
+# WITHOUT touching platform_profile, which has been observed once and is not
+# explained.
+# =============================================================================
 
 from __future__ import annotations
 
@@ -41,8 +53,8 @@ IN_MODIFY = 0x2
 IN_CLOSE_WRITE = 0x8
 IN_NONBLOCK = 0o4000
 
-# A single write produces MODIFY then CLOSE_WRITE; coalesce anything within this
-# window into one apply.
+# One write produces MODIFY then CLOSE_WRITE; coalesce anything within this
+# window into a single apply, so a burst does not restart the service repeatedly.
 DEBOUNCE = 0.4
 
 _running = True
@@ -53,61 +65,65 @@ def _stop(signum, frame):
     _running = False
 
 
-def apply_profile(reason: str) -> None:
+def drain(fd):
+    """Read and discard every pending event, so the next select() blocks."""
+    try:
+        while os.read(fd, 4096):
+            pass
+    except (BlockingIOError, OSError):
+        pass
+
+
+def apply_profile(reason):
     start = time.monotonic()
-    r = subprocess.run(["systemctl", "start", SERVICE],
-                       stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+    try:
+        r = subprocess.run(["systemctl", "start", SERVICE],
+                           stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+    except OSError as e:
+        print("cannot run systemctl: %s" % e, file=sys.stderr, flush=True)
+        return
     dt = time.monotonic() - start
     if r.returncode == 0:
-        print(f"re-applied after {reason} in {dt:.2f}s", flush=True)
+        print("re-applied after %s in %.2fs" % (reason, dt), flush=True)
     else:
-        print(f"FAILED to re-apply after {reason}: {r.stderr.decode().strip()}",
-              flush=True)
+        print("FAILED to re-apply after %s: %s"
+              % (reason, r.stderr.decode(errors="replace").strip()),
+              file=sys.stderr, flush=True)
 
 
-def main() -> None:
+def main():
     signal.signal(signal.SIGTERM, _stop)
     signal.signal(signal.SIGINT, _stop)
 
     libc = ctypes.CDLL(ctypes.util.find_library("c"), use_errno=True)
     fd = libc.inotify_init1(IN_NONBLOCK)
     if fd < 0:
-        sys.exit("inotify_init1 failed")
+        sys.exit("power-profile-watch: inotify_init1 failed")
 
-    if libc.inotify_add_watch(fd, PROFILE.encode(), IN_MODIFY | IN_CLOSE_WRITE) < 0:
-        sys.exit(f"cannot watch {PROFILE} (errno {ctypes.get_errno()})")
+    if libc.inotify_add_watch(fd, PROFILE.encode(),
+                              IN_MODIFY | IN_CLOSE_WRITE) < 0:
+        sys.exit("power-profile-watch: cannot watch %s (errno %d)"
+                 % (PROFILE, ctypes.get_errno()))
 
-    print(f"watching {PROFILE}", flush=True)
+    print("watching %s" % PROFILE, flush=True)
 
     while _running:
         r, _, _ = select.select([fd], [], [], 1.0)
         if not r:
             continue
 
-        # drain, and note the value that was written
-        value = None
-        try:
-            for _ in range(32):
-                data = os.read(fd, 4096)
-                if not data:
-                    break
-        except BlockingIOError:
-            pass
+        drain(fd)
         try:
             with open(PROFILE) as fh:
                 value = fh.read().strip()
         except OSError:
             value = "?"
 
-        # coalesce the MODIFY/CLOSE_WRITE pair and any repeat writes
+        # Coalesce the MODIFY/CLOSE_WRITE pair and any repeat writes.
         time.sleep(DEBOUNCE)
-        try:
-            while os.read(fd, 4096):
-                pass
-        except (BlockingIOError, OSError):
-            pass
+        drain(fd)
 
-        apply_profile(f"platform_profile -> {value!r}")
+        apply_profile("platform_profile -> %r" % value)
 
 
 if __name__ == "__main__":
