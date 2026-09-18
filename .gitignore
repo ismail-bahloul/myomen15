@@ -1,0 +1,20 @@
+# Primary evidence kept local, not versioned.
+#
+# 133 JPEGs (~430 MB) photographing the SmokelessUMAF menus. Their content is
+# transcribed in BIOS_arborescence_OMEN.md, which IS versioned, so git would
+# carry 430 MB to deliver information that is already here in text.
+#
+# They also carry EXIF: capture date, phone model, and possibly GPS. No reason
+# to publish that, and it is awkward to remove after the fact.
+img_smokelessUMAF/
+
+# Local dumps and scratch space
+*.bin
+*.aml
+*.dsl
+nvram-dump.txt
+
+# Snapshot files produced by evidence/setupdiff.py and evidence/tpmstate.py.
+# The ones worth keeping live in evidence/tpm-experiment/ and ARE versioned.
+/setupdiff-*.json
+/tpmstate-*.json

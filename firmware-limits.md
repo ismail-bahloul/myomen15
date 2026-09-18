@@ -6,6 +6,63 @@ ends are not explored again. Everything here was measured on this machine.
 The point-in-time investigation record is in `record/` in this repository; this
 file is the distilled, current conclusion.
 
+## The setup is readable — the flash chip is not fully opaque
+
+An earlier conclusion in this repo was that the firmware is a black box: the
+update payload is a proprietary AMI container, and the flash is shared with the
+EC. That is true of the *payload*. It is **not** true of the flash chip itself,
+and it is not true of the running system.
+
+**The BIOS setup answers are plain EFI variables**, readable from Linux with no
+reboot and no `/dev/mem`:
+
+```
+/sys/firmware/efi/efivars/AMD_PBS_SETUP-a339d746-…   132 B    PBS menu answers
+/sys/firmware/efi/efivars/AmdSetup-3a997502-…        1448 B    CBS menu answers
+/sys/firmware/efi/efivars/Setup-ec87d643-…            322 B    the Setup table
+/sys/firmware/efi/efivars/SetupDefault-0ee72c08-…     322 B    its factory defaults
+/sys/firmware/efi/efivars/HPSetupData-206bc44a-…      116 B    HP's own setup data
+```
+
+The same bytes are also sitting in the **flash chip, in clear, twice** — outside
+the encrypted volumes. The two `AMD_PBS_SETUP` copies (flash `0x7c0e17` and
+`0x7e0e17`) differ in **exactly one byte**, at offset 22; the runtime variable
+matches whichever the firmware is running from.
+
+So the interesting detail is not that the flash is opaque — it is that it is
+readable **twice**, and the one byte that differs between the copies is a free
+correlation point for naming the rest of the table. Full detail, with the
+reproduction steps, is in [`efi-nvram.md`](efi-nvram.md).
+
+### What this corrects
+
+- **"The payload cannot even be extracted"** was too strong. It cannot be
+extracted *as an Aptio image*, but the live configuration is readable at
+runtime, and the payload is sitting on the ESP at
+`/boot/EFI/HP/BIOS/Current/088D1.bin` (16 MiB) to inspect.
+- **"`Custom Core Pstates` is empty, therefore there is nothing to
+configure"** needs a caveat: **more than a third of the 16 MiB image is at
+entropy ≈ 8.0** — encrypted or compressed — and no `_FVH` signature survives
+inside those volumes. A string's absence from the dump therefore only says it is
+not *in the clear*. The empty-menu finding rests on the live setup browser under
+SmokelessUMAF, which is the right instrument; the image neither confirms nor
+refutes it.
+- **The memory-tuning dead end was a QVL dead end, not a firmware one.** The
+image carries whole SPD profiles keyed by part number, in signed `APCB` blocks
+(each with its own GUID and MD5). One of them is a literal
+`8ATF1G64HZ-2G3B1` — a Micron module this machine does not have. The installed
+modules are `MT16ATF2G64HZ-3G2E1` (confirmed by `dmidecode`, both slots), which
+have no profile of their own. The lever is `AMD CBS > UMC Common Options`.
+
+### The write path is still the dead end
+
+Nothing above changes the flashing conclusion. Every one of these variables
+carries the `EFI_VARIABLE_RUNTIME_ACCESS` bit and **refuses `O_RDWR`** outright,
+which is the firmware gating its own setup rather than a mount option. Sure Start
+is active, `authentication/SPM` reports `is_enabled = 0` and
+`key_mechanism = not provisioned` (so no BIOS admin password is set either), and
+the BIOS payload is PSS/RSA-signed — a modified image cannot be re-signed.
+
 ## BIOS power limits are a POST-time seed, not a policy
 
 `ryzenadj` writes the SMU limits directly; the BIOS *System Configuration*
@@ -73,8 +130,12 @@ points 3–5 and with HP Sure Start.
 firmware on tamper. On top of that the flash chip is shared with the EC (fan
 control), and `flashrom` is deliberately not used here: a failed write would
 risk the fans. The `BIOS_Update.exe` payload is a proprietary AMI container
-(`@UAF@` / `@UII@`) that `uefixtract` does not recognise, so the image cannot
-even be extracted for offline inspection.
+(`@UAF@` / `@UII@`) that `uefixtract` does not recognise.
+
+The image itself, though, is not opaque — see
+["The setup is readable"](#the-setup-is-readable--the-flash-chip-is-not-fully-opaque)
+above. The payload on the ESP is a 16 MiB AMI firmware image with two complete
+copies of the flash, and the parts that hold *state* are in clear.
 
 ## Power limits: they stay put, but writing `platform_profile` resets them
 
@@ -106,23 +167,95 @@ anything that writes `platform_profile` on a power-state change; whether any
 daemon actually does here is unverified. The investigation script is kept at
 `evidence/ec-revert-ab-test.sh`.
 
+## Battery charge thresholds: reachable, not exposed
+
+The kernel surface really is empty — `powerdevil` reports "not supported by
+kernel", `/sys/class/power_supply/BAT0/` has no `charge_control_*` attributes,
+and `hp-bioscfg` exposes nothing. That part of the earlier conclusion stands.
+
+What does **not** stand is calling the mechanism opaque. The DSDT shows HP's own
+WMI methods doing exactly this, on a named EC register:
+
+```
+Method (GBCC, 0, Serialized)   // "HP WMI Command 0x1F (BIOS Read)"
+Method (SBCC, 4, Serialized)   // "HP WMI Command 0x1F (BIOS Write)"
+
+\_SB.PCI0.SBRG.EC0.MBDC    charge-control register, written by SBCC
+\_SB.PCI0.SBRG.EC0.MBTS    battery-usable guard
+\_SB.PCI0.SBRG.EC0.MBST    modes supported, bits 0-1
+\_SB.PCI0.SBRG.EC0.ADPP    AC-present guard
+```
+
+And `acpi_call` reaches them right now:
+
+```
+\_SB.PCI0.SBRG.EC0.MBTS  -> 0x1     battery usable
+\_SB.PCI0.SBRG.EC0.MBST  -> 0x0     ** no cap mode advertised **
+\_SB.PCI0.SBRG.EC0.MBDC  -> 0x0     nothing set
+\_SB.WMID.GBCC            -> [0x0, 0x4, {0x00, 0xff, 0x00, 0x00}]   mode 0
+```
+
+The `BCTC` / `BMNC` read-only finding is about the ACPI *battery* objects, a
+different mechanism. Both statements are true; the earlier page conflated them.
+
+**Not written to, deliberately.** The argument encoding is decoded and the revert
+(`MBDC &= 0xE0`) is shared by both code paths — but `MBST = 0x00` says the
+battery implements no cap mode, so a write may be accepted and ignored. Given
+this repo has already been burned once by a write that succeeded and changed
+nothing (the UXTU case), that is a warning, not a formality. Full detail:
+[`battery-charge-control.md`](battery-charge-control.md).
+Tooling: `evidence/batterycc.py` (read-only by default).
+
+## The PM table: what the SMU is actually doing
+
+`/sys/kernel/ryzen_smu_drv/pm_table` is a plain read-only file of 2372 bytes, and
+it decodes as `float32` — nine limits, each followed by its live value:
+
+```
+STAPM      limit=50.000   live=8.941      TDC_VDD   limit=58.000   live=9.965
+PPT_FAST   limit=65.000   live=18.872     TDC_SOC   limit=15.000   live=4.347
+PPT_SLOW   limit=54.000   live=19.148     EDC_VDD   limit=110.000  live=79.132
+PPT_APU    limit=22.000   live=19.148     EDC_SOC   limit=20.000   live=0.000
+THM_CORE   limit=85.000   live=65.364
+```
+
+This is the instrument the Windows half of this repo concluded it could not have
+(there, the PM table never populated — the refresh command `0x65` was refused and
+the read returned zeros). On Linux it is populated and needs no SMU command at
+all. Any "did this write take, and does it survive?" question is now one file
+read instead of parsing `ryzenadj --info`.
+
+It also closes an old loose end: the "`50/65/54` vs `54/65/54` discrepancy" was
+never a discrepancy. `0x00` is STAPM and `0x10` is PPT-slow; reading a triple as
+"STAPM / fast / slow" and expecting 54 in the first slot was the error. Details in
+[`pm-table.md`](pm-table.md).
+
 ## Not supported by the kernel / firmware
 
-- **Battery charge thresholds**: `powerdevil` reports "not supported by kernel".
-  `hp-bioscfg` exposes only `Sure_Start` and `pending_reboot`; the `BCTC` /
-  `BMNC` ACPI objects are read-only in the DSDT and their writes go to an opaque
-  SMM handler.
+- **Battery charge thresholds**: not exposed by the kernel — but *not* a
+  firmware dead end either. See "Battery charge thresholds" above.
 - **Serial port**: `8250.nr_uarts=0` was measured to save ~0 — the `ttyS*`
   devices are not on the critical path — so `limine.conf` was left untouched (it
   carries the VFIO entry).
-- **TPM** is disabled in the BIOS.
+- **MSR**: `/dev/cpu/*/msr` exist but `read()` returns `EIO`.
+- **EFI variable writes**: every variable carries `EFI_VARIABLE_RUNTIME_ACCESS`
+  and refuses `O_RDWR` with `EPERM`.
+- **TPM**: currently set to `Hidden` — disabled and not detected at POST.
 
-## EC access (mapped, partially)
+## EC access (mapped further)
 
 The EC is reachable through `ec_probe` (based on `ec_sys`), and its fan and
-temperature registers are now identified and verified — see
+temperature registers are identified and verified — see
 [`ec-map.md`](ec-map.md). `nbfc` already drives the fan setpoints through the same
 path, so the write half has a working reference.
+
+Two corrections to the earlier map, both from a controlled thermal ramp:
+
+- **`0x57` and `0x58` are CPU temperatures**, tracking `k10temp`'s `Tctl` within
+a degree across a 72 → 85 °C ramp. `0x48` is a third, slower-moving sensor.
+- **The rest of the `0x40`–`0x49` row is not.** `0x40`, `0x42`, `0x44`, `0x46`
+and `0x49` never moved under load. The earlier "plausible additional
+temperatures" was too generous.
 
 What was tested and **ruled out**: the EC does not hold the SMU power limits.
 Dumping the EC before and after a `ryzenadj` write, with a no-op control run to
@@ -130,6 +263,24 @@ account for telemetry drift, produces indistinguishable diffs — the limits liv
 in the SMU only. So the [platform profile
 reset](#power-limits-they-stay-put-but-writing-platform_profile-resets-them) is not
 the EC re-asserting a stored limit.
+
+### The EFI variables that carry the setup
+
+```bash
+# the AMD PBS answers (skip the 4-byte NVRAM counter)
+sudo dd if=/sys/firmware/efi/efivars/AMD_PBS_SETUP-a339d746-f678-49b3-9fc7-54ce0f9df226 \
+        bs=1 skip=4 count=132 status=none | xxd
+
+# the same structure, in the flash chip, in clear, twice
+sudo python3 -c "
+import mmap,os
+fd=os.open('/dev/mem',os.O_RDONLY|os.O_SYNC)
+d=mmap.mmap(fd,0x1000000,offset=0xff000000,access=mmap.ACCESS_READ)
+for off in (0x7c0e17,0x7e0e17): print(hex(off), bytes(d[off:off+15]))"
+# -> 0x7c0e17 b'AMD_PBS_SETUP'   /   0x7e0e17 b'AMD_PBS_SETUP'  (differ at byte 22)
+```
+
+Details, and the rest of the store, in [`efi-nvram.md`](efi-nvram.md).
 
 ---
 
