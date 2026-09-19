@@ -27,7 +27,7 @@ Where control sits, layer by layer. The detailed evidence for each row is in
 | Keyboard RGB | The EC publishes 4-zone RGB state in `H2RA`; **writes there don't control it** | 🟡 **found, not controllable** |
 | Performance mode (`OCPC`) | In the EC; maps to dGPU power limits via `\DPTC` | 🟡 **open** |
 | Curve Optimizer (SMM path) | `\AOD` command `0x0005000A` — a second road, never tried | 🟡 **open** |
-| Battery charge control | EC bridge → `MBDC` **stops charging** (no held threshold seen, 100→55 %); `GBCC` confirms the mode; the cap that holds is the BIOS optimizer's `BFCC` | 🟡 **partial** |
+| Battery charge control | `MBDC` **stops charging** (no held threshold, 100→55 %); the cap that holds is **`Adaptive Battery Extender`** (`SHEN`, EC `0xC5` bit 7 — enabled, cuts `BFCC` to 84.8 % of the pack) | 🟡 **partial** |
 | Memory tuning (SPD profiles) | Firmware ships non-QVL SPD profiles by part number, reachable via `AMD CBS > UMC` | 🟡 **open** |
 | BIOS power menu (AMD CBS) | Nothing — it only seeds POST values the HP EC overrides | ⚪ **inert** |
 | BIOS hidden menus | Reachable with SmokelessUMAF / SREP (`SuppressIf` patch) | 🟡 **partial** — but `Custom Core Pstates` stays empty |
@@ -46,7 +46,7 @@ Legend: ✅ controlled · 🟡 partial or open · ⚪ no effect · 🔴 refused.
 | Can I read what the SMU is actually doing? | **Yes.** The PM table decodes to 9 limits + 9 live values in one `read()`. |
 | Can I read the BIOS settings from the running OS? | **Yes.** Plain EFI variables — and identical in the flash chip, twice. Writing them back is refused for the setup store, but the standard EFI globals *are* writable. |
 | Can I talk to any EC register or I/O port? | **Yes.** The firmware ships a generic byte bridge (`M040`/`M041`/`M31A`/`M319`), verified 256/256 against `ec_probe`. |
-| Can I cap battery charging? | **Partly.** The firmware's cap is the BIOS "battery optimizer": it lowers `BFCC`, the reported full capacity (85 % of the 70.9 Wh pack) — and the OS cannot see it. The `MBDC` register is a *different* lever: it stops charging, it does not hold a level. |
+| Can I cap battery charging? | **Yes — and it is already on.** The BIOS option is **`Adaptive Battery Extender`**: one EC bit, `SHEN` (`0xC5` bit 7), currently `1`. It works by lowering `BFCC`, the reported full capacity (85 % of the 70.9 Wh pack), so the OS cannot see it. Read it with the EC bridge or `\_SB.WMID.ABES`. The `MBDC` register is a *different* lever: it stops charging, it does not hold a level. |
 | Can I control the keyboard lighting? | **No** — the EC publishes the state in `H2RA`, but writes there (including the firmware's own `LM05`) change nothing. |
 | Can I set a power limit in the BIOS? | That setting is **inert**; the HP EC owns those values. |
 | Do power limits written by the OS stick? | **Yes** — except a `platform_profile` write makes the EC re-apply its own. |

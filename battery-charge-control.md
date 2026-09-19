@@ -321,6 +321,33 @@ and the register read again.
 sudo python3 evidence/batterycctl.py capacity
 ```
 
+## The cap that holds: `Adaptive Battery Extender` (`SHEN`)
+
+The BIOS option that limits charging is exposed by the firmware under a name, and
+it is not `MBDC`. It is **Adaptive Battery Extender**, in the WMI setup list
+(`\System Configuration`, values `Disable` / `Enable`), and its state is a
+single EC bit — `WMID.ABES` is nothing but:
+
+```
+Method (ABES, 0, NotSerialized) { Local0 = Zero; Local0 = EC0.SHEN; Return (Local0) }
+```
+
+`SHEN` is bit 7 of EC `0xC5` (that byte also carries `SHB1`..`SHB4`, `SHOK`,
+`SHFL`, `SHNP`). Read live:
+
+```
+EC 0xC5 = 0x80   ->  SHEN = 1
+\_SB.WMID.ABES -> 0x1   ("Activated")
+```
+
+So it is **enabled** — and that is what explains the 84.8 %: with ABE on, the EC
+lowers `BFCC`, the reported full-charge capacity, so the pack charges to a
+smaller "Full" and the OS cannot tell.
+
+Unlike `MBDC`, this **is** a held cap. It is also writable from Linux — the same
+EC bridge, `0xC5` bit 7 — so the option can be toggled without the BIOS, and the
+effect is checkable by re-reading `BFCC`.
+
 ## What this changes in the repo
 
 - **"Battery charge thresholds: unsupported"** was true of the *kernel surface*

@@ -18,7 +18,7 @@ This page exists so the same ground is not re-covered, and so a surface that is
 | **Memory-mapped fan tachos** | `/dev/mem` at `0xfe700000` (`H2RA`) | A third, independent path, **read-only**. Writes were tested and do nothing. See [`h2ra-region.md`](h2ra-region.md) |
 | Fan control | `nbfc` (EC), `hp-wmi` `pwm1_enable` | `pwm1_enable=2` (auto) |
 | Platform profile | `/sys/class/platform-profile/` | `cool` / `balanced` / `performance` |
-| **Battery charge control** | EC bridge → `MBDC` (0xA6); `\WMID.GBCC` reads it | Setting a mode **stops charging** (no held threshold seen down to 55 %), `GBCC` confirms it, reversible. The cap that holds is the BIOS optimizer's `BFCC`. See [`battery-charge-control.md`](battery-charge-control.md) |
+| **Battery charge control** | EC bridge → `MBDC` (0xA6); `\WMID.GBCC` reads it | Setting a mode **stops charging** (no held threshold seen down to 55 %), `GBCC` confirms it, reversible. The cap that *holds* is **`Adaptive Battery Extender`** (`SHEN`, EC `0xC5` bit 7 — enabled), which lowers `BFCC`. See [`battery-charge-control.md`](battery-charge-control.md) |
 | **AMD overclocking (`\AOD`)** | `acpi_call` → `\AOD.WMAA` | PPT/TDC/EDC/Scalar/Curve Optimizer via SMM. Never tried. See [`acpi-bridge.md`](acpi-bridge.md) |
 | **Performance mode** | EC `OCPC` (0xBA) / `OCPS` (0xBB) | Maps to dGPU power limits via `\DPTC` |
 | **Keyboard RGB (4 zones)** | Reported by the EC in `H2RA`, but there is **no Linux interface** and writes there do nothing | 🟡 **found, not controllable** |

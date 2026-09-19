@@ -74,6 +74,7 @@ EC_NAMES = {
     0xA6: "MBDC  (battery charge control)",
     0xAD: "SARS  (thermal level)",
     0xAF: "GPUT  (GPU type)",
+    0xC5: "SHEN  (Adaptive Battery Extender, bit 7)",
     0xBA: "OCPC  (OC profile current)",
     0xBB: "OCPS  (OC profile set)",
     0xE2: "KBT0  (keyboard type)",
