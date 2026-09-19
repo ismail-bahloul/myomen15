@@ -10,27 +10,33 @@ agrees with the DSDT:
     GBCC     \\_SB.WMID.GBCC, the firmware's own reader for it
 
 Writing `MBDC` to a mode value makes the EC stop maintaining the battery on AC
-(`BAT0/status` goes Full -> Discharging and stays), and clearing it restores
-`Full`. `GBCC` reports mode 0x02 while set and 0x00 after clearing, so the mode
-is real rather than an echo. The EC sets the completion bit `MBDC & 0x10` within
-~200 ms of the write.
+(`BAT0/status` goes Full -> Discharging and stays); clearing it restores `Full`.
+`GBCC` reports mode 0x02 while set and 0x00 after clearing, so the mode is real
+rather than an echo. The EC sets the completion bit `MBDC & 0x10` within ~200 ms.
 
 Two mode encodings are used by the firmware's `SBCC` method (DSDT):
 
     MBDC = 0x0A   ->  GBCC reports mode 2
     MBDC = 0x0C   ->  GBCC reports mode 3
 
-This tool writes `MBDC` through the ACPI EC bridge (`M041`), which is the same
-path `ecbridge.py` uses, and polls for the ack itself instead of calling `SBCC`
--- `SBCC` waits on that bit in an *unbounded* AML loop, so driving it directly
-keeps the timeout on this side.
+The *percentage* each mode enforces is not published anywhere -- not in an EC
+register, not in `energy_full`, not in ACPI -- so it can only be read off a
+discharge. `watch` logs for that.
 
-Read-only unless asked. Always reversible: `clear` writes MBDC = 0x00, the same
-revert both of `SBCC`'s branches share.
+Writing goes through the ACPI EC bridge (`M041`), the same path `ecbridge.py`
+uses, and the ack is polled here rather than by `SBCC`: `SBCC` waits on that bit
+in an *unbounded* AML loop, so the timeout stays on this side.
 
   sudo python3 batterycctl.py status
   sudo python3 batterycctl.py set 0x0A --yes      # apply a mode
   sudo python3 batterycctl.py clear --yes         # back to no cap
+  sudo python3 batterycctl.py watch 20            # 20 min of samples, to find
+                                                  # the threshold
+  sudo python3 batterycctl.py apply               # read /etc/battery-cap (boot)
+
+Persistence: `MBDC` lives in EC RAM and is cleared on a cold boot, so a cap
+disappears after a power cycle. `evidence/battery-cap.service` re-applies the
+value in `/etc/battery-cap` at boot; with no such file (or `0`), nothing is done.
 """
 
 import re
@@ -41,6 +47,7 @@ EC = r"\_SB.PCI0.SBRG.EC0"
 MBDC = 0xA6
 ACK = 0x10
 MODES = {0x0A: 2, 0x0C: 3}   # written value -> what GBCC reports
+CONF = "/etc/battery-cap"
 
 
 def call(method, *args):
@@ -88,10 +95,10 @@ def status():
     print("battery    = %s %s%%" % (bat("status"), bat("capacity")))
 
 
-def set_mode(val):
+def do_set(val, require_yes):
     if val not in MODES:
         sys.exit("mode must be 0x0A (GBCC mode 2) or 0x0C (mode 3)")
-    if "--yes" not in sys.argv:
+    if require_yes and "--yes" not in sys.argv:
         sys.exit("about to WRITE EC MBDC = 0x%02x. Re-run with --yes." % val)
     ec_write(MBDC, val)
     for _ in range(30):
@@ -114,16 +121,52 @@ def clear():
     print("battery = %s %s%%" % (bat("status"), bat("capacity")))
 
 
+def watch(minutes):
+    """Sample until the pack stops falling, which is the mode's threshold."""
+    end = time.monotonic() + minutes * 60
+    last = None
+    while time.monotonic() < end:
+        cap = bat("capacity")
+        print("%s  MBDC=0x%02x  %-11s %s%%"
+              % (time.strftime("%H:%M:%S"), ec_read(MBDC) or 0,
+                 bat("status"), cap), flush=True)
+        last = cap
+        time.sleep(10)
+    print("last capacity: %s%% (if it plateaued there, that is the threshold)"
+          % last)
+
+
+def apply_conf():
+    """Boot path: apply whatever /etc/battery-cap asks for, or nothing."""
+    try:
+        with open(CONF) as fh:
+            raw = fh.read().strip()
+    except FileNotFoundError:
+        print("no %s -- no cap applied" % CONF)
+        return
+    if not raw or raw in ("0", "0x0", "0x00", "none"):
+        print("%s: no cap requested" % CONF)
+        return
+    val = int(raw, 0)
+    if val not in MODES:
+        sys.exit("%s: invalid mode %r (want 0x0A or 0x0C)" % (CONF, raw))
+    do_set(val, require_yes=False)
+
+
 def main():
     if len(sys.argv) < 2:
-        sys.exit(__doc__.strip().splitlines()[-3].strip())
+        sys.exit("usage: batterycctl.py status|set <0x0A|0x0C>|clear|watch [min]|apply")
     cmd = sys.argv[1]
     if cmd == "status":
         status()
     elif cmd == "set":
-        set_mode(int(sys.argv[2], 0))
+        do_set(int(sys.argv[2], 0), require_yes=True)
     elif cmd == "clear":
         clear()
+    elif cmd == "watch":
+        watch(int(sys.argv[2]) if len(sys.argv) > 2 else 20)
+    elif cmd == "apply":
+        apply_conf()
     else:
         sys.exit("unknown command: " + cmd)
 

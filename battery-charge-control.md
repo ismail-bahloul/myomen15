@@ -237,8 +237,34 @@ MBDC = 0x00   GBCC = {0x00, ...}   no charge control
   something to re-apply it, the way `power-profile.service` does for the SMU
   limits.
 
-Tooling: `evidence/batterycctl.py` — `status` / `set <0x0A|0x0C>` / `clear`.
-Read-only unless `--yes`; always reversible with `clear`.
+Tooling: `evidence/batterycctl.py` — `status` / `set <0x0A|0x0C>` / `clear` /
+`watch [min]` / `apply`. Read-only unless `--yes`; always reversible with
+`clear`.
+
+### Making it stick
+
+`MBDC` is EC RAM, cleared on a cold boot, so a cap disappears after a power
+cycle. `evidence/battery-cap.service` re-applies what `/etc/battery-cap` asks for
+at boot — and does nothing if that file is absent or reads `0`, so it is opt-in
+and inert by default:
+
+```bash
+sudo install -m755 evidence/batterycctl.py /usr/local/bin/batterycctl
+echo 0x0A | sudo tee /etc/battery-cap        # or 0x0C, or 0 for none
+sudo install -m644 evidence/battery-cap.service /etc/systemd/system/
+sudo systemctl enable --now battery-cap.service
+```
+
+To find which percent each mode enforces, set it and log across a discharge:
+
+```bash
+sudo python3 evidence/batterycctl.py set 0x0A --yes
+sudo python3 evidence/batterycctl.py watch 60   # capacity plateaus at the cap
+```
+
+That is the one part of this that needs time and a discharge; the write itself,
+the ack, the firmware read-back, and the revert were all measured without
+either.
 
 ## What this changes in the repo
 
