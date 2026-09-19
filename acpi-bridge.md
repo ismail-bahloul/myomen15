@@ -122,7 +122,7 @@ mechanism:
 Reading them today:
 
 ```
-EC 0xBA (OCPC) = 0x01
+EC 0xBA (OCPC) = 0x01     (0x00 later the same session -- EC-owned, see ec-map.md)
 EC 0xBB (OCPS) = 0x07
 ```
 

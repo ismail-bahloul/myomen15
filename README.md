@@ -33,7 +33,7 @@ Where control sits, layer by layer. The detailed evidence for each row is in
 | BIOS hidden menus | Reachable with SmokelessUMAF / SREP (`SuppressIf` patch) | 🟡 **partial** — but `Custom Core Pstates` stays empty |
 | CPU undervolt / Curve Optimizer (**SMU path**) | The SMU refuses the whole OC/CO family on **both** OSes | 🔴 **locked** |
 | BIOS modification / flashing | Nothing — HP Sure Start is active, the payload is PSS-signed | 🔴 **blocked** |
-| Embedded controller (EC) registers | Fans, three temperatures, and the named control offsets mapped | 🟡 **partial** — see [`ec-map.md`](ec-map.md) |
+| Embedded controller (EC) registers | Fans, temperatures, battery, perf. The **responsive surface is fully attributed** — only 18 of 256 offsets ever change, and 16 are named | ✅ **mapped** — see [`ec-map.md`](ec-map.md) |
 | TPM | `Hidden` — disabled and not detected at POST | ⚪ **off** |
 
 Legend: ✅ controlled · 🟡 partial or open · ⚪ no effect · 🔴 refused.
@@ -191,7 +191,7 @@ What has not been tried yet, ordered by how much it would unlock:
 | [`efi-nvram.md`](efi-nvram.md) | The EFI variable store: the BIOS answers as readable variables, the clear-text copies in the flash, and what the image does and does not expose. |
 | [`BIOS_arborescence_OMEN.md`](BIOS_arborescence_OMEN.md) | The full SmokelessUMAF menu tree, transcribed from the 133 photos. |
 | [`record/`](record/) | The point-in-time investigation, kept as written. Start with the Linux report, then the Windows verdict. |
-| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`, `omenkbd.py`, `omenwatch.py`, `aodread.py`, plus `omenmon.py` (live power/thermal TUI), `limitwatch.py` (what resets the SMU limits), `pmtable-cores.py` (the per-core PM table groups), `smuraw.py` (read-only SMN/MP1 access), and `batterycctl.py` (battery charge control). |
+| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`, `omenkbd.py`, `omenwatch.py`, `aodread.py`, plus `omenmon.py` (live power/thermal TUI), `limitwatch.py` (what resets the SMU limits), `pmtable-cores.py` (the per-core PM table groups), `smuraw.py` (read-only SMN/MP1 access), `batterycctl.py` (battery charge control), and `ecsweep.py` (EC dump/diff). |
 | [`evidence/power-profile-watch`](evidence/power-profile-watch) | Re-applies the power profile the instant `platform_profile` is written — the 5-minute re-apply window, closed. |
 | [`img_smokelessUMAF/`](img_smokelessUMAF/) | The 133 photographs of the SmokelessUMAF menus, kept as primary evidence. |
 

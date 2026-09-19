@@ -65,12 +65,17 @@ Tctl  72 78 79 80 82 82 83 83 84 84 84 84 85 85
 `0x57` is the fastest and tightest of the three; `0x48` is a slower, more
 damped sensor — consistent with a board or VRM sensor rather than a die one.
 
-### A negative result worth keeping
+### A negative result, partly revised
 
-The `0x40`–`0x49` row is **not** a bank of temperatures. Across the whole ramp,
-`0x40` (0x0B), `0x42` (0x04), `0x44` (0x04) and `0x46` (0x00) never moved at
-all, and `0x49` never moved. Only `0x48` tracks heat. The earlier reading of
-that row as "plausible additional temperatures" was too generous.
+The `0x40`–`0x49` row is **not** a bank of temperatures. Across the short thermal
+ramp, `0x40` (0x0B), `0x42` (0x04), `0x44` (0x04) and `0x46` (0x00) never moved
+at all, and only `0x48` tracked heat — so the earlier reading of that row as
+"plausible additional temperatures" was too generous.
+
+But `0x49` is not dead either. Under a *sustained* all-cores load it moved
+`0x38` -> `0x3A`, where the short ramp never budged it. So it is a slow channel
+of some kind, not a constant — the one spot where a longer experiment softened
+this repo's own negative result.
 
 ### `0x80`–`0x88` is a DMI/SMBIOS table, not telemetry
 
@@ -90,6 +95,43 @@ sampled at a byte offset.
 | `0x70`–`0x74` | fixed bytes (`FC 17 4B 14 …`), look like a fixed identifier |
 | `0x86`, `0x90`, `0x92`, `0xD4`, `0xD8` | stable under every condition tested |
 | `0x40`–`0x47`, `0x49` | constant under load — *not* temperatures (see above) |
+
+## The responsive surface: 18 of 256
+
+Six dumps — idle twice, all-cores load, and the three `platform_profile` values —
+settle how much of the 256-byte space actually *does* anything:
+
+| | Count |
+|---|---|
+| Offsets that moved under at least one stimulus | **18** |
+| Offsets identical across all six dumps | **238** |
+
+The eighteen, attributed:
+
+```
+0x2c 0x2d 0x2e 0x2f   fan duty setpoint / readback        known
+0x49 0x57 0x58 0x59   temperatures                          known
+0x62                  part of the 0x62/0x63 pair            unknown
+0x63                  varies 0x5f-0x76 with profile + load  UNKNOWN
+0x87                  DMI part-number table (static text)   explained
+0x95                  HPCM, dGPU mode: 0x30/0x31/0x50       known
+0xb0 0xb1 0xb2 0xb3   fan tachometers                       known
+0xb7                  slow-moving, 0x37 -> 0x39 on load     UNKNOWN
+0xba                  OCPC, OC profile current              known, EC-owned
+```
+
+So **16 of the 18 are already attributed**, and the two that are not — `0x63` and
+`0xB7` — are the *entire* remaining gap, not 165 offsets. Everything else in the
+space is **static**: identifiers, the `0x80`–`0x88` DMI strings, constants. (That covers every register on the "Not yet identified" list above — `0x53`,
+`0x51`, `0x55`, `0x70`–`0x74`, `0x86`, `0x90`, `0x92`, `0xD4`, `0xD8` — except
+`0x49`, which is not static: it moved `0x38` -> `0x3A` under sustained all-core
+load, so it behaves like a slow temperature after all.)
+
+That reframes the map. It is not 36 % complete; it is **complete for behaviour**.
+Everything the EC *changes* is explained, and everything unexplained is something
+it never changes.
+
+Tooling: `evidence/ecsweep.py` (`dump <file>` / `diff <a> <b>`).
 
 ## Negative result: the power limits are *not* in the EC
 
@@ -147,7 +189,7 @@ There is **no blanket rule**. Writing a value and watching the register:
 | Register | Behaviour |
 |---|---|
 | `MBDC` `0xA6` | **writable and held** — and it does something (stops charging) |
-| `OCPS` `0xBB` | **writable and held** (≥10 s); effect not established |
+| `OCPS` `0xBB` | **writable and held** (≥10 s), but writing it does **not** move `OCPC` (tested `1`, `3`, `7`) — effect not otherwise established |
 | `SHEN` `0xC5.7` | the written value reads back, then the EC **reverts it in ~150 ms** |
 | `OCPC` `0xBA` | the written value reads back, then the EC **reverts it in ~100 ms** |
 | `TAPM` `0x40` | the write **does not land at all** — the register never changes |

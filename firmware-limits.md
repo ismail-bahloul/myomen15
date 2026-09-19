@@ -451,7 +451,9 @@ side". It is at two adjacent EC registers:
 | `OCPC` | `0xBA` | current performance profile (0–6) |
 | `OCPS` | `0xBB` | highest selectable profile |
 
-Currently `OCPC = 0x01`, `OCPS = 0x07`. `PWLC` (DSDT 17344) maps the profile to
+Currently `OCPC = 0x01`, `OCPS = 0x07`. Note that `OCPC` is EC-owned: it read `0x00`
+later in the same session and a write is reverted in ~100 ms, so the "current"
+value is whatever the EC decided. `PWLC` (DSDT 17344) maps the profile to
 dGPU power limits in mW through `\DPTC` — profile 0 gives 54/65/54 W, profile 6
 gives 15 W. It is switched by EC query events (`_Q8C` applies, `_Q8E` cycles up),
 not by a WMI command.
