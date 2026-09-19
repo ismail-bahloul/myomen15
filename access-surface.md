@@ -12,6 +12,7 @@ This page exists so the same ground is not re-covered, and so a surface that is
 |---|---|---|
 | SMU power limits | `ryzen_smu` + `ryzenadj` | STAPM / PPT / Tctl, writes persist |
 | **SMU PM table** | `/sys/kernel/ryzen_smu_drv/pm_table` | 2372 B of `float32`; 9 limits + 9 live values. See [`pm-table.md`](pm-table.md) |
+| **Raw SMN / SMU mailbox** | `/sys/kernel/ryzen_smu_drv/{smn,mp1_smu_cmd,rsmu_cmd,smu_args}` | The layer under `ryzenadj`; read-only so far. SMN registers read, `GetSmuVersion` verified end to end. Writable, deliberately not used. See [`smu-raw.md`](smu-raw.md) |
 | EC registers | `ec_probe`, `/sys/kernel/debug/ec/ec0/io`, **and the ACPI bridge** | `write_support=Y`; fans, three temperatures |
 | **ACPI EC/I-O bridge** | `acpi_call` → `M040`/`M041`/`M31A`/`M319` | Any EC byte, any I/O port. Verified 256/256 vs `ec_probe`. See [`acpi-bridge.md`](acpi-bridge.md) |
 | **Memory-mapped fan tachos** | `/dev/mem` at `0xfe700000` (`H2RA`) | A third, independent path, **read-only**. Writes were tested and do nothing. See [`h2ra-region.md`](h2ra-region.md) |
@@ -32,13 +33,10 @@ visible rather than forgotten.
 | Surface | How | Why it might matter |
 |---|---|---|
 | `hp-wmi` `postcode` | `cat /sys/devices/platform/hp-wmi/postcode` | Reads a stable `0x70`. A firmware observation channel that costs nothing. |
-| SMN access | `/sys/kernel/ryzen_smu_drv/smn` | Raw SMN register read/write via PCI `0xB8`/`0xBC` — the layer under `ryzenadj`. |
-| Raw SMU mailbox | `mp1_smu_cmd`, `rsmu_cmd`, `smu_args` | Send any MP1/RSMU message. **Write.** What the earlier Windows probe did from the other side. |
 | esrt / capsules | `/sys/firmware/efi/esrt/` | Firmware update entries; `fwupd` sees the system as updatable. |
 | PCI config, root complex | `setpci` / `lspci -xxx -s 00:00.0` | Zone `0x40`–`0x100` is non-zero and uninterpreted. |
 | IOMMU + vfio | 24 groups, `vfio-pci` registered | No device bound; unused. Relevant to the VFIO passthrough setup. |
 | SMBus / i2c | `i2c-3`, `i2c-4`, `i2c-5`, `i2c-6`, `i2c-7` | `i2cdetect`, `i2cget` available. SPD is on this bus; nothing scanned yet. |
-| 16 SSDTs | `iasl -d` | Only the DSDT was read. The SSDTs may hold the WMI/thermal plumbing. |
 | `hp-wmi` `display`, `dock` | `cat` | Both read `0`. |
 | `hp_accel` | module exists, not loaded | The accelerometer driver is shipped but idle. |
 

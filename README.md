@@ -161,11 +161,12 @@ What has not been tried yet, ordered by how much it would unlock:
   mode (`MBST = 0x00`), so a write may be accepted and ignored — the exact trap
   this repo was already caught by once. `evidence/batterycc.py status` shows the
   state; it stays read-only unless asked.
-- **The SSDTs.** Only the DSDT was disassembled. Sixteen SSDTs remain, and they
-  are where the WMI and thermal plumbing is likely to be.
-- **The raw SMU/SMN interface.** `mp1_smu_cmd`, `rsmu_cmd`, `smn` expose the layer
-  under `ryzenadj` — the same layer the Windows probe used from the other side.
-  Never driven from Linux here.
+- **Writing through the raw SMU layer.** The layer under `ryzenadj` (`smn`,
+  `mp1_smu_cmd`, `rsmu_cmd`, `smu_args`) is now *read* — SMN registers, and an
+  end-to-end `GetSmuVersion` — but every node is also writable and none has been
+  written. That is the largest remaining unlock, and the honest reason it waits
+  is that a control path should be read before it is used to write. →
+  [`smu-raw.md`](smu-raw.md)
 - **Name the setup offsets — the right way.** The eleven off-default offsets are
   known, but naming them needs the two-leg method of
   [`efi-nvram.md`](efi-nvram.md) §7: two reboots per option.
@@ -184,13 +185,14 @@ What has not been tried yet, ordered by how much it would unlock:
 | [`acpi-bridge.md`](acpi-bridge.md) | The SSDTs decoded: the firmware's generic EC/I-O bridge, the `\AOD` overclocking interface, and HP's performance-mode selector. |
 | [`access-surface.md`](access-surface.md) | Everything reachable on this machine, everything measured as blocked, and what is reachable but not yet used. |
 | [`pm-table.md`](pm-table.md) | The SMU PM table decoded: 9 limits + 9 live values as `float32`, the "50 vs 54" question it settles, and the per-core groups (busy %, and the clocks `0x3c0`/`0x3e0` confirmed against `perf`). |
+| [`smu-raw.md`](smu-raw.md) | The raw SMU/SMN layer under `ryzenadj`: the nodes, Cezanne's mailbox addresses, an end-to-end `GetSmuVersion` from userspace, and why the write path is left untouched so far. |
 | [`ec-map.md`](ec-map.md) | The mapped embedded-controller registers (fans, three temperatures), how each was verified, and what is not in the EC. |
 | [`h2ra-region.md`](h2ra-region.md) | The `H2RA` memory region at `0xfe700000` — a third, independent path to the fan tachometers. |
 | [`battery-charge-control.md`](battery-charge-control.md) | `GBCC` / `SBCC` / `MBDC` decoded from the DSDT, and why it was not written to. |
 | [`efi-nvram.md`](efi-nvram.md) | The EFI variable store: the BIOS answers as readable variables, the clear-text copies in the flash, and what the image does and does not expose. |
 | [`BIOS_arborescence_OMEN.md`](BIOS_arborescence_OMEN.md) | The full SmokelessUMAF menu tree, transcribed from the 133 photos. |
 | [`record/`](record/) | The point-in-time investigation, kept as written. Start with the Linux report, then the Windows verdict. |
-| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`, `omenkbd.py`, `omenwatch.py`, `aodread.py`, plus `omenmon.py` (live power/thermal TUI), `limitwatch.py` (what resets the SMU limits), and `pmtable-cores.py` (the per-core PM table groups). |
+| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`, `omenkbd.py`, `omenwatch.py`, `aodread.py`, plus `omenmon.py` (live power/thermal TUI), `limitwatch.py` (what resets the SMU limits), `pmtable-cores.py` (the per-core PM table groups), and `smuraw.py` (read-only SMN/MP1 access). |
 | [`evidence/power-profile-watch`](evidence/power-profile-watch) | Re-applies the power profile the instant `platform_profile` is written — the 5-minute re-apply window, closed. |
 | [`img_smokelessUMAF/`](img_smokelessUMAF/) | The 133 photographs of the SmokelessUMAF menus, kept as primary evidence. |
 
