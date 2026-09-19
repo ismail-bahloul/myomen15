@@ -344,9 +344,20 @@ So it is **enabled** — and that is what explains the 84.8 %: with ABE on, the 
 lowers `BFCC`, the reported full-charge capacity, so the pack charges to a
 smaller "Full" and the OS cannot tell.
 
-Unlike `MBDC`, this **is** a held cap. It is also writable from Linux — the same
-EC bridge, `0xC5` bit 7 — so the option can be toggled without the BIOS, and the
-effect is checkable by re-reading `BFCC`.
+Unlike `MBDC`, this **is** a held cap — but it is **not** controllable from
+Linux. Writing `0xC5` bit 7 through the EC bridge lands and reads back (a write
+of `0x00` reads `0x00` immediately), then the EC re-asserts `0x80` within about
+**150 ms**:
+
+```
+write 0xC5=0x00  ->  t=0.00s  0xC5=0x00  SHEN=0
+                     t=0.15s  0xC5=0x80  SHEN=1
+```
+
+So the option is **readable, not writable** from here — the same one-way
+behaviour as the [`H2RA`](h2ra-region.md) region, and the same lesson: a write
+that reads back is not a write that took. Changing it means the BIOS setup, or
+HP's own WMI BIOS-write path, which is SMM-mediated.
 
 ## What this changes in the repo
 
