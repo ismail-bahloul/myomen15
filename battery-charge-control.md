@@ -186,10 +186,59 @@ applies: **a write is not evidence, a read-back is.**
 4. If `GBCC` still reports `0`, the write did not take — record that and stop.
 5. Revert with `SBCC(0x63, 0, 0, 0)` regardless of the outcome.
 
-**This writes to a live EC register on the battery, which is why it is not done
-here.** The revert argument is known and shared by both paths, which is what
-makes it acceptable at all — but it is still a first-time write on hardware
-nobody has mapped, and it is your machine to decide on.
+**This writes to a live EC register on the battery.** The revert argument is
+known and shared by both paths. It has since been done — see
+[below](#the-write-was-done--it-works) — and it works, and it is reversible.
+
+## The write was done — it works
+
+The order above was followed, but through the EC bridge (`M041`) rather than
+`SBCC`, so the timeout stays on this side. `SBCC` waits on the completion bit in
+an **unbounded** AML loop:
+
+```
+While ((Local1 & 0x10) != 0x10) { Sleep (0x64); Local1 = EC0.MBDC }
+```
+
+If the EC did not acknowledge, that loop would spin forever inside the ACPI
+interpreter, holding the EC lock. That risk is now measured away: the EC **does**
+acknowledge, in about 200 ms.
+
+The A/B, sampled once a second:
+
+```
+no cap    MBDC=0x00  status=Full         (6/6)
+cap set   MBDC=0x1a  status=Discharging  (10/10)
+reverted  MBDC=0x00  status=Full         (6/6)
+```
+
+Writing `MBDC = 0x0A` sets the mode (the EC raises `MBDC & 0x10` within ~200 ms),
+and the EC **stops maintaining the battery on AC** — the pack discharges while
+plugged in. Clearing it (`MBDC = 0x00`) restores `Full`.
+
+The mode is not an echo: the firmware's own `GBCC` reports it.
+
+```
+MBDC = 0x00   GBCC = {0x00, ...}   no charge control
+MBDC = 0x1a   GBCC = {0x02, ...}   mode 2
+MBDC = 0x00   GBCC = {0x00, ...}   no charge control
+```
+
+### What is settled, and what is not
+
+- **Settled:** charge control is real and functional here, despite `MBST = 0x00`.
+  The register takes the mode, the EC acknowledges, the firmware reports it
+  back, and the charge behaviour changes. Fully reversible.
+- **Not settled:** the **threshold** each mode enforces. The pack sat at 100 %
+  throughout, so all that is visible is "stops charging"; which percent `0x0A` /
+  `0x0C` correspond to needs a discharge to see.
+- **Not persistent:** `MBDC` lives in EC RAM and is not written on boot, so a cap
+  lasts until the EC resets (cold boot / power cycle). Making it stick needs
+  something to re-apply it, the way `power-profile.service` does for the SMU
+  limits.
+
+Tooling: `evidence/batterycctl.py` — `status` / `set <0x0A|0x0C>` / `clear`.
+Read-only unless `--yes`; always reversible with `clear`.
 
 ## What this changes in the repo
 

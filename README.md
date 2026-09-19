@@ -27,7 +27,7 @@ Where control sits, layer by layer. The detailed evidence for each row is in
 | Keyboard RGB | The EC publishes 4-zone RGB state in `H2RA`; **writes there don't control it** | 🟡 **found, not controllable** |
 | Performance mode (`OCPC`) | In the EC; maps to dGPU power limits via `\DPTC` | 🟡 **open** |
 | Curve Optimizer (SMM path) | `\AOD` command `0x0005000A` — a second road, never tried | 🟡 **open** |
-| Battery charge control | `GBCC` / `SBCC` reachable; decoded, **not** written | 🟡 **open** |
+| Battery charge control | EC bridge → `MBDC`; setting a mode stops charging on AC, `GBCC` confirms it, reversible | ✅ **works** |
 | Memory tuning (SPD profiles) | Firmware ships non-QVL SPD profiles by part number, reachable via `AMD CBS > UMC` | 🟡 **open** |
 | BIOS power menu (AMD CBS) | Nothing — it only seeds POST values the HP EC overrides | ⚪ **inert** |
 | BIOS hidden menus | Reachable with SmokelessUMAF / SREP (`SuppressIf` patch) | 🟡 **partial** — but `Custom Core Pstates` stays empty |
@@ -46,8 +46,8 @@ Legend: ✅ controlled · 🟡 partial or open · ⚪ no effect · 🔴 refused.
 | Can I read what the SMU is actually doing? | **Yes.** The PM table decodes to 9 limits + 9 live values in one `read()`. |
 | Can I read the BIOS settings from the running OS? | **Yes.** Plain EFI variables — and identical in the flash chip, twice. |
 | Can I talk to any EC register or I/O port? | **Yes.** The firmware ships a generic byte bridge (`M040`/`M041`/`M31A`/`M319`), verified 256/256 against `ec_probe`. |
-| Can I cap battery charging? | **Mechanism decoded** (`SBCC` writes `EC0.MBDC`), but the battery reports no cap mode. Unverified. |
-| Can I control the keyboard lighting? | **Yes** — 4-zone RGB via the WMI `LM03` method. Unexplored. |
+| Can I cap battery charging? | **Yes** — verified: writing `EC0.MBDC` stops the EC maintaining the charge on AC, `GBCC` reports the mode, and it reverts cleanly. |
+| Can I control the keyboard lighting? | **No** — the EC publishes the state in `H2RA`, but writes there (including the firmware's own `LM05`) change nothing. |
 | Can I set a power limit in the BIOS? | That setting is **inert**; the HP EC owns those values. |
 | Do power limits written by the OS stick? | **Yes** — except a `platform_profile` write makes the EC re-apply its own. |
 | Can I modify the BIOS? | **No** — HP Sure Start is active, and the payload is PSS-signed. |
@@ -103,11 +103,13 @@ is visible.
   declares a 4 KiB memory region at `0xfe700000`; `FS1H:FS1L` there is the CPU fan
   tacho, to the RPM, 5/5 samples. The EC and `hp-wmi` could in principle share a
   bug — a direct load cannot. → [`h2ra-region.md`](h2ra-region.md)
-- **The battery "dead end" was not one.** "Charge thresholds unsupported" was
-  true of the kernel surface and false of the firmware: HP's `SBCC` method writes
-  a named EC register, and `acpi_call` reaches it. Decoded in full — arguments,
-  bit encodings, the guard, the completion flag, the return codes. Not written to,
-  and why. → [`battery-charge-control.md`](battery-charge-control.md)
+- **The battery "dead end" was not one, and it is not a dead end at all.**
+  "Charge thresholds unsupported" was true of the kernel surface and false of
+  the firmware. HP's `MBDC` mechanism was decoded in full — arguments, bit
+  encodings, the guard, the completion flag, the return codes — and then actually
+  written: setting the mode stops the EC maintaining the battery on AC, the
+  firmware's own `GBCC` reports the mode back, and clearing it restores `Full`.
+  Reversible. → [`battery-charge-control.md`](battery-charge-control.md)
 - **The firmware ships a generic EC/I-O bridge, and nothing uses it.** SSDT12
   declares `M040`/`M041` (read/write any EC byte) and `M31A`/`M319` (read/write
   any I/O port). Verified against `ec_probe`: **256 of 256 registers agree**.
@@ -156,11 +158,6 @@ is visible.
 
 What has not been tried yet, ordered by how much it would unlock:
 
-- **The battery write, first and only if you want it.** The mechanism is decoded
-  and the revert is known (`MBDC &= 0xE0`), but the battery advertises **no** cap
-  mode (`MBST = 0x00`), so a write may be accepted and ignored — the exact trap
-  this repo was already caught by once. `evidence/batterycc.py status` shows the
-  state; it stays read-only unless asked.
 - **Writing through the raw SMU layer.** The layer under `ryzenadj` (`smn`,
   `mp1_smu_cmd`, `rsmu_cmd`, `smu_args`) is now *read* — SMN registers, and an
   end-to-end `GetSmuVersion` — but every node is also writable and none has been
@@ -188,11 +185,11 @@ What has not been tried yet, ordered by how much it would unlock:
 | [`smu-raw.md`](smu-raw.md) | The raw SMU/SMN layer under `ryzenadj`: the nodes, Cezanne's mailbox addresses, an end-to-end `GetSmuVersion` from userspace, and why the write path is left untouched so far. |
 | [`ec-map.md`](ec-map.md) | The mapped embedded-controller registers (fans, three temperatures), how each was verified, and what is not in the EC. |
 | [`h2ra-region.md`](h2ra-region.md) | The `H2RA` memory region at `0xfe700000` — a third, independent path to the fan tachometers. |
-| [`battery-charge-control.md`](battery-charge-control.md) | `GBCC` / `SBCC` / `MBDC` decoded from the DSDT, and why it was not written to. |
+| [`battery-charge-control.md`](battery-charge-control.md) | `GBCC` / `SBCC` / `MBDC` decoded from the DSDT, and the measured proof that the charge cap works and is reversible. |
 | [`efi-nvram.md`](efi-nvram.md) | The EFI variable store: the BIOS answers as readable variables, the clear-text copies in the flash, and what the image does and does not expose. |
 | [`BIOS_arborescence_OMEN.md`](BIOS_arborescence_OMEN.md) | The full SmokelessUMAF menu tree, transcribed from the 133 photos. |
 | [`record/`](record/) | The point-in-time investigation, kept as written. Start with the Linux report, then the Windows verdict. |
-| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`, `omenkbd.py`, `omenwatch.py`, `aodread.py`, plus `omenmon.py` (live power/thermal TUI), `limitwatch.py` (what resets the SMU limits), `pmtable-cores.py` (the per-core PM table groups), and `smuraw.py` (read-only SMN/MP1 access). |
+| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`, `omenkbd.py`, `omenwatch.py`, `aodread.py`, plus `omenmon.py` (live power/thermal TUI), `limitwatch.py` (what resets the SMU limits), `pmtable-cores.py` (the per-core PM table groups), `smuraw.py` (read-only SMN/MP1 access), and `batterycctl.py` (battery charge control). |
 | [`evidence/power-profile-watch`](evidence/power-profile-watch) | Re-applies the power profile the instant `platform_profile` is written — the 5-minute re-apply window, closed. |
 | [`img_smokelessUMAF/`](img_smokelessUMAF/) | The 133 photographs of the SmokelessUMAF menus, kept as primary evidence. |
 
