@@ -266,6 +266,41 @@ That is the one part of this that needs time and a discharge; the write itself,
 the ack, the firmware read-back, and the revert were all measured without
 either.
 
+## Capacity registers, and the design the OS cannot see
+
+The DSDT's battery methods read three EC registers:
+
+| EC | Field | u16 LE | Meaning |
+|---|---|---|---|
+| `0x70` | `BADC` | 6140 | design capacity (mAh) |
+| `0x72` | `BFCC` | 5208 | full-charge capacity, as reported |
+| `0x74` | `BADV` | 11550 | design voltage (mV) |
+
+At 11.55 V that is **70.92 Wh** design and **60.15 Wh** full — the pack is a
+70.9 Wh one, and the OS only ever sees the second number.
+
+The reason is in the firmware. `UPBI` and `UPBX` fill *both* design and
+last-full from the same register:
+
+```
+Local5  = EC.BFCC
+PBIF[1] = Local5   // DesignCapacity
+PBIF[2] = Local5   // LastFullChargeCapacity
+```
+
+So `energy_full == energy_full_design` in sysfs is not "no wear" — it is the
+firmware copying one value into both fields. **The true design capacity is
+declared (`BADC`) and then never exported**, which is why no userspace tool can
+see a BIOS charge cap: it only ever sees 100 % of an already-capped number.
+
+`full / design` reads **84.8 %** here. Whether that is the "battery optimizer"
+setting exactly, or a cap plus some wear, needs the option toggled in the BIOS
+and the register read again.
+
+```bash
+sudo python3 evidence/batterycctl.py capacity
+```
+
 ## What this changes in the repo
 
 - **"Battery charge thresholds: unsupported"** was true of the *kernel surface*

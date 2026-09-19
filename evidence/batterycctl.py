@@ -28,6 +28,7 @@ uses, and the ack is polled here rather than by `SBCC`: `SBCC` waits on that bit
 in an *unbounded* AML loop, so the timeout stays on this side.
 
   sudo python3 batterycctl.py status
+  sudo python3 batterycctl.py capacity            # design vs reported full
   sudo python3 batterycctl.py set 0x0A --yes      # apply a mode
   sudo python3 batterycctl.py clear --yes         # back to no cap
   sudo python3 batterycctl.py watch 20            # 20 min of samples, to find
@@ -48,6 +49,11 @@ MBDC = 0xA6
 ACK = 0x10
 MODES = {0x0A: 2, 0x0C: 3}   # written value -> what GBCC reports
 CONF = "/etc/battery-cap"
+
+# Capacity registers (u16 little-endian), from the DSDT field block:
+BADC = 0x70   # design capacity, mAh
+BFCC = 0x72   # reported full-charge capacity, mAh
+BADV = 0x74   # design voltage, mV
 
 
 def call(method, *args):
@@ -121,6 +127,29 @@ def clear():
     print("battery = %s %s%%" % (bat("status"), bat("capacity")))
 
 
+def rd16(off):
+    lo = ec_read(off)
+    hi = ec_read(off + 1)
+    return None if lo is None or hi is None else lo | (hi << 8)
+
+
+def capacity():
+    """Design vs reported full, and the ratio between them.
+
+    The DSDT feeds BFCC into *both* _BIF's DesignCapacity and its
+    LastFullChargeCapacity, so the kernel shows energy_full ==
+    energy_full_design and the true design (BADC) is invisible to the OS. Read
+    it here instead: on this machine BADC = 6140 mAh = 70.9 Wh (the pack), BFCC
+    = 5208 mAh = 60.2 Wh, i.e. the full the OS sees is 84.8 % of the pack."""
+    badc, bfcc, badv = rd16(BADC), rd16(BFCC), rd16(BADV)
+    if None in (badc, bfcc, badv):
+        sys.exit("could not read the capacity registers")
+    print("BADC design capacity = %5d mAh  (%.2f Wh)" % (badc, badc * badv / 1e6))
+    print("BFCC reported full   = %5d mAh  (%.2f Wh)" % (bfcc, bfcc * badv / 1e6))
+    print("BADV design voltage  = %5d mV" % badv)
+    print("full / design        = %.1f %%" % (100.0 * bfcc / badc))
+
+
 def watch(minutes):
     """Sample until the pack stops falling, which is the mode's threshold."""
     end = time.monotonic() + minutes * 60
@@ -155,7 +184,7 @@ def apply_conf():
 
 def main():
     if len(sys.argv) < 2:
-        sys.exit("usage: batterycctl.py status|set <0x0A|0x0C>|clear|watch [min]|apply")
+        sys.exit("usage: batterycctl.py status|capacity|set <0x0A|0x0C>|clear|watch [min]|apply")
     cmd = sys.argv[1]
     if cmd == "status":
         status()
@@ -163,6 +192,8 @@ def main():
         do_set(int(sys.argv[2], 0), require_yes=True)
     elif cmd == "clear":
         clear()
+    elif cmd == "capacity":
+        capacity()
     elif cmd == "watch":
         watch(int(sys.argv[2]) if len(sys.argv) > 2 else 20)
     elif cmd == "apply":
