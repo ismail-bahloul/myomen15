@@ -111,14 +111,22 @@ The eighteen, attributed:
 ```
 0x2c 0x2d 0x2e 0x2f   fan duty setpoint / readback        known
 0x49 0x57 0x58 0x59   temperatures                          known
-0x62                  part of the 0x62/0x63 pair            unknown
-0x63                  varies 0x5f-0x76 with profile + load  UNKNOWN
+0x62 0x63             16-bit BE, volatile (0x0604 / 0x0000)   UNKNOWN
 0x87                  DMI part-number table (static text)   explained
 0x95                  HPCM, dGPU mode: 0x30/0x31/0x50       known
 0xb0 0xb1 0xb2 0xb3   fan tachometers                       known
-0xb7                  slow-moving, 0x37 -> 0x39 on load     UNKNOWN
+0xb7                  57-58, +1 on sustained load           UNKNOWN
 0xba                  OCPC, OC profile current              known, EC-owned
 ```
+
+The two unresolved ones, with what has been ruled out:
+
+- **`0x62` / `0x63`** — a 16-bit big-endian value. Seen at `0x0604` (1540) and at
+  `0x0000`, so it is volatile and sometimes zero. It is **not** the CPU fan
+  tacho: under load the real tacho at `0xB0:B1` climbed 1620 -> 2300 while this
+  stayed `0`. Reading it as an RPM is not supported.
+- **`0xB7`** — `57`–`58`, and `+1` under a sustained load. Slow and weakly
+  load-linked, so plausibly a temperature, but nothing confirms it.
 
 So **16 of the 18 are already attributed**, and the two that are not — `0x63` and
 `0xB7` — are the *entire* remaining gap, not 165 offsets. Everything else in the
