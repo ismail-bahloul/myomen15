@@ -188,7 +188,8 @@ applies: **a write is not evidence, a read-back is.**
 
 **This writes to a live EC register on the battery.** The revert argument is
 known and shared by both paths. It has since been done — see
-[below](#the-write-was-done--it-works) — and it works, and it is reversible.
+[below](#the-write-was-done--it-works) — and it is reversible. What it does turns
+out to be "stop charging", not "hold a threshold".
 
 ## The write was done — it works
 
@@ -224,47 +225,66 @@ MBDC = 0x1a   GBCC = {0x02, ...}   mode 2
 MBDC = 0x00   GBCC = {0x00, ...}   no charge control
 ```
 
-### What is settled, and what is not
+### What the mode actually does — a longer test
 
-- **Settled:** charge control is real and functional here, despite `MBST = 0x00`.
-  The register takes the mode, the EC acknowledges, the firmware reports it
-  back, and the charge behaviour changes. Fully reversible.
-- **Not settled:** the **threshold** each mode enforces. The pack sat at 100 %
-  throughout, so all that is visible is "stops charging"; which percent `0x0A` /
-  `0x0C` correspond to needs a discharge to see.
-- **Not persistent:** `MBDC` lives in EC RAM and is not written on boot, so a cap
-  lasts until the EC resets (cold boot / power cycle). Making it stick needs
-  something to re-apply it, the way `power-profile.service` does for the SMU
-  limits.
+The A/B above only shows that charging *stops*. Whether the mode **holds** a
+level was then tested by leaving it set on AC and watching:
 
-Tooling: `evidence/batterycctl.py` — `status` / `set <0x0A|0x0C>` / `clear` /
-`watch [min]` / `apply`. Read-only unless `--yes`; always reversible with
-`clear`.
-
-### Making it stick
-
-`MBDC` is EC RAM, cleared on a cold boot, so a cap disappears after a power
-cycle. `evidence/battery-cap.service` re-applies what `/etc/battery-cap` asks for
-at boot — and does nothing if that file is absent or reads `0`, so it is opt-in
-and inert by default:
-
-```bash
-sudo install -m755 evidence/batterycctl.py /usr/local/bin/batterycctl
-echo 0x0A | sudo tee /etc/battery-cap        # or 0x0C, or 0 for none
-sudo install -m644 evidence/battery-cap.service /etc/systemd/system/
-sudo systemctl enable --now battery-cap.service
+```
+12:05:54  80%  Discharging 0x1a
+12:13:06  70%  Discharging 0x1a
+12:20:08  60%  Discharging 0x1a
+12:26:23  55%  Discharging 0x1a   (test stopped here)
 ```
 
-To find which percent each mode enforces, set it and log across a discharge:
+The pack discharged continuously from 100 % to 55 % — it **never plateaued and
+charging never resumed**. So mode 2, as exercised here, is *"stop charging"*, not
+"hold at a threshold". The test was cut off at 55 % deliberately; a threshold at
+50 % or below cannot be excluded from this run.
+
+That is a **different mechanism** from the firmware's own battery cap. The BIOS
+"battery optimizer" discharges nothing — it lowers `BFCC`, the reported
+full-charge capacity (see
+[above](#capacity-registers-and-the-design-the-os-cannot-see)). The two are not
+the same lever.
+
+### What is settled, and what is not
+
+- **Settled:** the register takes the mode, the EC acknowledges (bit `0x10`,
+  ~200 ms), the firmware's own `GBCC` reports it back, charging stops, and
+  clearing it restores charging immediately. Fully reversible.
+- **Not settled:** what the modes *mean*. Mode 2 stops charging with no hold
+  observed down to 55 %; whether it eventually resumes at some lower level is
+  open, and mode 3 (`0x0C`) was not exercised at all.
+- **Not persistent:** `MBDC` lives in EC RAM and is not written on boot, and the
+  EC clears it on an AC transition (observed: it read `0x1a` on battery and was
+  back to `0x00` once the charger was plugged), so a mode lasts until the EC
+  resets or the charger moves. Persisting it is deliberately **not** done — see
+  [below](#why-this-is-not-wired-to-run-at-boot).
+
+Note that the sysfs `capacity` percentage is relative to `BFCC`, which the BIOS
+optimizer already lowers. So the 55 % above is 55 % of 60.15 Wh, i.e. about 33 Wh
+— roughly 47 % of the true 70.9 Wh pack.
+
+Tooling: `evidence/batterycctl.py` — `status` / `capacity` / `set <0x0A|0x0C>` /
+`clear` / `watch [min]`. Read-only unless `--yes`; always reversible with
+`clear`.
+
+### Why this is *not* wired to run at boot
+
+Nothing here is made automatic, on purpose. Two measured reasons: `MBDC` is EC
+RAM cleared on a cold boot, *and* the EC clears it on an AC transition — so a
+boot unit alone would not even keep it. And more to the point, the effect is
+"stop charging": re-applying that at every boot would leave a laptop that never
+charges from the adapter. Until the modes are understood better — in particular
+whether mode 3 (`0x0C`) behaves differently — this stays a manual tool.
+
+To observe a mode across a discharge:
 
 ```bash
 sudo python3 evidence/batterycctl.py set 0x0A --yes
-sudo python3 evidence/batterycctl.py watch 60   # capacity plateaus at the cap
+sudo python3 evidence/batterycctl.py watch 60
 ```
-
-That is the one part of this that needs time and a discharge; the write itself,
-the ack, the firmware read-back, and the revert were all measured without
-either.
 
 ## Capacity registers, and the design the OS cannot see
 

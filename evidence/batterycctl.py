@@ -1,43 +1,38 @@
 #!/usr/bin/env python3
-"""Battery charge control on the HP OMEN 15-en1xxx -- verified working.
+"""The HP battery charge-control register on the 15-en1xxx -- decoded, and
+what writing it actually does.
 
-The repo once recorded charge thresholds as unsupported because the battery
-advertises no modes (`MBST = 0x00`) and the kernel exposes no
-`charge_control_*` attributes. The DSDT says otherwise, and a controlled test
-agrees with the DSDT:
+    MBDC   EC 0xA6                  the charge-control register
+    GBCC   \\_SB.WMID.GBCC          the firmware's own reader for it
 
-    MBDC     EC 0xA6, the charge-control register
-    GBCC     \\_SB.WMID.GBCC, the firmware's own reader for it
+Writing `MBDC` to a mode value does **not** hold a charge threshold. Measured on
+AC from 100 %: the EC stops charging and the pack discharges continuously --
+80 % at 12:05, 70 at 12:13, 60 at 12:20, 55 at 12:26 -- with no plateau and no
+resumption. Clearing it restores charging immediately. So the mode is "stop
+charging", not "cap at X". (A threshold at 50 % or below was not excluded; the
+test was stopped at 55 %.)
 
-Writing `MBDC` to a mode value makes the EC stop maintaining the battery on AC
-(`BAT0/status` goes Full -> Discharging and stays); clearing it restores `Full`.
-`GBCC` reports mode 0x02 while set and 0x00 after clearing, so the mode is real
-rather than an echo. The EC sets the completion bit `MBDC & 0x10` within ~200 ms.
+The cap that *does* hold is the BIOS "battery optimizer", and it works
+differently: it lowers `BFCC`, the reported full-charge capacity, so the pack
+simply charges to a smaller "Full". See `capacity`.
 
-Two mode encodings are used by the firmware's `SBCC` method (DSDT):
+The EC acknowledges a write by setting `MBDC & 0x10` within ~200 ms, and `GBCC`
+reports the mode back (`0x0A` -> mode 2, `0x0C` -> mode 3), so a write here is
+verifiable rather than an echo.
 
-    MBDC = 0x0A   ->  GBCC reports mode 2
-    MBDC = 0x0C   ->  GBCC reports mode 3
-
-The *percentage* each mode enforces is not published anywhere -- not in an EC
-register, not in `energy_full`, not in ACPI -- so it can only be read off a
-discharge. `watch` logs for that.
-
-Writing goes through the ACPI EC bridge (`M041`), the same path `ecbridge.py`
-uses, and the ack is polled here rather than by `SBCC`: `SBCC` waits on that bit
-in an *unbounded* AML loop, so the timeout stays on this side.
+Writes go through the ACPI EC bridge (`M041`) and the ack is polled here rather
+than by `SBCC`: `SBCC` waits on that bit in an *unbounded* AML loop, so the
+timeout stays on this side.
 
   sudo python3 batterycctl.py status
-  sudo python3 batterycctl.py capacity            # design vs reported full
-  sudo python3 batterycctl.py set 0x0A --yes      # apply a mode
-  sudo python3 batterycctl.py clear --yes         # back to no cap
-  sudo python3 batterycctl.py watch 20            # 20 min of samples, to find
-                                                  # the threshold
-  sudo python3 batterycctl.py apply               # read /etc/battery-cap (boot)
+  sudo python3 batterycctl.py capacity        # design (BADC) vs reported full (BFCC)
+  sudo python3 batterycctl.py set 0x0A --yes  # mode 2: stop charging
+  sudo python3 batterycctl.py clear --yes     # resume charging
+  sudo python3 batterycctl.py watch 20        # log capacity and status
 
-Persistence: `MBDC` lives in EC RAM and is cleared on a cold boot, so a cap
-disappears after a power cycle. `evidence/battery-cap.service` re-applies the
-value in `/etc/battery-cap` at boot; with no such file (or `0`), nothing is done.
+Not persisted, on purpose: `MBDC` is EC RAM, cleared on a cold boot and on an AC
+transition, and wiring "stop charging" to run at every boot is not something to
+do by default.
 """
 
 import re
@@ -48,7 +43,6 @@ EC = r"\_SB.PCI0.SBRG.EC0"
 MBDC = 0xA6
 ACK = 0x10
 MODES = {0x0A: 2, 0x0C: 3}   # written value -> what GBCC reports
-CONF = "/etc/battery-cap"
 
 # Capacity registers (u16 little-endian), from the DSDT field block:
 BADC = 0x70   # design capacity, mAh
@@ -151,7 +145,7 @@ def capacity():
 
 
 def watch(minutes):
-    """Sample until the pack stops falling, which is the mode's threshold."""
+    """Log capacity and status at a steady interval."""
     end = time.monotonic() + minutes * 60
     last = None
     while time.monotonic() < end:
@@ -161,30 +155,12 @@ def watch(minutes):
                  bat("status"), cap), flush=True)
         last = cap
         time.sleep(10)
-    print("last capacity: %s%% (if it plateaued there, that is the threshold)"
-          % last)
-
-
-def apply_conf():
-    """Boot path: apply whatever /etc/battery-cap asks for, or nothing."""
-    try:
-        with open(CONF) as fh:
-            raw = fh.read().strip()
-    except FileNotFoundError:
-        print("no %s -- no cap applied" % CONF)
-        return
-    if not raw or raw in ("0", "0x0", "0x00", "none"):
-        print("%s: no cap requested" % CONF)
-        return
-    val = int(raw, 0)
-    if val not in MODES:
-        sys.exit("%s: invalid mode %r (want 0x0A or 0x0C)" % (CONF, raw))
-    do_set(val, require_yes=False)
+    print("last capacity: %s%%" % last)
 
 
 def main():
     if len(sys.argv) < 2:
-        sys.exit("usage: batterycctl.py status|capacity|set <0x0A|0x0C>|clear|watch [min]|apply")
+        sys.exit("usage: batterycctl.py status|capacity|set <0x0A|0x0C>|clear|watch [min]")
     cmd = sys.argv[1]
     if cmd == "status":
         status()
@@ -196,8 +172,6 @@ def main():
         capacity()
     elif cmd == "watch":
         watch(int(sys.argv[2]) if len(sys.argv) > 2 else 20)
-    elif cmd == "apply":
-        apply_conf()
     else:
         sys.exit("unknown command: " + cmd)
 
