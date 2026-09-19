@@ -392,12 +392,16 @@ forms do **not** line up at any offset — do not assume a fixed prefix.
 
 ## 11. The write path, and why it is not the way in
 
-Not a dead end for reading, but it is for writing:
+Reading is not a dead end; writing to the **setup** store is.
 
-- `efivarfs` is mounted `rw`, but **every variable here carries the
-  `EFI_VARIABLE_RUNTIME_ACCESS` bit and refuses `O_RDWR`** — `Operation not
-  permitted` on plain `open(..., 'r+b')`, before any write. That is the firmware
-  gating its own setup, not a mount option.
+- `efivarfs` is mounted `rw`. Of the 137 variables, **22 open `O_RDWR`** — the
+  standard EFI globals (`Boot####`, `BootOrder`, `Timeout`, `PlatformLang`,
+  `OsIndications`, …); rewriting `Timeout` with its own bytes succeeds. The other
+  **115 refuse `O_RDWR`** with `Operation not permitted` *before* any write: they
+  are marked `immutable` (efivarfs sets the inode flag `i`, visible with
+  `lsattr`), and that set is exactly the BIOS/HP/AMD **setup** store, the Secure
+  Boot keys and the TPM state. The attribute dword is the same in both groups
+  (`0x7`), so this is not attribute-driven.
 - `HP Sure Start` is **active**. `hp-bioscfg` exposes only `Sure_Start` (audit
   log: `Operation not supported`) and `pending_reboot` (= `0`). Its
   `authentication/SPM` node reports `role = enhanced-bios-auth`,

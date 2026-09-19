@@ -54,14 +54,28 @@ image carries whole SPD profiles keyed by part number, in signed `APCB` blocks
 modules are `MT16ATF2G64HZ-3G2E1` (confirmed by `dmidecode`, both slots), which
 have no profile of their own. The lever is `AMD CBS > UMC Common Options`.
 
-### The write path is still the dead end
+### The write path: writable for the globals, not for the setup
 
-Nothing above changes the flashing conclusion. Every one of these variables
-carries the `EFI_VARIABLE_RUNTIME_ACCESS` bit and **refuses `O_RDWR`** outright,
-which is the firmware gating its own setup rather than a mount option. Sure Start
-is active, `authentication/SPM` reports `is_enabled = 0` and
+Nothing above changes the flashing conclusion, but the earlier blanket "every
+variable refuses `O_RDWR`" was wrong. Of the 137 variables, **22 open `O_RDWR`
+and can be written** — the standard EFI globals (`Boot####`, `BootOrder`,
+`BootCurrent`, `ConIn`/`ConOut`, `ErrOut`, `Timeout`, `PlatformLang`,
+`OsIndications`, systemd's `LoaderSystemToken`); a no-op rewrite of `Timeout`
+with its own bytes succeeds. The other **115 are `immutable`** — efivarfs sets
+the inode flag `i` (visible with `lsattr`), so `O_RDWR` returns `EPERM` before any
+write — and that set is exactly the BIOS/HP/AMD **setup** store (`Setup`,
+`SetupDefault`, `AMITSESetup`, `AmdSetup`, `AMD_PBS_SETUP`, `HPSetupData`,
+`NewHPSetupData`, `StdDefaults`), the Secure Boot keys, and the TPM/firmware
+state. The attribute dword is the same (`0x7`, `NV|BS|RT`) in both groups, so the
+refusal is not attribute-driven.
+
+So the **setup variables** are readable and not writable, which is the part that
+matters. Sure Start is active, `authentication/SPM` reports `is_enabled = 0` and
 `key_mechanism = not provisioned` (so no BIOS admin password is set either), and
 the BIOS payload is PSS/RSA-signed — a modified image cannot be re-signed.
+
+One writable variable worth knowing: **`OsIndications`** — the standard bit a
+bootloader sets to ask the firmware to process a capsule update.
 
 ## BIOS power limits are a POST-time seed, not a policy
 

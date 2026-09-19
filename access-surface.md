@@ -45,7 +45,7 @@ visible rather than forgotten.
 | Surface | Result | Detail |
 |---|---|---|
 | **MSR** | `EIO` | `/dev/cpu/*/msr` exist (16 nodes), but `read()` at `0x1a0` returns `Input/output error`. No `rdmsr`/`wrmsr` installed. |
-| **EFI variable writes** | `EPERM` | Every variable carries `EFI_VARIABLE_RUNTIME_ACCESS` and refuses `O_RDWR` outright. |
+| **EFI variable writes** | mixed | 137 variables: **22 are writable** (the EFI globals — `Boot####`, `BootOrder`, `BootCurrent`, `Timeout`, `PlatformLang`, `OsIndications`, …); **115 are immutable** (`EPERM`), and that set is exactly the BIOS/HP/AMD setup store plus the Secure Boot keys and TPM state. The attribute dword (`0x7`) is the same in both groups. |
 | **HP Sure Start audit log** | `ENOTSUP` | `hp-bioscfg` exposes `audit_log_entries`, but reading it fails. |
 | **SPM auth token** | `ENOTSUP` / `EPERM` | `enhanced-bios-auth`, `is_enabled=0`, `key_mechanism = not provisioned`. No BIOS admin password set. |
 | **BIOS flashing** | blocked by design | Payload is PSS/RSA-signed; Sure Start restores on tamper. Not attempted, deliberately. |

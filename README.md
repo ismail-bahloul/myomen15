@@ -44,7 +44,7 @@ Legend: ✅ controlled · 🟡 partial or open · ⚪ no effect · 🔴 refused.
 |---|---|
 | Can I undervolt, or use Curve Optimizer? | **The SMU says no** — proven on both OSes. But an untested second road exists (`\AOD`, via SMM), which is what HP's own software uses. |
 | Can I read what the SMU is actually doing? | **Yes.** The PM table decodes to 9 limits + 9 live values in one `read()`. |
-| Can I read the BIOS settings from the running OS? | **Yes.** Plain EFI variables — and identical in the flash chip, twice. |
+| Can I read the BIOS settings from the running OS? | **Yes.** Plain EFI variables — and identical in the flash chip, twice. Writing them back is refused for the setup store, but the standard EFI globals *are* writable. |
 | Can I talk to any EC register or I/O port? | **Yes.** The firmware ships a generic byte bridge (`M040`/`M041`/`M31A`/`M319`), verified 256/256 against `ec_probe`. |
 | Can I cap battery charging? | **Partly.** The firmware's cap is the BIOS "battery optimizer": it lowers `BFCC`, the reported full capacity (85 % of the 70.9 Wh pack) — and the OS cannot see it. The `MBDC` register is a *different* lever: it stops charging, it does not hold a level. |
 | Can I control the keyboard lighting? | **No** — the EC publishes the state in `H2RA`, but writes there (including the firmware's own `LM05`) change nothing. |
@@ -174,7 +174,7 @@ What has not been tried yet, ordered by how much it would unlock:
 - **The memory side.** The firmware's own SPD table names a module that is not
   installed; the lever is `AMD CBS > UMC Common Options`.
 - **Closed, do not chase:** Curve Optimizer, BIOS flashing, MSR (`EIO`), EFI
-  variable writes (`EPERM`).
+  setup-variable writes (`EPERM`).
 
 ## What is in this repository
 
