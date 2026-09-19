@@ -140,6 +140,34 @@ string at `0x06`–`0x0E`, then `0x16 0x1A` and a version byte at `0x04` (`0x31`
 — redacted here on the same principle as the machine serial in the README. It is
 reproducible from `ec_probe dump` on the machine that owns it.
 
+## Which registers accept a write — measured per register
+
+There is **no blanket rule**. Writing a value and watching the register:
+
+| Register | Behaviour |
+|---|---|
+| `MBDC` `0xA6` | **writable and held** — and it does something (stops charging) |
+| `OCPS` `0xBB` | **writable and held** (≥10 s); effect not established |
+| `SHEN` `0xC5.7` | the written value reads back, then the EC **reverts it in ~150 ms** |
+| `OCPC` `0xBA` | the written value reads back, then the EC **reverts it in ~100 ms** |
+| `TAPM` `0x40` | the write **does not land at all** — the register never changes |
+
+```
+MBDC  0x00 -> hold
+OCPS  0x00 -> hold (t = 1, 3, 6, 10 s all read 0x00)
+SHEN  0x00 -> t=0.00s 0x00, t=0.15s 0x80
+OCPC  0x00 -> t=0.0s 0x00, t=0.1s 0x01
+TAPM  0x00 -> 0x0b throughout
+```
+
+So three distinct behaviours coexist in the same 256-byte space, plus the
+[`H2RA`](h2ra-region.md) case where a write lands and reads back but has **no
+effect at all**. "Can I write this register?" is only answerable by measuring,
+and "it read back" proves nothing by itself — the lesson this repo keeps
+relearning.
+
+Tooling: `evidence/ecbridge.py` (`ec-read` / `ec-write`).
+
 ## How to reach the EC
 
 - `ec_probe` — register dump / read / write, plus `acpi_call`.

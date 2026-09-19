@@ -20,7 +20,7 @@ This page exists so the same ground is not re-covered, and so a surface that is
 | Platform profile | `/sys/class/platform-profile/` | `cool` / `balanced` / `performance` |
 | **Battery charge control** | EC bridge → `MBDC` (0xA6); `\WMID.GBCC` reads it | Setting a mode **stops charging** (no held threshold seen down to 55 %), `GBCC` confirms it, reversible. The cap that *holds* is **`Adaptive Battery Extender`** (`SHEN`, EC `0xC5` bit 7 — enabled), which lowers `BFCC`. See [`battery-charge-control.md`](battery-charge-control.md) |
 | **AMD overclocking (`\AOD`)** | `acpi_call` → `\AOD.WMAA` | PPT/TDC/EDC/Scalar/Curve Optimizer via SMM. Never tried. See [`acpi-bridge.md`](acpi-bridge.md) |
-| **Performance mode** | EC `OCPC` (0xBA) / `OCPS` (0xBB) | Maps to dGPU power limits via `\DPTC` |
+| **Performance mode** | EC `OCPC` (0xBA) / `OCPS` (0xBB) | Maps to dGPU power limits via `\DPTC`. `OCPC` is EC-owned (read-only); `OCPS` accepts a write but the effect is not established. See [`ec-map.md`](ec-map.md) |
 | **Keyboard RGB (4 zones)** | Reported by the EC in `H2RA`, but there is **no Linux interface** and writes there do nothing | 🟡 **found, not controllable** |
 | EFI setup answers | `/sys/firmware/efi/efivars/` | 137 vars, read-only. See [`efi-nvram.md`](efi-nvram.md) |
 | DSDT / 16 SSDT | `/sys/firmware/acpi/tables/` | 95 KB DSDT, disassembles cleanly with `iasl` |

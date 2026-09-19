@@ -25,7 +25,7 @@ Where control sits, layer by layer. The detailed evidence for each row is in
 | I/O ports | Firmware `M31A`/`M319` reaches any port, including SMM `0xB2` | ✅ **accessible** |
 | EFI setup answers | **Readable** at runtime as plain EFI variables; also stored in clear twice in the flash | ✅ **read** |
 | Keyboard RGB | The EC publishes 4-zone RGB state in `H2RA`; **writes there don't control it** | 🟡 **found, not controllable** |
-| Performance mode (`OCPC`) | In the EC; maps to dGPU power limits via `\DPTC` | 🟡 **open** |
+| Performance mode (`OCPC`) | In the EC; maps to dGPU power limits via `\DPTC`. `OCPC` is EC-owned (reverts, read-only); `OCPS` takes a write but its effect is not established | 🟡 **read** |
 | Curve Optimizer (SMM path) | `\AOD` command `0x0005000A` — a second road, never tried | 🟡 **open** |
 | Battery charge control | `MBDC` **stops charging** (no held threshold, 100→55 %); the cap that holds is **`Adaptive Battery Extender`** (`SHEN`, EC `0xC5` bit 7 — enabled, cuts `BFCC` to 84.8 % of the pack) | 🟡 **partial** |
 | Memory tuning (SPD profiles) | Firmware ships non-QVL SPD profiles by part number, reachable via `AMD CBS > UMC` | 🟡 **open** |
