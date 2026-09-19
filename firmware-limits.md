@@ -370,13 +370,16 @@ And `acpi_call` reaches them right now:
 The `BCTC` / `BMNC` read-only finding is about the ACPI *battery* objects, a
 different mechanism. Both statements are true; the earlier page conflated them.
 
-**Not written to, deliberately.** The argument encoding is decoded and the revert
-(`MBDC &= 0xE0`) is shared by both code paths — but `MBST = 0x00` says the
-battery implements no cap mode, so a write may be accepted and ignored. Given
-this repo has already been burned once by a write that succeeded and changed
-nothing (the UXTU case), that is a warning, not a formality. Full detail:
+**Written to, and measured — the answer was not what this page expected.** The
+argument encoding is decoded and the revert (`MBDC &= 0xE0`) is shared by both
+code paths. Writing it did not produce a cap: the EC acknowledges and stops
+charging, and the pack then discharges with no threshold (measured 100 % → 55 %).
+`MBST = 0x00` was right that no cap mode is advertised. The cap that **does**
+hold is a different lever — `Adaptive Battery Extender`, one EC bit (`SHEN`),
+which the BIOS sets, which explains the 84.8 % `BFCC`/`BADC` ratio, and which is
+**readable but not writable** from Linux. Full detail:
 [`battery-charge-control.md`](battery-charge-control.md).
-Tooling: `evidence/batterycc.py` (read-only by default).
+Tooling: `evidence/batterycctl.py`.
 
 ## The PM table: what the SMU is actually doing
 
@@ -404,14 +407,16 @@ never a discrepancy. `0x00` is STAPM and `0x10` is PPT-slow; reading a triple as
 
 ## Not supported by the kernel / firmware
 
-- **Battery charge thresholds**: not exposed by the kernel — but *not* a
-  firmware dead end either. See "Battery charge thresholds" above.
+- **Battery charge thresholds**: not exposed by the kernel, but two firmware
+  levers exist — see "Battery charge thresholds" above.
 - **Serial port**: `8250.nr_uarts=0` was measured to save ~0 — the `ttyS*`
   devices are not on the critical path — so `limine.conf` was left untouched (it
   carries the VFIO entry).
 - **MSR**: `/dev/cpu/*/msr` exist but `read()` returns `EIO`.
-- **EFI variable writes**: every variable carries `EFI_VARIABLE_RUNTIME_ACCESS`
-  and refuses `O_RDWR` with `EPERM`.
+- **EFI variable writes**: refused with `EPERM` for the BIOS/HP/AMD **setup**
+  store and the Secure Boot keys (efivarfs marks those inodes `immutable`); the
+  standard EFI globals — `Boot####`, `BootOrder`, `Timeout`, `OsIndications`, … —
+  *are* writable.
 - **TPM**: currently set to `Hidden` — disabled and not detected at POST.
 
 ## The firmware ships a generic EC / I-O bridge
