@@ -1,0 +1,150 @@
+<?xml version="1.0"?>
+<configuration platform="CEZANNE">
+  <!-- #################################### -->
+  <!--                                      -->
+  <!-- Information                          -->
+  <!--                                      -->
+  <!-- #################################### -->
+  <!--
+    HP OMEN 15-en1xxx, AMD Ryzen 7 5800H. CPUID 0x00A50F00 -> Family 19h Model 50h
+    (Cezanne). Root complex 00:00.0 = 1022:1630 (measured on this machine).
+    FCH LPC (00:14.3) = 1022:790E and SMBus (00:14.0) = 1022:790B are identical
+    to the values chipsec's own strix.xml uses; the FCH block (and therefore
+    the register layout below, taken from that file) is shared across AMD
+    generations, not Strix-specific. This file only adds platform detection
+    and reuses those register definitions against a machine chipsec upstream
+    does not otherwise recognise.
+  -->
+  <info family="core">
+    <sku did="0x1630" name="Cezanne" code="CEZANNE" longname="Cezanne (Family 19h Model 50h) Root Complex" />
+  </info>
+
+  <!-- #################################### -->
+  <!--                                      -->
+  <!-- Integrated devices                   -->
+  <!--                                      -->
+  <!-- #################################### -->
+  <pci>
+    <!-- measured via `chipsec_util pci dump 0 0x14 3` / `0 0x14 0` / `0 0 0` on this machine -->
+    <device name="LPC"            bus="0" dev="0x14" fun="3" vid="0x1022" did="0x790E" />
+    <device name="SMBUS"          bus="0" dev="0x14" fun="0" vid="0x1022" did="0x790B" />
+  </pci>
+
+  <!-- #################################### -->
+  <!--                                      -->
+  <!-- Memory Mapped I/O spaces (MMIO BARs) -->
+  <!--                                      -->
+  <!-- #################################### -->
+  <mmio>
+  </mmio>
+
+  <!-- #################################### -->
+  <!--                                      -->
+  <!-- Memory ranges                        -->
+  <!--                                      -->
+  <!-- #################################### -->
+  <memory>
+  </memory>
+
+  <!-- #################################### -->
+  <!--                                      -->
+  <!-- Indirect memory accesses             -->
+  <!--                                      -->
+  <!-- #################################### -->
+  <ima>
+  </ima>
+
+  <!-- #################################### -->
+  <!--                                      -->
+  <!-- I/O spaces (I/O BARs)                -->
+  <!--                                      -->
+  <!-- #################################### -->
+  <io>
+  </io>
+
+  <!-- #################################### -->
+  <!--                                      -->
+  <!-- Configuration registers              -->
+  <!--                                      -->
+  <!-- #################################### -->
+  <registers>
+    <register name="HWCR" type="msr" msr="0xc0010015" desc="Hardware Configuration">
+      <field name="SmmPgCfgLock" bit="33" size="1"  desc="1=SMM page config locked."/>
+      <field name="SmmBaseLock" bit="31" size="1"  desc="Disable SMM_BASE from being saved to and restored from the SMM save state area."/>
+      <field name="SmmLock" bit="0" size="1"  desc="SMM code in the ASeg and TSeg range and the SMM registers are Read-only and SMI interrupts are not intercepted in SVM."/>
+    </register>
+    <register name="PATCH_LEVEL" type="msr" msr="0x0000008B" desc="Patch Level. Read,Error-on-write,Volatile. Reset: 0000_0000_0000_0000h.">
+      <field name="PatchLevel" bit="0" size="32" desc="Returns an identification number for the loaded microcode patch, or 0 if none." />
+    </register>
+    <register name="SPIBASEADDR" type="pcicfg" device="LPC" offset="0x0A0" size="4" desc="SPI Base_Addr. Read-write. Reset: FEC1_0002h.">
+      <field name="Spi_eSpi_BaseAddr" bit="8" size="24" desc="Read-write. Reset: FE_C100h." />
+      <field name="PspSpiMmioSel" bit="4" size="1" desc="Read-write. Reset: 0. 0=SPI MMIO register for Host. 1=SPI MMIO register for PSP." />
+      <field name="RouteTpm2Spi" bit="3" size="1" desc="Read-write. Reset: 0. 1=TPM cycles are routed to SPI bus with TPM_SPI_CS# asserted." />
+      <field name="AbortEnable" bit="2" size="1" desc="Read-write. Reset: 0. LPC Abort enable." />
+      <field name="SpiRomEnable" bit="1" size="1" desc="Read-write. Reset: 1. 0=SPI ROM is disabled. 1=SPI ROM is enabled if chip is strapped to SPI ROM." />
+      <field name="AltSpiCSEnable" bit="0" size="1" desc="Read-write. Reset: 0. Alternative SPI CS enable." />
+    </register>
+    <register name="ROMPROTECT0" type="pcicfg" device="LPC" offset="0x050" size="4" lockedby="SpiHostAccessRomEn" desc="ROM Protect 0. Read,Write-once. Reset: 0000_0000h.">
+      <field name="RomBase" bit="12" size="20" desc="ROM Base. Read,Write-once." />
+      <field name="WriteProtect" bit="10" size="1" desc="1=range is write-protected." />
+      <field name="ReadProtect" bit="9" size="1" desc="1=range is read-protected (reads return FFFF_FFFFh)." />
+      <field name="RangeUnit" bit="8" size="1" desc="0=4 KB. 1=64 KB." />
+      <field name="Range" bit="0" size="8" desc="Protected range, in RangeUnit units." />
+    </register>
+    <register name="ROMPROTECT1" type="pcicfg" device="LPC" offset="0x054" size="4" lockedby="SpiHostAccessRomEn" desc="ROM Protect 1. Read,Write-once. Reset: 0000_0000h.">
+      <field name="RomBase" bit="12" size="20" desc="ROM Base. Read,Write-once." />
+      <field name="WriteProtect" bit="10" size="1" desc="1=range is write-protected." />
+      <field name="ReadProtect" bit="9" size="1" desc="1=range is read-protected (reads return FFFF_FFFFh)." />
+      <field name="RangeUnit" bit="8" size="1" desc="0=4 KB. 1=64 KB." />
+      <field name="Range" bit="0" size="8" desc="Protected range, in RangeUnit units." />
+    </register>
+    <register name="ROMPROTECT2" type="pcicfg" device="LPC" offset="0x058" size="4" lockedby="SpiHostAccessRomEn" desc="ROM Protect 2. Read,Write-once. Reset: 0000_0000h.">
+      <field name="RomBase" bit="12" size="20" desc="ROM Base. Read,Write-once." />
+      <field name="WriteProtect" bit="10" size="1" desc="1=range is write-protected." />
+      <field name="ReadProtect" bit="9" size="1" desc="1=range is read-protected (reads return FFFF_FFFFh)." />
+      <field name="RangeUnit" bit="8" size="1" desc="0=4 KB. 1=64 KB." />
+      <field name="Range" bit="0" size="8" desc="Protected range, in RangeUnit units." />
+    </register>
+    <register name="ROMPROTECT3" type="pcicfg" device="LPC" offset="0x05C" size="4" lockedby="SpiHostAccessRomEn" desc="ROM Protect 3. Read,Write-once. Reset: 0000_0000h.">
+      <field name="RomBase" bit="12" size="20" desc="ROM Base. Read,Write-once." />
+      <field name="WriteProtect" bit="10" size="1" desc="1=range is write-protected." />
+      <field name="ReadProtect" bit="9" size="1" desc="1=range is read-protected (reads return FFFF_FFFFh)." />
+      <field name="RangeUnit" bit="8" size="1" desc="0=4 KB. 1=64 KB." />
+      <field name="Range" bit="0" size="8" desc="Protected range, in RangeUnit units." />
+    </register>
+    <register name="SMM_BASE" type="msr" msr="0xC0010111" desc="SMM Base Address.">
+      <field name="SMMBASE" bit="0" size="32" desc="AccessType: HWCR[SmmLock] ? Read-only : Read-write." />
+    </register>
+    <register name="SMMADDR" type="msr" msr="0xC0010112" desc="SMM TSeg Base Address.">
+      <field name="TSEGBASE" bit="17" size="31" desc="AccessType: HWCR[SmmLock] ? Read-only : Read-write." />
+    </register>
+    <register name="SMMMASK" type="msr" msr="0xC0010113" desc="SMM TSeg Mask.">
+      <field name="TSEGMASK" bit="17" size="31" desc="AccessType: HWCR[SmmLock] ? Read-only : Read-write." />
+      <field name="TVALID" bit="1" size="1" desc="1=TSeg address range SMM enabled." />
+      <field name="AVALID" bit="0" size="1" desc="1=ASeg address range SMM enabled." />
+    </register>
+    <register name="SPEC_CTRL" type="msr" msr="0x48" desc="Speculation Control MSR">
+      <field name="IBRS"  bit="0" size="1" desc="Enable IBRS" />
+      <field name="STIBP" bit="1" size="1" desc="Enable STIBP" />
+      <field name="SSBD"  bit="2" size="1" desc="Speculative Store Bypass Disable" />
+      <field name="PSFD"  bit="7" size="1" desc="Disable predictive store forwarding" />
+    </register>
+  </registers>
+
+  <!-- #################################### -->
+  <!--                                      -->
+  <!-- Controls                             -->
+  <!--                                      -->
+  <!-- #################################### -->
+  <controls>
+  </controls>
+
+  <!-- #################################### -->
+  <!--                                      -->
+  <!-- Locks                                -->
+  <!--                                      -->
+  <!-- #################################### -->
+  <locks>
+  </locks>
+
+</configuration>

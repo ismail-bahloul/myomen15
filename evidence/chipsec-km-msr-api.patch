@@ -1,0 +1,25 @@
+--- /tmp/chipsec-src/drivers/linux/chipsec_km.c	2026-09-20 09:34:55.586655308 +0000
++++ /usr/src/chipsec-dkms-git/chipsec_km.c	2026-09-20 09:33:59.243282431 +0000
+@@ -34,6 +34,22 @@
+ #include <linux/slab.h>
+ #include <asm/io.h>
+ #include <linux/smp.h>
++#include <asm/msr.h>
++
++static inline int rdmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 *l, u32 *h)
++{
++    u64 __v = 0;
++    int __ret = rdmsrq_on_cpu(cpu, msr_no, &__v);
++    *l = (u32)__v;
++    *h = (u32)(__v >> 32);
++    return __ret;
++}
++
++static inline int wrmsr_on_cpu(unsigned int cpu, u32 msr_no, u32 l, u32 h)
++{
++    u64 __v = ((u64)h << 32) | l;
++    return wrmsrq_on_cpu(cpu, msr_no, __v);
++}
+ #include <linux/miscdevice.h>
+ 
+ #include "include/chipsec.h"

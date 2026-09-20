@@ -26,7 +26,7 @@ read-only · `⚪` no effect · `🔴` refused. Each row links its evidence.
 | Read raw SMN registers and the SMU mailbox | ✅ | `smn`, `mp1_smu_cmd`; `GetSmuVersion` round-trips → [`smu-raw.md`](smu-raw.md) |
 | Write through the raw SMU layer | 🟡 | the nodes are writable; nothing written yet — the largest remaining unlock |
 | Undervolt / Curve Optimizer | 🔴 | the SMU refuses the whole OC/CO family on **both** OSes |
-| MSR | 🔴 | `/dev/cpu/*/msr` exist, `read()` → `EIO` |
+| MSR | 🟡 | `/dev/cpu/*/msr` → `EIO`, but that's Linux's own `msr` module allowlist — a raw `rdmsr` via CHIPSEC's kernel driver reads real values (`APIC_BASE`, `EFER`); does not reopen CO, which is SMU-gated → [`chipsec-recon.md`](chipsec-recon.md) |
 
 ### Embedded controller (EC)
 
@@ -187,6 +187,13 @@ is visible.
   keyboard backlight says otherwise: **writes there are ignored**, including via
   the firmware's own `LM05` method. `H2RA` is a one-way publication. That closes
   the hope of driving the fans through it. → [`h2ra-region.md`](h2ra-region.md)
+- **The `EIO` on MSR reads was Linux, not this machine.** Getting CHIPSEC
+  running at all meant patching its kernel driver for a renamed kernel API
+  first — and once it ran, a raw `rdmsr` through it returned correct values
+  (`APIC_BASE`, `EFER`) where `/dev/cpu/*/msr` had refused. The block was the
+  Linux `msr` module's own allowlist, one layer above the chip. It does not
+  reopen Curve Optimizer, which is gated somewhere else entirely (the SMU
+  mailbox). → [`chipsec-recon.md`](chipsec-recon.md)
 - **A method I proposed, and the experiment that killed it.** Toggle one BIOS
   option, diff the tables, name the offset — that was the plan. A three-way TPM
   toggle (`off` → `on` → `off` → `Hidden`) showed it does not work: saving the
@@ -219,8 +226,14 @@ What has not been tried yet, ordered by how much it would unlock:
   `0x70`. Read, but not decoded any further.
 - **The memory side.** The firmware's own SPD table names a module that is not
   installed; the lever is `AMD CBS > UMC Common Options`.
-- **Closed, do not chase:** Curve Optimizer, BIOS flashing, MSR (`EIO`), EFI
-  setup-variable writes (`EPERM`).
+- **What `ROMPROTECT2` actually does.** CHIPSEC reads one FCH write-protect
+  register as set (`WriteProtect=1`, a narrow, ambiguous range) — a real,
+  measured data point, but not yet correlated to any actual write behaviour,
+  and not the same mechanism as the PSP-enforced Sure Start signature check.
+  → [`chipsec-recon.md`](chipsec-recon.md)
+- **Closed, do not chase:** Curve Optimizer, BIOS flashing, EFI setup-variable
+  writes (`EPERM`). MSR reads are open (raw `rdmsr` works via CHIPSEC) but lead
+  nowhere new — CO stays SMU-gated regardless.
 
 ## What is in this repository
 
@@ -235,9 +248,10 @@ What has not been tried yet, ordered by how much it would unlock:
 | [`h2ra-region.md`](h2ra-region.md) | The `H2RA` memory region at `0xfe700000` — a third, independent path to the fan tachometers. |
 | [`battery-charge-control.md`](battery-charge-control.md) | `GBCC` / `SBCC` / `MBDC` decoded from the DSDT, the measured proof the charge cap works and is reversible, and the EC capacity registers (`BADC`/`BFCC`) that explain why the OS cannot see the design capacity. |
 | [`efi-nvram.md`](efi-nvram.md) | The EFI variable store: the BIOS answers as readable variables, the clear-text copies in the flash, and what the image does and does not expose. |
+| [`chipsec-recon.md`](chipsec-recon.md) | Talking to the chip directly instead of through HP's software: fixing CHIPSEC's kernel driver for a newer kernel, what that shows about the MSR block, and a from-scratch AMD platform file that reads the FCH's own write-protect registers. |
 | [`BIOS_arborescence_OMEN.md`](BIOS_arborescence_OMEN.md) | The full SmokelessUMAF menu tree, transcribed from the 133 photos. |
 | [`record/`](record/) | The point-in-time investigation, kept as written. Start with the Linux report, then the Windows verdict. |
-| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`, `omenkbd.py`, `omenwatch.py`, `aodread.py`, plus `omenmon.py` (live power/thermal TUI), `limitwatch.py` (what resets the SMU limits), `pmtable-cores.py` (the per-core PM table groups), `smuraw.py` (read-only SMN/MP1 access), `batterycctl.py` (battery charge control), and `ecsweep.py` (EC dump/diff). |
+| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`, `omenkbd.py`, `omenwatch.py`, `aodread.py`, plus `omenmon.py` (live power/thermal TUI), `limitwatch.py` (what resets the SMU limits), `pmtable-cores.py` (the per-core PM table groups), `smuraw.py` (read-only SMN/MP1 access), `batterycctl.py` (battery charge control), `ecsweep.py` (EC dump/diff), `chipsec-km-msr-api.patch` (the driver fix for newer kernels), `chipsec-cezanne.xml` (the AMD platform file), and `chipsec-recon.log` (raw command output). |
 | [`evidence/power-profile-watch`](evidence/power-profile-watch) | Re-applies the power profile the instant `platform_profile` is written — the 5-minute re-apply window, closed. |
 | [`img_smokelessUMAF/`](img_smokelessUMAF/) | The 133 photographs of the SmokelessUMAF menus, kept as primary evidence. |
 

@@ -1,0 +1,90 @@
+=== $ chipsec_util -i pci dump 0 0x14 3   (LPC bridge, holds SPIBASEADDR + ROMPROTECT0-3) ===
+[CHIPSEC]      RID: FF
+[CHIPSEC] Executing command 'pci' with args ['dump', '0', '0x14', '3']
+
+[CHIPSEC] PCI device 00:14.03 configuration:
+    _00__01__02__03__04__05__06__07__08__09__0A__0B__0C__0D__0E__0F__
+00 | 22  10  0E  79  0F  00  20  02  51  00  01  06  00  00  80  00  
+10 | 00  00  00  00  00  00  00  00  00  00  00  00  00  00  00  00  
+20 | 00  00  00  00  00  00  00  00  00  00  00  00  22  10  0E  79  
+30 | 00  00  00  00  00  00  00  00  00  00  00  00  00  00  00  00  
+40 | 0C  00  00  00  D5  FF  03  FF  27  FF  20  03  00  00  00  00  
+50 | 00  00  00  00  00  00  00  00  00  64  32  00  00  00  00  00  
+60 | 70  FE  70  FE  40  16  68  00  00  00  0F  00  00  FF  FF  FF  
+70 | 67  45  23  00  0C  00  00  00  90  02  00  00  02  0A  00  00  
+80 | 08  00  03  A8  00  00  00  00  00  00  00  00  00  00  00  00  
+90 | 80  03  00  00  00  00  00  00  00  00  00  00  00  00  00  00  
+A0 | 02  00  C1  FE  2F  01  00  00  00  00  00  00  FD  00  00  00  
+B0 | 00  00  00  00  00  00  00  00  04  00  ED  33  00  00  00  00  
+C0 | 00  00  00  00  00  00  00  00  00  00  00  00  00  00  F7  FF  
+D0 | 86  FF  FF  08  42  00  00  00  00  00  00  00  01  00  00  00  
+E0 | 00  00  00  00  00  00  00  00  00  00  00  00  00  00  00  00  
+F0 | 00  00  00  00  00  00  00  00  00  00  00  00  00  00  00  00  
+[CHIPSEC] Time elapsed 0.001
+
+=== $ chipsec_util -i pci dump 0 0 0   (root complex, for platform detection) ===
+[CHIPSEC]      RID: FF
+[CHIPSEC] Executing command 'pci' with args ['dump', '0', '0', '0']
+
+[CHIPSEC] PCI device 00:00.00 configuration:
+    _00__01__02__03__04__05__06__07__08__09__0A__0B__0C__0D__0E__0F__
+00 | 22  10  30  16  00  00  00  00  00  00  00  06  00  00  80  00  
+10 | 00  00  00  00  00  00  00  00  00  00  00  00  00  00  00  00  
+20 | 00  00  00  00  00  00  00  00  00  00  00  00  3C  10  D2  88  
+30 | 00  00  00  00  00  00  00  00  00  00  00  00  00  00  00  00  
+40 | 00  00  00  00  00  00  00  00  80  00  00  00  10  00  80  00  
+50 | 3C  10  D2  88  00  00  00  00  00  00  00  00  00  00  00  00  
+60 | 00  98  05  00  00  00  8B  76  00  00  00  00  00  00  00  00  
+70 | 00  00  00  00  00  00  00  00  00  00  00  00  00  00  00  00  
+80 | 00  00  00  00  08  01  00  00  00  00  00  00  00  00  00  00  
+90 | 00  00  00  C0  00  00  00  00  00  00  00  00  00  00  00  00  
+A0 | 00  00  00  00  34  B2  05  00  00  00  00  00  00  00  00  00  
+B0 | 00  00  00  00  00  00  00  00  64  05  B1  03  01  00  00  00  
+C0 | 00  00  00  00  9C  0A  B1  03  00  00  00  00  00  00  00  00  
+D0 | 00  00  00  00  34  B2  05  00  00  00  00  00  00  00  00  00  
+E0 | 46  00  30  01  00  00  00  00  00  00  00  00  00  00  00  00  
+F0 | 00  00  00  00  00  80  80  00  00  00  00  00  34  B2  05  00  
+[CHIPSEC] Time elapsed 0.001
+
+=== $ chipsec_util -i mem read 0xFEC10000 0x40   (SPI controller MMIO, raw) ===
+[CHIPSEC]      DID: FFFF
+[CHIPSEC]      RID: FF
+[CHIPSEC] Executing command 'mem' with args ['read', '0xFEC10000', '0x40']
+
+[CHIPSEC] Reading buffer from memory: PA = 0x00000000FEC10000, len = 0x40..
+05 10 48 4F 00 00 00 00 00 01 06 00 89 01 00 02 |   HO            
+06 20 04 04 06 04 9F 05 03 0B 0A 02 FF 98 06 01 |                 
+13 07 33 10 08 20 20 20 0C 14 06 0E C0 54 00 80 |   3          T  
+CC 14 08 46 03 00 00 00 FC FC FC FC FC 88 00 00 |    F            
+[CHIPSEC] Time elapsed 0.000
+
+=== $ chipsec_util -i msr 0x1b   (APIC_BASE, sanity check) ===
+[CHIPSEC] CPU12: RDMSR( 0x1b ) = 00000000FEE00800 (EAX=FEE00800, EDX=00000000)
+[CHIPSEC] CPU13: RDMSR( 0x1b ) = 00000000FEE00800 (EAX=FEE00800, EDX=00000000)
+[CHIPSEC] CPU14: RDMSR( 0x1b ) = 00000000FEE00800 (EAX=FEE00800, EDX=00000000)
+[CHIPSEC] CPU15: RDMSR( 0x1b ) = 00000000FEE00800 (EAX=FEE00800, EDX=00000000)
+[CHIPSEC] Time elapsed 0.008
+
+=== $ chipsec_util -i msr 0xc0000080   (EFER, sanity check) ===
+[CHIPSEC] CPU12: RDMSR( 0xc0000080 ) = 0000000000009D01 (EAX=00009D01, EDX=00000000)
+[CHIPSEC] CPU13: RDMSR( 0xc0000080 ) = 0000000000009D01 (EAX=00009D01, EDX=00000000)
+[CHIPSEC] CPU14: RDMSR( 0xc0000080 ) = 0000000000009D01 (EAX=00009D01, EDX=00000000)
+[CHIPSEC] CPU15: RDMSR( 0xc0000080 ) = 0000000000009D01 (EAX=00009D01, EDX=00000000)
+[CHIPSEC] Time elapsed 0.007
+
+=== $ chipsec_main -p CEZANNE -m common.bios_wp   (platform now recognised; module itself is Intel-only) ===
+[*] Metadata tags: ['OPENSOURCE', 'IA', 'COMMON', 'BIOS_WP']
+[!] SPI HAL is not initialized (HAL with name spi was not found.). Skipping module.
+Skipping module chipsec.modules.common.bios_wp: is_supported() returned False, so the module does not apply to this platform/environment
+
+[CHIPSEC] ***************************  SUMMARY  ***************************
+[CHIPSEC] Time elapsed            0.001
+[CHIPSEC] Modules failed to run   0:
+[CHIPSEC] Modules passed          0:
+[CHIPSEC] Modules information     0:
+[CHIPSEC] Modules failed          0:
+[CHIPSEC] Modules with warnings   0:
+[CHIPSEC] Modules not applicable  1:
+NOT APPLICABLE: chipsec.modules.common.bios_wp
+[CHIPSEC] Modules total           1
+[CHIPSEC] *****************************************************************
