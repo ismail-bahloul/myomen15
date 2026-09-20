@@ -297,10 +297,44 @@ originally proposed is **invalid**, and this experiment is what invalidated it.
 ### The method that does work
 
 Do every test **both ways** - change the option, snapshot, revert it, snapshot -
-and keep only the offsets that move out **and back**. In this experiment
-offsets 6, 7, 9 and 221 move on both legs, so they pass the filter; the rest is
-save-noise. It costs two reboots per option instead of one, and it is the only
-form of this experiment that means anything.
+and keep only the offsets that move out **and back**. It costs two reboots per
+option instead of one, and it is the only form of this experiment that means
+anything.
+
+**Correction.** This section previously said offsets 6, 7, 9 and 221 "move on
+both legs, so they pass the filter" — backwards. `baseline-hidden` never
+reverts `Hidden` back off, so the `Hidden` run has no revert leg at all; 6, 7,
+9, 221 are exactly the offsets listed just above as moving on the single
+`before-hidden` → `after-hidden` diff, which §7 itself says is not sufficient.
+Running the filter for real, on the one triple in this data that *is* a true
+out-and-back (`before-tpm` → `after-tpm` → `after-disable-tpm`, i.e.
+off → on → off), with the tooling this correction added
+(`setupdiff.py twoleg`):
+
+```
+$ python3 setupdiff.py twoleg before-tpm after-tpm after-disable-tpm
+
+=== Setup ===
+  2 offset(s) moved out AND back (real signal):
+    offset   3: before-tpm=0x01 -> after-tpm=0x00 -> after-disable-tpm=0x01  default=0x01
+    offset   4: before-tpm=0x01 -> after-tpm=0x00 -> after-disable-tpm=0x01  default=0x01
+  5 offset(s) moved out but did NOT return (save-noise, discard): [6, 7, 9, 13, 221]
+
+=== HPSetupData ===
+  2 offset(s) moved out AND back (real signal):
+    offset  94: before-tpm=0x01 -> after-tpm=0x00 -> after-disable-tpm=0x01  default=0xff
+    offset  95: before-tpm=0x01 -> after-tpm=0x00 -> after-disable-tpm=0x01  default=0xff
+  5 offset(s) moved out but did NOT return (save-noise, discard): [97, 98, 100, 104, 106]
+```
+
+Two results, not one: `Setup` offsets 3-4 pass the filter exactly as already
+concluded — now on a rigorous basis rather than a mislabelled one — and
+`HPSetupData` offsets 94-95 track them in perfect lockstep (`1 → 0 → 1`,
+same steps, same snapshots), a second, independent variable confirming the
+same TPM-enable bit. Neither was known to pass a real two-leg test before this.
+Six, seven, nine and 221 remain unnamed noise, in `Setup` and `SetupDefault`
+and `StdDefaults` and `HPSetupData` alike — the correction does not change
+that part.
 
 ### Hypothesis check, for the record
 
@@ -431,15 +465,23 @@ writing is guarded by Sure Start and a signature that cannot be reproduced.
 
 ## 13. Next steps, in order of value
 
-1. **Name the offsets.** The eleven off-default offsets are known and the
-   reference table is confirmed by two sources; what is missing is which offset
-   is which option. One at a time: snapshot, change a single option in the BIOS,
-   reboot, `setupdiff.py diff`. Tooling is written and tested —
-   `evidence/setupdiff.py`.
-2. **Correlate one of the eleven with a known-changed setting.** The cheapest
-   candidate is the TPM (currently disabled, and `Setup` differs from default at
-   offsets 276-284): toggling TPM alone and re-diffing names all of them in one
-   reboot.
+1. **Name the offsets.** Two of the eleven are now named: **offset 9** was
+   ruled out as a TPM effect (§7 — it moves during the TPM cycle, but as
+   noise, not signal), and offsets 276-284 are confirmed **untouched** by the
+   TPM toggle at all (checked directly against the `twoleg` triple, zero
+   movement). Nine remain (`21, 22, 23, 174, 244, 276, 278, 280, 284, 316` —
+   note offset 9 is settled, not named to a TPM cause). One at a time:
+   snapshot, change a single option in the BIOS, reboot, snapshot, revert the
+   same option, reboot, snapshot again, `setupdiff.py twoleg`. Tooling is
+   written and tested — `evidence/setupdiff.py`.
+2. ~~Correlate one of the eleven with a known-changed setting: the TPM~~ —
+   done, and it named a *different* offset than expected. The TPM toggle (§7)
+   turned out to explain `Setup` offsets 3-4 and, newly, `HPSetupData`
+   offsets 94-95 — neither of which is one of the eleven off-default offsets,
+   because this machine's TPM setting is already at its factory default
+   (`disabled`). It does not touch offsets 276-284 at all, which was the
+   original guess for "the cheapest candidate": that guess is now closed,
+   not open.
 3. **Decide the encoding question of §8.** Either locate the IFR in the
    encrypted volume (hard), or find a second variable whose live and flash forms
    are both known, so the transformation between them can be inferred (cheap).

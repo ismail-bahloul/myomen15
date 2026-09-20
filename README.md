@@ -202,11 +202,17 @@ is visible.
   uses. Self-restoring, and separately confirmed reverted by the running
   `power-profile-watch` service on its own — the raw path and `ryzenadj`'s are
   provably the same mailbox. → [`smu-raw.md`](smu-raw.md)
-- **A method I proposed, and the experiment that killed it.** Toggle one BIOS
-  option, diff the tables, name the offset — that was the plan. A three-way TPM
-  toggle (`off` → `on` → `off` → `Hidden`) showed it does not work: saving the
-  setup moves bytes *whatever* you changed, and `SetupDefault` itself drifts, so
-  "factory default" is not a stable point. → [`efi-nvram.md`](efi-nvram.md) §7
+- **A method I proposed, and the experiment that killed it — then the same
+  data, read correctly, is what made it work.** Toggle one BIOS option, diff
+  the tables, name the offset — that was the plan. A three-way TPM toggle
+  (`off` → `on` → `off` → `Hidden`) showed the naive form does not work: saving
+  the setup moves bytes *whatever* you changed, and `SetupDefault` itself
+  drifts. This page also said 6/7/9/221 "passed" a two-leg filter — backwards;
+  they never had a revert leg to pass. Actually running the filter, on the one
+  triple that *is* a real out-and-back (`before-tpm → after-tpm →
+  after-disable-tpm`), names two things at once: `Setup` offsets 3-4, and —
+  new — `HPSetupData` offsets 94-95 tracking them in lockstep, a second
+  variable confirming the same bit. → [`efi-nvram.md`](efi-nvram.md) §7
 - **A hidden memory-tuning table names a module this machine does not have.** The
   firmware carries whole SPD profiles keyed by part number; one of them is for a
   Micron `8ATF1G64HZ-2G3B1`, which is not in either slot. So the "no memory
@@ -226,9 +232,12 @@ What has not been tried yet, ordered by how much it would unlock:
   one part of the raw SMU layer still genuinely untouched, now that the
   mailbox itself has been both read and (carefully) written. →
   [`smu-raw.md`](smu-raw.md)
-- **Name the setup offsets — the right way.** The eleven off-default offsets are
-  known, but naming them needs the two-leg method of
-  [`efi-nvram.md`](efi-nvram.md) §7: two reboots per option.
+- **Name the remaining setup offsets.** Two of the eleven are settled (offset 9
+  is TPM-adjacent noise, not TPM itself; offsets 276-284 are confirmed
+  untouched by the TPM toggle). Nine remain (`21, 22, 23, 174, 244, 276, 278,
+  280, 284, 316`), and naming them needs the two-leg method of
+  [`efi-nvram.md`](efi-nvram.md) §7 — now with tooling for it,
+  `setupdiff.py twoleg`: two reboots per option.
 - **`postcode`.** `hp-wmi` exposes a firmware POST code that reads a stable
   `0x70`. Read, but not decoded any further.
 - **The memory side.** The firmware's own SPD table names a module that is not

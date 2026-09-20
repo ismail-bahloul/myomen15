@@ -12,6 +12,17 @@ Usage:
     setupdiff.py snapshot after
     setupdiff.py diff before after
 
+A plain before/after diff cannot name an offset by itself: saving the setup
+moves bytes on its own, whatever was changed (see efi-nvram.md §7). The form
+that means something reverts the option and snapshots a third time:
+
+    # ... revert the same option, reboot ...
+    setupdiff.py snapshot revert
+    setupdiff.py twoleg before after revert
+
+`twoleg` keeps only the offsets that moved out and came back; everything else
+that moved is save-noise from the two setup visits, not the option.
+
 Two independent sources back the reference table, which is why the diff is
 trustworthy: `StdDefaults` (1088 B, firmware-provided) embeds the same table at
 offset 17, byte-identical to `SetupDefault`. `setupdiff.py verify` re-checks
@@ -111,6 +122,41 @@ def diff(before: str, after: str) -> None:
             print(f"    offset {i:3d}: 0x{old[i]:02x} -> 0x{new[i]:02x}{dflt}{tag}")
 
 
+def twoleg(before: str, after: str, revert: str) -> None:
+    """The method from efi-nvram.md §7: change, snapshot, revert, snapshot --
+    keep only offsets that moved out AND came back. A plain before/after diff
+    cannot name an offset, because saving the setup moves bytes on its own,
+    whatever was changed; this is the filter that removes that noise."""
+    with open(f"setupdiff-{before}.json") as fh:
+        a = json.load(fh)
+    with open(f"setupdiff-{after}.json") as fh:
+        b = json.load(fh)
+    with open(f"setupdiff-{revert}.json") as fh:
+        c = json.load(fh)
+
+    default = read_var("SetupDefault")
+
+    for name in VARS:
+        old, mid, back = a["tables"][name], b["tables"][name], c["tables"][name]
+        n = min(len(old), len(mid), len(back))
+        moved_out = [i for i in range(n) if old[i] != mid[i]]
+        signal = [i for i in moved_out if back[i] == old[i]]
+        noise = [i for i in moved_out if back[i] != old[i]]
+
+        print(f"\n=== {name} ===")
+        if not moved_out:
+            print("  no change")
+            continue
+        if signal:
+            print(f"  {len(signal)} offset(s) moved out AND back (real signal):")
+            for i in signal:
+                d = default[i] if name != "StdDefaults" and i < len(default) else None
+                dflt = f"  default=0x{d:02x}" if d is not None else ""
+                print(f"    offset {i:3d}: {before}=0x{old[i]:02x} -> {after}=0x{mid[i]:02x} -> {revert}=0x{back[i]:02x}{dflt}")
+        if noise:
+            print(f"  {len(noise)} offset(s) moved out but did NOT return (save-noise, discard): {noise}")
+
+
 def offdefault() -> None:
     """List every option currently off-default, using both references."""
     setup = read_var("Setup")
@@ -134,6 +180,8 @@ def main() -> None:
         snapshot(sys.argv[2])
     elif cmd == "diff" and len(sys.argv) > 3:
         diff(sys.argv[2], sys.argv[3])
+    elif cmd == "twoleg" and len(sys.argv) > 4:
+        twoleg(sys.argv[2], sys.argv[3], sys.argv[4])
     else:
         sys.exit(__doc__)
 
