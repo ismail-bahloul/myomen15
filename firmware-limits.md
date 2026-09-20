@@ -244,8 +244,23 @@ with per-file verification status: `PSP_FW_BOOT_LOADER`, `PSP_FW_TRUSTED_OS`,
 `SMU_OFFCHIP_FW` (the actual SMU firmware image this repo has been probing
 all session via the mailbox), `AMD_PUBLIC_KEY`, and others — most
 `verified(<keyid>), sha256_ok`, a few (`SMU_OFFCHIP_FW`, `PMU_CODE`/`PMU_DATA`)
-`compressed, veri-failed(<keyid>), sha256_ok`, meaning the hash matches but
-signature verification against that key fails; not chased further here.
+`compressed, veri-failed(<keyid>), sha256_ok`.
+
+**Checked, not a firmware flaw.** `psptool -E -t` shows a real RSA check was
+attempted — the certifying key (`96A0` for `SMU_OFFCHIP_FW`, `4F75` for
+`PMU_CODE`/`PMU_DATA`) is present in this image's own key tree and was tried,
+not missing (that has its own distinct `key_missing(...)` label in `psptool`,
+never seen here). Every other key in the tree verifies `True` for all of its
+files; only these two, and only for `compressed` entries, fail — 100%
+consistent, not one success among them. The obvious next suspect, an AMD
+generation-specific decryption key (`psptool`'s own source has a `TODO: Find
+out how to identify the correct IKEK` and hardcodes the Zen+ one regardless of
+platform), is **ruled out by direct measurement**: both files' own headers
+read `encrypted=0` — decryption is never attempted, only decompression, which
+completes with no warning. Likely `psptool` itself mis-slices the decompressed
+body against a `size_signed` field meant for the compressed one, for this
+specific PSP entry type — but that is not confirmed, and it is a `psptool`
+question, not a question about this machine's firmware.
 
 `0x0–~0x1e0000` remains completely unaccounted for: no `$PSP`/`$BHD`/`$BL2`/
 `$PL2`/`_FVH` magic anywhere in it. Still genuinely opaque, still a
