@@ -24,7 +24,7 @@ read-only · `⚪` no effect · `🔴` refused. Each row links its evidence.
 | Read what the SMU is doing | ✅ | the PM table: 9 limits + 9 live values, in one `read()` → [`pm-table.md`](pm-table.md) |
 | Per-core busy % and clock | ✅ | requested `0x3c0` / effective `0x3e0`, confirmed against `perf` to <0.3 % |
 | Read raw SMN registers and the SMU mailbox | ✅ | `smn`, `mp1_smu_cmd`; `GetSmuVersion` round-trips → [`smu-raw.md`](smu-raw.md) |
-| Write through the raw SMU layer | 🟡 | the nodes are writable; nothing written yet — the largest remaining unlock |
+| Write through the raw SMU layer | ✅ | two query commands sent and cross-checked, plus a real mutating write (`SetStapmLimit`, self-restoring) — the same command `ryzenadj` already sends, proven to be the same mailbox and the same effect; `smn` writes and unverified commands stay untouched → [`smu-raw.md`](smu-raw.md) |
 | Undervolt / Curve Optimizer | 🔴 | the SMU refuses the whole OC/CO family on **both** OSes |
 | MSR | 🟡 | `/dev/cpu/*/msr` → `EIO`, but that's Linux's own `msr` module allowlist — a raw `rdmsr` via CHIPSEC's kernel driver reads real values (`APIC_BASE`, `EFER`); does not reopen CO, which is SMU-gated → [`chipsec-recon.md`](chipsec-recon.md) |
 
@@ -194,6 +194,14 @@ is visible.
   Linux `msr` module's own allowlist, one layer above the chip. It does not
   reopen Curve Optimizer, which is gated somewhere else entirely (the SMU
   mailbox). → [`chipsec-recon.md`](chipsec-recon.md)
+- **The raw SMU layer went from read to written, on purpose and in order.**
+  Two query commands first (`GetPmTableVersion`, `GetDramBaseAddress`), each
+  cross-checked against a value independent of the command itself, before a
+  real mutating write: `SetStapmLimit`, sent from this repo's own script
+  instead of `ryzenadj`, over the exact mailbox command `ryzenadj` already
+  uses. Self-restoring, and separately confirmed reverted by the running
+  `power-profile-watch` service on its own — the raw path and `ryzenadj`'s are
+  provably the same mailbox. → [`smu-raw.md`](smu-raw.md)
 - **A method I proposed, and the experiment that killed it.** Toggle one BIOS
   option, diff the tables, name the offset — that was the plan. A three-way TPM
   toggle (`off` → `on` → `off` → `Hidden`) showed it does not work: saving the
@@ -213,11 +221,10 @@ is visible.
 
 What has not been tried yet, ordered by how much it would unlock:
 
-- **Writing through the raw SMU layer.** The layer under `ryzenadj` (`smn`,
-  `mp1_smu_cmd`, `rsmu_cmd`, `smu_args`) is now *read* — SMN registers, and an
-  end-to-end `GetSmuVersion` — but every node is also writable and none has been
-  written. That is the largest remaining unlock, and the honest reason it waits
-  is that a control path should be read before it is used to write. →
+- **Raw `smn` writes.** A direct address-value poke into the SoC's internal
+  fabric, with no per-command validation the way a mailbox message gets — the
+  one part of the raw SMU layer still genuinely untouched, now that the
+  mailbox itself has been both read and (carefully) written. →
   [`smu-raw.md`](smu-raw.md)
 - **Name the setup offsets — the right way.** The eleven off-default offsets are
   known, but naming them needs the two-leg method of
@@ -251,7 +258,7 @@ What has not been tried yet, ordered by how much it would unlock:
 | [`chipsec-recon.md`](chipsec-recon.md) | Talking to the chip directly instead of through HP's software: fixing CHIPSEC's kernel driver for a newer kernel, what that shows about the MSR block, and a from-scratch AMD platform file that reads the FCH's own write-protect registers. |
 | [`BIOS_arborescence_OMEN.md`](BIOS_arborescence_OMEN.md) | The full SmokelessUMAF menu tree, transcribed from the 133 photos. |
 | [`record/`](record/) | The point-in-time investigation, kept as written. Start with the Linux report, then the Windows verdict. |
-| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`, `omenkbd.py`, `omenwatch.py`, `aodread.py`, plus `omenmon.py` (live power/thermal TUI), `limitwatch.py` (what resets the SMU limits), `pmtable-cores.py` (the per-core PM table groups), `smuraw.py` (read-only SMN/MP1 access), `batterycctl.py` (battery charge control), `ecsweep.py` (EC dump/diff), `chipsec-km-msr-api.patch` (the driver fix for newer kernels), `chipsec-cezanne.xml` (the AMD platform file), and `chipsec-recon.log` (raw command output). |
+| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`, `omenkbd.py`, `omenwatch.py`, `aodread.py`, plus `omenmon.py` (live power/thermal TUI), `limitwatch.py` (what resets the SMU limits), `pmtable-cores.py` (the per-core PM table groups), `smuraw.py` (SMN reads, query-class SMU mailbox commands, and one self-restoring mutating write), `batterycctl.py` (battery charge control), `ecsweep.py` (EC dump/diff), `chipsec-km-msr-api.patch` (the driver fix for newer kernels), `chipsec-cezanne.xml` (the AMD platform file), and `chipsec-recon.log` (raw command output). |
 | [`evidence/power-profile-watch`](evidence/power-profile-watch) | Re-applies the power profile the instant `platform_profile` is written — the 5-minute re-apply window, closed. |
 | [`img_smokelessUMAF/`](img_smokelessUMAF/) | The 133 photographs of the SmokelessUMAF menus, kept as primary evidence. |
 

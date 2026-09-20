@@ -2,7 +2,12 @@
 
 `ryzen_smu` exposes two layers *below* any client — below `ryzenadj`, below the
 PM table. [`access-surface.md`](access-surface.md) listed both as "reachable,
-never used". This is what they do. Everything below was **read**, not written.
+never used". This is what they do.
+
+Update: the mailbox *is* now written to — two query-class commands sent and
+cross-checked, then one that actually mutates state (`SetStapmLimit`, the same
+command `ryzenadj` already sends routinely on this machine). `smn` writes are
+still untouched; see "What is written now, and what still isn't" below.
 
 ## The nodes
 
@@ -61,19 +66,84 @@ MP1   cmd 0x3B10528   rsp 0x3B10564   args 0x3B10998
 RSMU  cmd 0x3B10A20   rsp 0x3B10A80   args 0x3B10A88
 ```
 
-## What is *not* done, and why
+## Two more commands, sent for the first time
 
-Both nodes are writable and the driver will do it: `smn` takes an address-value
-pair, `mp1_smu_cmd` takes any command. That is the real unlock — arbitrary SMN
-registers and arbitrary SMU messages from Linux, with nothing in between.
+`GetSmuVersion` was the only command ever sent — the one the driver issues
+itself at init. Two more, both taken from Cezanne's own `case` in
+`/usr/src/ryzen_smu-*/smu.c` (not guessed), both query-class:
 
-It is left alone, for the repo's usual reason: **a control path is not used to
-write before it has been read.** SMN is the SoC's internal fabric, and a
-mis-addressed write there is not the same class of act as writing an EC byte
-whose meaning is decoded. If this is picked up, the order is: read a *known*
-register, confirm the value, and only then consider a write.
+```
+$ sudo python3 evidence/smuraw.py pmver
+RSMU cmd 0x06 (GetPmTableVersion): rsp 0x01 (OK)
+  args back : 0x00400005 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+  sysfs pm_table_version : 0x00400005
+  MATCH
 
-Tooling: `evidence/smuraw.py` — `mailbox`, `smn <addr>`, `version`. Read-only.
+$ sudo python3 evidence/smuraw.py drambase
+RSMU cmd 0x66 (GetDramBaseAddress): rsp 0x01 (OK)
+  args back : 0xB6AE6000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+  DRAM base address : 0x00000000B6AE6000
+```
+
+Both cross-check against something independent of the command itself:
+`GetPmTableVersion`'s reply matches the driver's own `pm_table_version` sysfs
+node exactly, and `GetDramBaseAddress`'s reply (`0xB6AE6000`) lands inside a
+region `/proc/iomem` marks `Reserved` (`b698d000-b6b0bfff`) — not a plausible
+coincidence for a made-up address. Both commands: no crash, no hang, nothing
+to revert.
+
+## A real write: `SetStapmLimit`, and getting it back
+
+`ryzenadj --stapm-limit=N` is one of this machine's most-used levers — the
+whole power-profile setup in `firmware-limits.md` depends on it, watched and
+re-applied within 0.12 s of any drift. Its Cezanne implementation, in
+RyzenAdj's own `lib/api.c` (`set_stapm_limit`), is exactly one command: `MP1
+cmd 0x14`, `arg0 = value in mW`. Sent from this repo's own script instead of
+the `ryzenadj` binary, self-restoring, with the running `power-profile-watch`
+service left active the whole time:
+
+```
+$ sudo python3 evidence/smuraw.py stapmtest
+baseline STAPM limit : 35000 mW
+writing MP1 cmd 0x14 (SetStapmLimit) arg0=40000 ...
+  rsp = 0x01 (OK)
+  STAPM limit immediately after : 40000 mW
+  MATCH
+restoring baseline MP1 cmd 0x14 arg0=35000 ...
+  rsp = 0x01 (OK)
+  STAPM limit after restore : 35000 mW
+  RESTORED
+```
+
+Two confirmations that this isn't a fluke: `ryzenadj --info` (a process this
+script never touches) shows the changed value immediately, and — run once
+without the script's own restore, separately — `power-profile-watch` caught
+the drift and reverted it to `35000` on its own within 0.8 s, exactly the
+mechanism `firmware-limits.md` already documents. The raw sysfs path and
+`ryzenadj`'s own path are provably the same mailbox, the same command, the
+same effect.
+
+## What is written now, and what still isn't
+
+Sending a command **is** a write — six `u32`s to `smu_args`, one `u32` to
+trigger it — and one of the four commands sent so far (`SetStapmLimit`)
+genuinely mutates SMU state, not just queries it. What makes it safe enough to
+run: it is not a new, unverified command. It is a command whose exact effect
+was already independently known (from `ryzenadj`'s own source and this
+machine's own months of routine use of it) before it was ever sent from this
+script.
+
+Left alone, still: `smn` writes — a raw address-value poke into the SoC's
+internal fabric, with no per-command validation the way a mailbox message
+gets — and any mailbox command whose effect *isn't* already known from an
+independent source the way `SetStapmLimit`'s was. SMN is a different class of
+act from a decoded EC byte or a documented mailbox command: there is no
+equivalent of "read a known register, confirm the value" to de-risk a write,
+because a wrong SMN address isn't a register with a known meaning to check
+against first.
+
+Tooling: `evidence/smuraw.py` — `mailbox`, `smn <addr>`, `version`, `pmver`,
+`drambase`, `stapmtest`.
 
 ## Reproducing
 
@@ -81,4 +151,7 @@ Tooling: `evidence/smuraw.py` — `mailbox`, `smn <addr>`, `version`. Read-only.
 sudo python3 evidence/smuraw.py mailbox
 sudo python3 evidence/smuraw.py smn 0x3B10564
 sudo python3 evidence/smuraw.py version
+sudo python3 evidence/smuraw.py pmver
+sudo python3 evidence/smuraw.py drambase
+sudo python3 evidence/smuraw.py stapmtest
 ```
