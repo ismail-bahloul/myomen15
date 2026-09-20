@@ -94,18 +94,32 @@ touching anything that matters.
 
 ## 4. What is *not* in the clear
 
-For contrast, and so this is not mistaken for a fully readable flash:
+For contrast, and so this is not mistaken for a fully readable flash — updated,
+because two of the four addresses below turned out to be wrong for a fixable
+reason. Full correction: [`firmware-limits.md`](firmware-limits.md#two-of-the-four-encrypted-regions-were-compressed-not-encrypted).
 
-- The main firmware volumes (`0x1e4000`, `0xa00000`, `0xb00000`, `0xef0000`) are
-  **encrypted or compressed** — entropy ≈ 8.0 bits/byte, and no `_FVH` signature
-  is recoverable inside them. No FFS files can be listed.
+- Two of what was flagged as "the main firmware volumes" — `0xb00000` and
+  `0xef0000` — are **not** encrypted. They were EFI/Tiano-*compressed*, and a
+  missing external tool (`TianoCompress`) made `uefiextract` fail silently
+  rather than report that. With it present, both parse completely: real
+  FFSv2 volumes, real `_FVH` headers, 684 named files across the image. They
+  turn out to hold the actual Sure Start / PSP recovery modules, by name.
+- The other two, `0x1e4000` and `0xa00000`, **are** still genuinely high
+  entropy (7.4–8.0 bits/byte, confirmed by re-scanning) and still unparsed —
+  `uefiextract` finds no FV structure there even with the missing tool fixed,
+  which is a different, unresolved kind of opaque. Likely AMD's own PSP
+  directory format rather than encryption, but that is not established.
 - Searches for `Custom Core Pstates`, `Curve Optimize`, `PBO`, `SureStart`, and
-  `OMEN` in the 16 MiB dump return **nothing**.
-- **That is not evidence the menus are absent.** Because the bulk is encrypted,
-  a string's absence only says it is not in the clear. The README's conclusion
-  that `Custom Core Pstates` "contains no questions at all" is based on the
-  *live setup browser* under SmokelessUMAF, which is the right instrument — but
-  the flash dump neither confirms nor refutes it.
+  `OMEN` in the 16 MiB dump return **nothing** — and for `0xb00000`/`0xef0000`
+  that absence is now a real one, not an artifact of encryption: those regions
+  are plaintext, and they still don't contain those literal strings (Sure
+  Start's actual code is there, under names like `HPCrisisRecovery`, just not
+  spelled that way).
+- **That is still not evidence the menus are absent**, for the two regions that
+  remain opaque. The README's conclusion that `Custom Core Pstates` "contains
+  no questions at all" is based on the *live setup browser* under
+  SmokelessUMAF, which is the right instrument regardless — the flash dump
+  neither confirms nor refutes it there.
 
 ## 5. What *is* in the clear, and provably so
 

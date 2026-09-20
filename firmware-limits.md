@@ -41,12 +41,11 @@ extracted *as an Aptio image*, but the live configuration is readable at
 runtime, and the payload is sitting on the ESP at
 `/boot/EFI/HP/BIOS/Current/088D1.bin` (16 MiB) to inspect.
 - **"`Custom Core Pstates` is empty, therefore there is nothing to
-configure"** needs a caveat: **more than a third of the 16 MiB image is at
-entropy ≈ 8.0** — encrypted or compressed — and no `_FVH` signature survives
-inside those volumes. A string's absence from the dump therefore only says it is
-not *in the clear*. The empty-menu finding rests on the live setup browser under
-SmokelessUMAF, which is the right instrument; the image neither confirms nor
-refutes it.
+configure"** still needs a caveat, but a narrower one than before — see
+["Two of the four \"encrypted\" regions were compressed, not encrypted"](#two-of-the-four-encrypted-regions-were-compressed-not-encrypted)
+below. The empty-menu finding rests on the live setup browser under
+SmokelessUMAF, which is the right instrument regardless; the image neither
+confirms nor refutes it.
 - **The memory-tuning dead end was a QVL dead end, not a firmware one.** The
 image carries whole SPD profiles keyed by part number, in signed `APCB` blocks
 (each with its own GUID and MD5). One of them is a literal
@@ -181,13 +180,99 @@ the interface is live.
 `hp-bioscfg` reports **HP Sure Start** active, which verifies and restores the
 firmware on tamper. On top of that the flash chip is shared with the EC (fan
 control), and `flashrom` is deliberately not used here: a failed write would
-risk the fans. The `BIOS_Update.exe` payload is a proprietary AMI container
-(`@UAF@` / `@UII@`) that `uefixtract` does not recognise.
+risk the fans. **Reading is a different question from writing, and this section
+used to conflate them** — see below: the payload turned out not to resist
+reading at all, only writing.
 
-The image itself, though, is not opaque — see
+The image itself is not opaque — see
 ["The setup is readable"](#the-setup-is-readable--the-flash-chip-is-not-fully-opaque)
 above. The payload on the ESP is a 16 MiB AMI firmware image with two complete
 copies of the flash, and the parts that hold *state* are in clear.
+
+## Two of the four "encrypted" regions were compressed, not encrypted
+
+This corrects a claim made twice in this repo — that `uefixtract` does not
+recognise the `BIOS_Update.exe` payload, and that the firmware volumes at
+`0x1e4000, 0xa00000, 0xb00000, 0xef0000` "are encrypted or compressed" —
+**partially**. Two of those four addresses were a missing external tool, not
+an unreadable image. The other two are not settled by this and remain exactly
+where they were.
+
+**The container is a documented, public AMI format, not proprietary.** `@UAF@`
+/ `@UII@` is "AMI UCP" (Utility Configuration Program) — `platomav/biosutilities`
+(`pip install biosutilities`) parses it directly: `Tag`, `Size`, `Checksum`,
+`Compress Size`, `Original Size`, `Filename`, one module per tag. Unwrapping it
+extracts `BIOS_00.bin` — **16,777,216 bytes, byte-for-byte identical to
+`/boot/EFI/HP/BIOS/Current/088D1.bin`**, the exact file the entropy scan
+above was run against.
+
+**What made `uefiextract` fail on it silently was one missing binary.**
+EFI-compressed sections (`GUID defined | EE4E5898-3914-4259-9D6E-DC7BD79403CF`
+— the standard Tiano/EFI compression GUID) need `TianoCompress` on `PATH`, and
+without it `uefiextract` reports nothing and exits non-zero, with no error
+message pointing at what's missing. `TianoCompress` is not exotic — it is
+EDK2's own BaseTools, buildable from the public `tianocore/edk2` source in
+about ten seconds (`evidence/bios-unwrap.sh`). With it present, `uefiextract`
+parses `088D1.bin`/`BIOS_00.bin` into 6 firmware volumes and 684 files, real
+`_FVH` headers throughout — but only **two** of those six volumes are at the
+addresses this repo had already flagged: `0xb00000` and `0xef0000`. Full
+structural report: [`evidence/bios-image-report.txt`](evidence/bios-image-report.txt).
+
+**`0x1e4000` and `0xa00000` are not in that report, and checking why matters
+more than the two that were fixed.** A byte-level re-scan of `BIOS_00.bin`
+(`evidence/bios-unwrap.sh` unwraps the identical file this correction is
+about) confirms genuinely high entropy (7.4–8.0 bits/byte) across
+`0x0–~0x1e0000` and `~0x820000–~0x9e0000` — real regions, not an artifact of
+where the two literal addresses happened to land (both, it turns out, sit
+just past the edge of their block, in ordinary `0xFF` padding — worth noting
+so a future spot-check at exactly those two addresses isn't mistaken for a
+second correction). `uefiextract` reports both blocks as top-level `Padding`,
+meaning it found no FFS/FV structure there at all — not "found one but
+couldn't decompress it", which is a different failure mode than the one
+`TianoCompress` fixed. The more likely explanation is that this is AMD's own
+PSP directory format (not a UEFI firmware volume, and not something
+`uefiextract` parses regardless of what compression tools are on `PATH`), but
+that is a hypothesis, not a measurement — unlike the `0xb00000`/`0xef0000`
+correction above, which is.
+
+**This maps "Sure Start" onto actual named modules, for the first time.** Two
+identical-size volumes (`61C0F511-A691-4F54-974F-B9A42172CE53`, 0x110000 bytes
+each) sit at `0xB00000` and `0xEF0000` — the "two complete copies" already
+known from the flash-level read, now with an exact address and a manifest:
+
+```
+AmdPspPeiV2, AmdPspFtpmPei, AmdCpmABRecoveryPeim, RecoveryControl,
+NvmeRecovery, PcdRecoveryPei, AmiPspFtpmPei, AmiPspPlatform, AhciRecovery,
+Recovery, FsRecovery, IdeRecovery, HPCrisisRecovery          (PEI modules)
+
+AmdPspDxeV2Rn, AmdPspFtpmDxe, PspPlatformDriver, PspDxe, AmiPspNvramDxe,
+PspResource, OememSecureBootDxe, SecureBootDXE, PspSetPcdForRecovery  (DXE)
+
+AmdPspP2CmboxV2, AmdPspP2CmboxV2SmmBuffer, AmdPspSmmV2, AmiPspNvramSmm,
+PspS3Smm, PspResumeServicesSmm                                (SMM)
+```
+
+`HPCrisisRecovery` and the A/B recovery PEIMs are, by name, almost certainly
+what `hp-bioscfg`'s `Sure_Start` audit flag refers to as one opaque word. The
+NVAR store is in the same volume family, at `0x7C0000` (0x20000 bytes),
+containing the exact GUIDs `efi-nvram.md` already names from the runtime side
+(`Setup`, `StdDefaults`, `SecureBootSetup`, …) — one exception logged, not
+resolved: `uefiextract`'s own name table labels GUID
+`0EE72C08-8185-427A-A58A-855B78B7BA0B` **`TpmStateFlag`**, where this repo's
+own `efivarfs` reading calls the same GUID **`SetupDefault`**. Worth checking
+before relying on either name for that specific GUID.
+
+**What this is not.** It is read access, and read access to a plaintext image
+was never the blocked operation — writing was, and still is: the PSS/RSA
+signature requirement is over the payload as a whole and does not care whether
+the payload is human-readable. Nothing here writes anything, and nothing here
+makes Sure Start's signature check any easier to pass. What it does do is turn
+"Sure Start is active" (a config-audit assertion) into a list of the actual PEI
+and DXE/SMM modules that implement it, at known offsets — the necessary
+starting point for anyone who wanted to go further (disassembling those PE32
+images), not a shortcut past it.
+
+Reproducing: `evidence/bios-unwrap.sh <path to BIOS_Update.exe or 088D1.bin>`.
 
 ## Power limits: what resets them is **not** established
 
