@@ -13,30 +13,75 @@ CachyOS + Windows 11. The serial number is deliberately not recorded here.
 
 ## The control surface
 
-Where control sits, layer by layer. The detailed evidence for each row is in
-[`firmware-limits.md`](firmware-limits.md).
+Everything measured on this machine, by domain. `✅` doable · `🟡` partial or
+read-only · `⚪` no effect · `🔴` refused. Each row links its evidence.
 
-| Layer | What we can do | State |
+### CPU and SMU
+
+| What | | Detail |
 |---|---|---|
-| CPU power limits (SMU) | Write STAPM / PPT / Tctl via `ryzenadj`; they persist | ✅ **controlled** (one caveat: a `platform_profile` write resets them) |
-| SMU telemetry (PM table) | 2372 bytes of `float32` — 9 limits + 9 live values, one file read | ✅ **decoded** |
-| Fan control | `nbfc` (EC), `hp-wmi`, memory-mapped tacho at `0xfe700000`, and the ACPI bridge | ✅ **controlled** (four independent paths) |
-| EC registers | Four paths: `ec_sys`, `hp-wmi`, `H2RA`, and firmware `M040`/`M041` (verified 256/256) | ✅ **controlled** |
-| I/O ports | Firmware `M31A`/`M319` reaches any port, including SMM `0xB2` | ✅ **accessible** |
-| EFI setup answers | **Readable** at runtime as plain EFI variables; also stored in clear twice in the flash | ✅ **read** |
-| Keyboard RGB | The EC publishes 4-zone RGB state in `H2RA`; **writes there don't control it** | 🟡 **found, not controllable** |
-| Performance mode (`OCPC`) | In the EC; maps to dGPU power limits via `\DPTC`. `OCPC` is EC-owned (reverts, read-only); `OCPS` takes a write but its effect is not established | 🟡 **read** |
-| Curve Optimizer (SMM path) | `\AOD` command `0x0005000A` — a second road, never tried | 🟡 **open** |
-| Battery charge control | `MBDC` **stops charging** (no held threshold, 100→55 %); the cap that holds is **`Adaptive Battery Extender`** (`SHEN`, EC `0xC5` bit 7 — enabled, cuts `BFCC` to 84.8 % of the pack) | 🟡 **partial** |
-| Memory tuning (SPD profiles) | Firmware ships non-QVL SPD profiles by part number, reachable via `AMD CBS > UMC` | 🟡 **open** |
-| BIOS power menu (AMD CBS) | Nothing — it only seeds POST values the HP EC overrides | ⚪ **inert** |
-| BIOS hidden menus | Reachable with SmokelessUMAF / SREP (`SuppressIf` patch) | 🟡 **partial** — but `Custom Core Pstates` stays empty |
-| CPU undervolt / Curve Optimizer (**SMU path**) | The SMU refuses the whole OC/CO family on **both** OSes | 🔴 **locked** |
-| BIOS modification / flashing | Nothing — HP Sure Start is active, the payload is PSS-signed | 🔴 **blocked** |
-| Embedded controller (EC) registers | Fans, temperatures, battery, perf. The **responsive surface is fully attributed** — only 18 of 256 offsets ever change, and 16 are named | ✅ **mapped** — see [`ec-map.md`](ec-map.md) |
-| TPM | `Hidden` — disabled and not detected at POST | ⚪ **off** |
+| Write power limits (STAPM / PPT / TDC / EDC / Tctl) | ✅ | via `ryzenadj`; they persist. A `platform_profile` write resets them — a watcher re-applies in 0.12 s |
+| Read what the SMU is doing | ✅ | the PM table: 9 limits + 9 live values, in one `read()` → [`pm-table.md`](pm-table.md) |
+| Per-core busy % and clock | ✅ | requested `0x3c0` / effective `0x3e0`, confirmed against `perf` to <0.3 % |
+| Read raw SMN registers and the SMU mailbox | ✅ | `smn`, `mp1_smu_cmd`; `GetSmuVersion` round-trips → [`smu-raw.md`](smu-raw.md) |
+| Write through the raw SMU layer | 🟡 | the nodes are writable; nothing written yet — the largest remaining unlock |
+| Undervolt / Curve Optimizer | 🔴 | the SMU refuses the whole OC/CO family on **both** OSes |
+| MSR | 🔴 | `/dev/cpu/*/msr` exist, `read()` → `EIO` |
 
-Legend: ✅ controlled · 🟡 partial or open · ⚪ no effect · 🔴 refused.
+### Embedded controller (EC)
+
+| What | | Detail |
+|---|---|---|
+| Reach any EC byte | ✅ | **four** independent paths: `ec_sys`, `hp-wmi`, `H2RA`, and the firmware's `M040`/`M041` (verified 256/256) |
+| Reach any I/O port | ✅ | `M31A`/`M319`, including SMM `0xB2` (untried) |
+| Write EC registers | 🟡 | measured **per register**: `MBDC` holds, `SHEN`/`OCPC` revert in ~100–150 ms, `TAPM` never lands → [`ec-map.md`](ec-map.md) |
+| Map the register file | ✅ | complete for behaviour — only **18 of 256** offsets ever change, and 16 are named |
+| Performance mode (`OCPC` / `OCPS`) | 🟡 | readable; `OCPC` is EC-owned, `OCPS` takes a write with no observed effect |
+
+### Firmware and BIOS
+
+| What | | Detail |
+|---|---|---|
+| Read the BIOS settings | ✅ | plain EFI variables at runtime → [`efi-nvram.md`](efi-nvram.md) |
+| Write the standard EFI globals | ✅ | `Boot####`, `BootOrder`, `Timeout`, `OsIndications`, … |
+| Write the BIOS setup store | 🔴 | `EPERM` — efivarfs marks those inodes immutable |
+| Unlock the hidden menus | 🟡 | `SmokelessUMAF` / `SREP`, **pre-boot only**; `Custom Core Pstates` stays empty |
+| Modify or flash the firmware | 🔴 | HP Sure Start + a PSS/RSA signature. Definitive |
+| The AMD CBS power menu | ⚪ | inert — it only seeds POST values the HP EC then overrides |
+| TPM | ⚪ | `Hidden` — disabled, not detected at POST |
+
+### Battery and power
+
+| What | | Detail |
+|---|---|---|
+| Read the true design capacity | ✅ | EC `BADC` (70.9 Wh) vs `BFCC` (60.2 Wh); the OS only ever sees `BFCC` → [`battery-charge-control.md`](battery-charge-control.md) |
+| Read the BIOS charge option | ✅ | `Adaptive Battery Extender`, one bit: `SHEN` (EC `0xC5` bit 7) — enabled here |
+| Change it | 🔴 | EC-owned — a write is reverted in ~150 ms |
+| Stop charging (`MBDC`) | 🟡 | writable and reversible, but **not a held cap** (100 % → 55 %, no plateau) |
+| Kernel charge API (`charge_control_*`) | 🔴 | absent on this model |
+
+### Thermal and fans
+
+| What | | Detail |
+|---|---|---|
+| Read fan speed | ✅ | four independent paths, cross-checked to the RPM → [`h2ra-region.md`](h2ra-region.md) |
+| Control the fans | ✅ | `nbfc` (EC setpoints), `hp-wmi` |
+| Drive them through `H2RA` | ⚪ | a one-way publication — writes read back and do nothing |
+| Read temperatures | ✅ | EC `0x57`/`0x58` track `Tctl`; `k10temp` |
+
+### Keyboard and lighting
+
+| What | | Detail |
+|---|---|---|
+| Keyboard RGB (4 zones) | 🔴 | the EC publishes the state in `H2RA`, but writes there — including the firmware's own `LM05` — change nothing |
+
+### Memory and platform
+
+| What | | Detail |
+|---|---|---|
+| Memory tuning (SPD profiles) | 🟡 | the firmware ships non-QVL profiles by part number, behind `AMD CBS > UMC` — BIOS-only |
+| IOMMU / vfio | 🟡 | 24 groups, registered, nothing bound |
+| SMBus / i2c busses | 🟡 | reachable, not scanned |
 
 ## The short version
 
@@ -151,10 +196,11 @@ is visible.
   firmware carries whole SPD profiles keyed by part number; one of them is for a
   Micron `8ATF1G64HZ-2G3B1`, which is not in either slot. So the "no memory
   tuning" dead end was a *QVL* dead end, not a firmware one.
-- **Two EC temperatures, and three that were not.** A controlled thermal ramp
+- **Two EC temperatures, and a slow third.** A controlled thermal ramp
   (idle → 16 threads → idle) confirmed `0x57` and `0x58` track `k10temp`'s
-  `Tctl`, and killed the earlier guess that the whole `0x40`-`0x49` row was a
-  bank of sensors: only `0x48` moves with heat. → [`ec-map.md`](ec-map.md)
+  `Tctl`, and killed the guess that the whole `0x40`-`0x49` row was a bank of
+  sensors: only `0x48` moves there. A later, *longer* load showed `0x49` moves
+  too (`0x38` -> `0x3A`) — a slow channel, not a constant. → [`ec-map.md`](ec-map.md)
 
 ## Open fronts
 
@@ -170,7 +216,7 @@ What has not been tried yet, ordered by how much it would unlock:
   known, but naming them needs the two-leg method of
   [`efi-nvram.md`](efi-nvram.md) §7: two reboots per option.
 - **`postcode`.** `hp-wmi` exposes a firmware POST code that reads a stable
-  `0x70`. Unexplored and free.
+  `0x70`. Read, but not decoded any further.
 - **The memory side.** The firmware's own SPD table names a module that is not
   installed; the lever is `AMD CBS > UMC Common Options`.
 - **Closed, do not chase:** Curve Optimizer, BIOS flashing, MSR (`EIO`), EFI
