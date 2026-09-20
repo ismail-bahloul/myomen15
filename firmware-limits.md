@@ -42,7 +42,7 @@ runtime, and the payload is sitting on the ESP at
 `/boot/EFI/HP/BIOS/Current/088D1.bin` (16 MiB) to inspect.
 - **"`Custom Core Pstates` is empty, therefore there is nothing to
 configure"** still needs a caveat, but a narrower one than before — see
-["Two of the four \"encrypted\" regions were compressed, not encrypted"](#two-of-the-four-encrypted-regions-were-compressed-not-encrypted)
+["Three of the four \"encrypted\" regions are now identified"](#three-of-the-four-encrypted-regions-are-now-identified)
 below. The empty-menu finding rests on the live setup browser under
 SmokelessUMAF, which is the right instrument regardless; the image neither
 confirms nor refutes it.
@@ -189,14 +189,16 @@ The image itself is not opaque — see
 above. The payload on the ESP is a 16 MiB AMI firmware image with two complete
 copies of the flash, and the parts that hold *state* are in clear.
 
-## Two of the four "encrypted" regions were compressed, not encrypted
+## Three of the four "encrypted" regions are now identified
 
 This corrects a claim made twice in this repo — that `uefixtract` does not
 recognise the `BIOS_Update.exe` payload, and that the firmware volumes at
 `0x1e4000, 0xa00000, 0xb00000, 0xef0000` "are encrypted or compressed" —
-**partially**. Two of those four addresses were a missing external tool, not
-an unreadable image. The other two are not settled by this and remain exactly
-where they were.
+**mostly**. `0xb00000`/`0xef0000` were a missing external tool, not an
+unreadable image, and fully parse as UEFI volumes. `0xa00000` is AMD's own
+PSP firmware directory — a different, signed (not encrypted) format that
+`uefiextract` was never going to parse regardless of tooling. Only
+`0x1e4000` is unresolved, exactly where it started.
 
 **The container is a documented, public AMI format, not proprietary.** `@UAF@`
 / `@UII@` is "AMI UCP" (Utility Configuration Program) — `platomav/biosutilities`
@@ -218,22 +220,36 @@ parses `088D1.bin`/`BIOS_00.bin` into 6 firmware volumes and 684 files, real
 addresses this repo had already flagged: `0xb00000` and `0xef0000`. Full
 structural report: [`evidence/bios-image-report.txt`](evidence/bios-image-report.txt).
 
-**`0x1e4000` and `0xa00000` are not in that report, and checking why matters
-more than the two that were fixed.** A byte-level re-scan of `BIOS_00.bin`
-(`evidence/bios-unwrap.sh` unwraps the identical file this correction is
-about) confirms genuinely high entropy (7.4–8.0 bits/byte) across
+**`0x1e4000` and `0xa00000` are not in that report.** A byte-level re-scan of
+`BIOS_00.bin` confirms genuinely high entropy (7.4–8.0 bits/byte) across
 `0x0–~0x1e0000` and `~0x820000–~0x9e0000` — real regions, not an artifact of
-where the two literal addresses happened to land (both, it turns out, sit
-just past the edge of their block, in ordinary `0xFF` padding — worth noting
-so a future spot-check at exactly those two addresses isn't mistaken for a
-second correction). `uefiextract` reports both blocks as top-level `Padding`,
-meaning it found no FFS/FV structure there at all — not "found one but
-couldn't decompress it", which is a different failure mode than the one
-`TianoCompress` fixed. The more likely explanation is that this is AMD's own
-PSP directory format (not a UEFI firmware volume, and not something
-`uefiextract` parses regardless of what compression tools are on `PATH`), but
-that is a hypothesis, not a measurement — unlike the `0xb00000`/`0xef0000`
-correction above, which is.
+where the two literal addresses happened to land (both sit just past the edge
+of their block, in ordinary `0xFF` padding). `uefiextract` reports both as
+top-level `Padding`: no FFS/FV structure, a different failure mode from the
+one `TianoCompress` fixed — this was never going to be a UEFI volume, because
+it isn't one.
+
+**One of the two is now explained; the other genuinely isn't.** The
+`~0x820000–~0x9e0000` region is AMD's own PSP firmware directory — confirmed,
+not guessed: `psptool` (`PSPReverseEngineering/psptool`) finds a complete,
+valid `$PSP` directory header at `0x863000`, with `$BHD`/`$PL2`/`$BL2`
+siblings nearby, the same structure it parses in full at `0xc53000`. The
+offset between the two — `0x3F0000` — is **exactly** the offset between the
+two Sure Start UEFI volumes (`0xef0000 − 0xb00000`). Both firmware layers use
+the same A/B redundancy scheme, at the same relative distance; the two
+directory headers differ in a few bytes (unaudited — not a byte-identical
+copy) but are unmistakably the same format. `evidence/psp-directory-report.txt`
+is the full parse of the `0xc53000` copy — real signed PSP modules, by name,
+with per-file verification status: `PSP_FW_BOOT_LOADER`, `PSP_FW_TRUSTED_OS`,
+`SMU_OFFCHIP_FW` (the actual SMU firmware image this repo has been probing
+all session via the mailbox), `AMD_PUBLIC_KEY`, and others — most
+`verified(<keyid>), sha256_ok`, a few (`SMU_OFFCHIP_FW`, `PMU_CODE`/`PMU_DATA`)
+`compressed, veri-failed(<keyid>), sha256_ok`, meaning the hash matches but
+signature verification against that key fails; not chased further here.
+
+`0x0–~0x1e0000` remains completely unaccounted for: no `$PSP`/`$BHD`/`$BL2`/
+`$PL2`/`_FVH` magic anywhere in it. Still genuinely opaque, still a
+hypothesis-free dead end.
 
 **This maps "Sure Start" onto actual named modules, for the first time.** Two
 identical-size volumes (`61C0F511-A691-4F54-974F-B9A42172CE53`, 0x110000 bytes

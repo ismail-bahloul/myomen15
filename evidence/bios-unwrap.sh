@@ -34,9 +34,9 @@ make -C "$WORK/edk2-src/BaseTools/Source/C/LzmaCompress" >/dev/null
 export PATH="$WORK/edk2-src/BaseTools/Source/C/bin:$PATH"
 TianoCompress --help >/dev/null && echo "  TianoCompress: OK"
 
-echo "== 2. biosutilities (platomav), for the AMI @UAF@/@UII@ container =="
+echo "== 2. biosutilities (platomav) + psptool (PSPReverseEngineering) =="
 python3 -m venv "$WORK/venv" >/dev/null
-"$WORK/venv/bin/pip" install -q biosutilities >/dev/null
+"$WORK/venv/bin/pip" install -q biosutilities psptool >/dev/null
 
 echo "== 3. Unwrap the AMI UCP container down to the raw 16 MiB image =="
 cat > "$WORK/unwrap.py" <<'PYEOF'
@@ -62,3 +62,6 @@ echo "  unwrapped: $BIN ($(stat -c%s "$BIN") bytes)"
 echo "== 4. Parse it as a standard PI/UEFI image =="
 uefiextract "$BIN" report
 echo "  report: ${BIN}.report.txt"
+
+echo "== 5. Parse the AMD PSP firmware directory (separate from the UEFI volumes) =="
+"$WORK/venv/bin/psptool" -E "$BIN"

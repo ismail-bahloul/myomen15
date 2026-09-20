@@ -46,7 +46,7 @@ read-only · `⚪` no effect · `🔴` refused. Each row links its evidence.
 | Write the standard EFI globals | ✅ | `Boot####`, `BootOrder`, `Timeout`, `OsIndications`, … |
 | Write the BIOS setup store | 🔴 | `EPERM` — efivarfs marks those inodes immutable |
 | Unlock the hidden menus | 🟡 | `SmokelessUMAF` / `SREP`, **pre-boot only**; `Custom Core Pstates` stays empty |
-| Modify or flash the firmware | 🔴 | HP Sure Start + a PSS/RSA signature. Definitive — but Sure Start is no longer just a name: the actual recovery volumes are unwrapped and their modules named → [`firmware-limits.md`](firmware-limits.md#two-of-the-four-encrypted-regions-were-compressed-not-encrypted) |
+| Modify or flash the firmware | 🔴 | HP Sure Start + a PSS/RSA signature. Definitive — but Sure Start is no longer just a name: the actual recovery volumes are unwrapped and their modules named → [`firmware-limits.md`](firmware-limits.md#three-of-the-four-encrypted-regions-are-now-identified) |
 | The AMD CBS power menu | ⚪ | inert — it only seeds POST values the HP EC then overrides |
 | TPM | ⚪ | `Hidden` — disabled, not detected at POST |
 
@@ -202,19 +202,23 @@ is visible.
   uses. Self-restoring, and separately confirmed reverted by the running
   `power-profile-watch` service on its own — the raw path and `ryzenadj`'s are
   provably the same mailbox. → [`smu-raw.md`](smu-raw.md)
-- **"Encrypted" was half right, and the half that was wrong had a one-word
-  cause.** Two of the four firmware regions flagged at entropy ≈ 8.0 turned out
-  to be EFI/Tiano-*compressed*, not encrypted — `uefiextract` was failing
-  silently for want of `TianoCompress` on `PATH`, a real EDK2 tool, not an
-  exotic one. Built from public source in about ten seconds
-  (`evidence/bios-unwrap.sh`), it unwraps the exact 16 MiB file this machine
-  already had cached at `/boot/EFI/HP/BIOS/Current/088D1.bin` into 684 named
-  modules — including, for the first time, actual named PEI/DXE/SMM code for
-  Sure Start's A/B recovery scheme (`HPCrisisRecovery`, `AmdCpmABRecoveryPeim`,
-  `AmdPspSmmV2`, …). The other two regions are still genuinely high-entropy and
-  still unread — this didn't open the whole image, and it didn't touch the
-  PSS/RSA signature that still blocks writing. →
-  [`firmware-limits.md`](firmware-limits.md#two-of-the-four-encrypted-regions-were-compressed-not-encrypted)
+- **"Encrypted" was mostly wrong, in two different ways.** Of the four firmware
+  regions flagged at entropy ≈ 8.0: two (`0xb00000`, `0xef0000`) were
+  EFI/Tiano-*compressed*, not encrypted — `uefiextract` was failing silently
+  for want of `TianoCompress` on `PATH`, a real EDK2 tool, not an exotic one.
+  Built from public source in about ten seconds (`evidence/bios-unwrap.sh`),
+  it unwraps the exact 16 MiB file this machine already had cached at
+  `/boot/EFI/HP/BIOS/Current/088D1.bin` into 684 named modules — including,
+  for the first time, actual named PEI/DXE/SMM code for Sure Start's A/B
+  recovery scheme (`HPCrisisRecovery`, `AmdCpmABRecoveryPeim`, `AmdPspSmmV2`,
+  …). A third (`0xa00000`) is AMD's own PSP firmware directory — signed, not
+  encrypted, a different format `uefiextract` was never going to parse; found
+  by its `$PSP` magic bytes exactly `0x3F0000` before the *other* copy of that
+  same directory, the identical offset that separates the two Sure Start
+  volumes — the same A/B scheme, at both firmware layers. Only one region
+  (`0x1e4000`) remains genuinely unread, and none of this touched the PSS/RSA
+  signature that still blocks writing. →
+  [`firmware-limits.md`](firmware-limits.md#three-of-the-four-encrypted-regions-are-now-identified)
 - **A method I proposed, and the experiment that killed it — then the same
   data, read correctly, is what made it work.** Toggle one BIOS option, diff
   the tables, name the offset — that was the plan. A three-way TPM toggle
@@ -280,7 +284,7 @@ What has not been tried yet, ordered by how much it would unlock:
 | [`chipsec-recon.md`](chipsec-recon.md) | Talking to the chip directly instead of through HP's software: fixing CHIPSEC's kernel driver for a newer kernel, what that shows about the MSR block, and a from-scratch AMD platform file that reads the FCH's own write-protect registers. |
 | [`BIOS_arborescence_OMEN.md`](BIOS_arborescence_OMEN.md) | The full SmokelessUMAF menu tree, transcribed from the 133 photos. |
 | [`record/`](record/) | The point-in-time investigation, kept as written. Start with the Linux report, then the Windows verdict. |
-| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`, `omenkbd.py`, `omenwatch.py`, `aodread.py`, plus `omenmon.py` (live power/thermal TUI), `limitwatch.py` (what resets the SMU limits), `pmtable-cores.py` (the per-core PM table groups), `smuraw.py` (SMN reads, query-class SMU mailbox commands, and one self-restoring mutating write), `batterycctl.py` (battery charge control), `ecsweep.py` (EC dump/diff), `chipsec-km-msr-api.patch` (the driver fix for newer kernels), `chipsec-cezanne.xml` (the AMD platform file), `chipsec-recon.log` (raw command output), `bios-unwrap.sh` (unwraps the AMI update capsule and parses the result), and `bios-image-report.txt` (the full 684-file structural report it produces). |
+| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`, `omenkbd.py`, `omenwatch.py`, `aodread.py`, plus `omenmon.py` (live power/thermal TUI), `limitwatch.py` (what resets the SMU limits), `pmtable-cores.py` (the per-core PM table groups), `smuraw.py` (SMN reads, query-class SMU mailbox commands, and one self-restoring mutating write), `batterycctl.py` (battery charge control), `ecsweep.py` (EC dump/diff), `chipsec-km-msr-api.patch` (the driver fix for newer kernels), `chipsec-cezanne.xml` (the AMD platform file), `chipsec-recon.log` (raw command output), `bios-unwrap.sh` (unwraps the AMI update capsule, parses it as UEFI and as an AMD PSP directory), `bios-image-report.txt` (the full 684-file UEFI structural report), and `psp-directory-report.txt` (the signed PSP module list, per-file verification status). |
 | [`evidence/power-profile-watch`](evidence/power-profile-watch) | Re-applies the power profile the instant `platform_profile` is written — the 5-minute re-apply window, closed. |
 | [`img_smokelessUMAF/`](img_smokelessUMAF/) | The 133 photographs of the SmokelessUMAF menus, kept as primary evidence. |
 
@@ -292,14 +296,14 @@ What has not been tried yet, ordered by how much it would unlock:
   menu, the empty `Custom Core Pstates` form and Sure Start — but the mechanism
   behind the refusal is not known. Only the refusal is.
 - **A string missing from the flash image proves nothing — for the part that's
-  still opaque.** Two of the four regions once called "encrypted" were
-  compressed, not encrypted — a missing tool (`TianoCompress`), not an
-  unreadable image; fixed, and now fully parsed by name →
-  [`firmware-limits.md`](firmware-limits.md#two-of-the-four-encrypted-regions-were-compressed-not-encrypted).
-  Two others (`0x1e4000`, `0xa00000`) really are still high-entropy and
-  unparsed. For those, absence of a name still only means it is not *in the
-  clear*, and any claim drawn from searching that part of the image carries
-  that limit.
+  still opaque.** Three of the four regions once called "encrypted" are now
+  identified — two were compressed (a missing tool, `TianoCompress`, not an
+  unreadable image), one is AMD's signed PSP directory (a different, known
+  format) →
+  [`firmware-limits.md`](firmware-limits.md#three-of-the-four-encrypted-regions-are-now-identified).
+  Only `0x1e4000` is still genuinely high-entropy and unparsed. For that one
+  region, absence of a name still only means it is not *in the clear*, and any
+  claim drawn from searching that part of the image carries that limit.
 - **"It was written" is not "it took effect".** One finding in here is a write
   that succeeds and echoes a constant back, which is why every claim about a
   write is backed by a read-back.

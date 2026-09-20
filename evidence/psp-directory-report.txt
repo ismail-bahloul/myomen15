@@ -1,0 +1,110 @@
+Warning: Input  file is 0x1000000, will assume ROM size of 16M
+Warning: ParseError from DirectoryEntry(self.type=0x2b, self.flags=0x0, self.size=0x1000, self.offset=0xff820000, self.entry_offset=0x50, self.rsv0=0x0): 
+  File should not have both sha256 and sha384 checksum bits set!
+Warning: ParseError from DirectoryEntry(self.type=0x2b, self.flags=0x0, self.size=0x1000, self.offset=0xff820000, self.entry_offset=0x110, self.rsv0=0x0): 
+  File should not have both sha256 and sha384 checksum bits set!
++-----+------+-----------+----------+---------------------------------+
+| ROM | Addr |    Size   |   FET    |              AGESA              |
++-----+------+-----------+----------+---------------------------------+
+|  0  | 0x0  | 0x1000000 | 0x820000 | AGESA!V9 CezannePI-FP6 1.0.1.1b |
++-----+------+-----------+----------+---------------------------------+
++--+-----------+----------+---------------------------+-------+---------------------+
+|  | Directory |   Addr   |         Generation        | Magic | Secondary Directory |
++--+-----------+----------+---------------------------+-------+---------------------+
+|  |     0     | 0xc53000 | Zen 3 (PSP ID 0xbc0c0140) |  $PSP |       0xc8b000      |
++--+-----------+----------+---------------------------+-------+---------------------+
++--+---+-------+----------+---------+---------------------------------+------------+----------+----------+--------------+---------------------------+
+|  |   | Entry |  Address |    Size |                            Type | Subprogram | Instance | Magic/ID | File Version |                 File Info |
++--+---+-------+----------+---------+---------------------------------+------------+----------+----------+--------------+---------------------------+
+|  |   |     0 | 0xc53400 |   0x440 |              AMD_PUBLIC_KEY~0x0 |        0x0 |      0x0 |     6C9E |            1 |             AMD_CODE_SIGN |
+|  |   |     1 | 0xc8b400 | 0x108c0 |          PSP_FW_BOOT_LOADER~0x1 |        0x0 |      0x0 |     $PS1 |    0.11.0.85 | verified(6C9E), sha256_ok |
+|  |   |     2 | 0xc53900 |  0xe5c0 | PSP_FW_RECOVERY_BOOT_LOADER~0x3 |        0x0 |      0x0 |     $PS1 |    0.11.0.85 | verified(6C9E), sha256_ok |
+|  |   |     3 | 0xc53040 |    0x10 |          SOFT_FUSE_CHAIN_01~0xb |        0x0 |      0x0 |          |              |     soft_fuse(0x10000001) |
+|  |   |     4 | 0xc61f00 |    0x10 |               WRAPPED_IKEK~0x21 |        0x0 |      0x0 |          |              |                           |
+|  |   |     5 | 0xc8b000 |   0x400 |              PSP_FW_L2_PTR~0x40 |        0x0 |      0x0 |          |              |                           |
++--+---+-------+----------+---------+---------------------------------+------------+----------+----------+--------------+---------------------------+
+
+
++--+-----------+----------+---------------------------+-------+---------------------+
+|  | Directory |   Addr   |         Generation        | Magic | Secondary Directory |
++--+-----------+----------+---------------------------+-------+---------------------+
+|  |     1     | 0xc8b000 | Zen 3 (PSP ID 0xbc0c0140) |  $PL2 |                     |
++--+-----------+----------+---------------------------+-------+---------------------+
++--+---+-------+----------+---------+-----------------------------+------------+----------+----------+--------------+------------------------------------------+
+|  |   | Entry |  Address |    Size |                        Type | Subprogram | Instance | Magic/ID | File Version |                                File Info |
++--+---+-------+----------+---------+-----------------------------+------------+----------+----------+--------------+------------------------------------------+
+|  |   |     0 | 0xc8b400 | 0x108c0 |      PSP_FW_BOOT_LOADER~0x1 |        0x0 |      0x0 |     $PS1 |    0.11.0.85 |                verified(6C9E), sha256_ok |
+|  |   |     1 | 0xc9bd00 |   0x440 |          AMD_PUBLIC_KEY~0x0 |        0x0 |      0x0 |     6C9E |            1 |                            AMD_CODE_SIGN |
+|  |   |     2 | 0xc9c200 | 0x19370 |       PSP_FW_TRUSTED_OS~0x2 |        0x0 |      0x0 |     $PS1 |    0.11.0.85 |                verified(24C6), sha256_ok |
+|  |   |     3 | 0x7a0000 | 0x20000 |             PSP_NV_DATA~0x4 |        0x0 |      0x0 |          |              |                                          |
+|  |   |     4 | 0xcb5600 | 0x210d0 |          SMU_OFFCHIP_FW~0x8 |        0x0 |      0x0 |     $PS1 |    0.40.4A.0 | compressed, veri-failed(96A0), sha256_ok |
+|  |   |     5 | 0xcd6700 |   0x440 |      SEC_DBG_PUBLIC_KEY~0x9 |        0x0 |      0x0 |     10AC |            1 |     verified(6C9E), unknown_key_usage(3) |
+|  |   |     6 | 0xc8b070 |    0x10 |      SOFT_FUSE_CHAIN_01~0xb |        0x0 |      0x0 |          |              |                    soft_fuse(0x10000001) |
+|  |   |     7 | 0xcd6c00 | 0x20100 | PSP_BOOT_TIME_TRUSTLETS~0xc |        0x0 |      0x0 |     $PS1 |     3.5D.2.5 |                verified(CC7D), sha256_ok |
+|  |   |     8 | 0xcf6d00 | 0x11c00 |      SMU_OFF_CHIP_FW_2~0x12 |        0x0 |      0x0 |     $PS1 |    0.40.4A.0 | compressed, veri-failed(96A0), sha256_ok |
+|  |   |     9 | 0xd08900 |  0x2100 |           DEBUG_UNLOCK~0x13 |        0x0 |      0x0 |     $PS1 |    0.11.0.85 |                verified(B034), sha256_ok |
+|  |   |    10 | 0xd0aa00 |   0x670 |     HARDWARE_IP_CONFIG~0x20 |        0x0 |      0x0 |     $PS1 |      0.0.0.1 |                verified(118D), sha256_ok |
+|  |   |    11 | 0xd0b100 |    0x10 |           WRAPPED_IKEK~0x21 |        0x0 |      0x0 |          |              |                                          |
+|  |   |    12 | 0xd0c000 |  0x1000 |           TOKEN_UNLOCK~0x22 |        0x0 |      0x0 |          |              |                                          |
+|  |   |    13 | 0xd0d000 |  0x2e80 |             SEC_GASKET~0x24 |        0x0 |      0x0 |     $PS1 |    B.10.0.22 |                verified(3005), sha256_ok |
+|  |   |    14 | 0xd0ff00 | 0x2fb36 |                 MP2_FW~0x25 |        0x0 |      0x0 |          |     7.0.8.13 |                verified(C04C), sha256_ok |
+|  |   |    15 | 0xd3fb00 | 0x1e770 |         DRIVER_ENTRIES~0x28 |        0x0 |      0x0 |     $PS1 |    0.11.0.85 |                verified(24C6), sha256_ok |
+|  |   |    16 | 0xd5e300 |  0x3100 |              KVM_IMAGE~0x29 |        0x0 |      0x0 |     $PS1 |   1C.8.60.70 |                verified(CC7D), sha256_ok |
+|  |   |    17 | 0xd5e300 |  0x3100 |              KVM_IMAGE~0x29 |        0x0 |      0x0 |     $PS1 |   1C.8.60.70 |                verified(CC7D), sha256_ok |
+|  |   |    18 | 0xd61400 |   0x290 |                   ABL0~0x30 |        0x0 |      0x0 |          |      0.0.0.0 |                verified(259C), sha256_ok |
+|  |   |    19 | 0xdc8200 |  0x5940 |          VBIOS_PRELOAD~0x3c |        0x0 |      0x0 |     $PS1 |    11.A.0.1D |                verified(DE39), sha256_ok |
+|  |   |    20 | 0xdcdc00 |  0x1b90 |    TOS_SECURITY_POLICY~0x45 |        0x0 |      0x0 |     $PS1 |    B.10.1.22 |                verified(3005), sha256_ok |
+|  |   |    21 | 0xdcf800 |   0x210 |                FW_XHCI~0x44 |        0x0 |      0x0 |     $PS1 |      0.0.0.1 |                verified(ADC2), sha256_ok |
+|  |   |    22 | 0xdd5f00 |  0x6100 |                DRTM_TA~0x47 |        0x0 |      0x0 |     $PS1 |    4.11.0.39 |                verified(61CE), sha256_ok |
+|  |   |    23 | 0xddc000 |  0x1900 |          BL_PUBLIC_KEY~0x50 |        0x0 |      0x0 |     $PS1 |            1 |                verified(6C9E), sha256_ok |
+|  |   |    24 | 0xddd900 |  0x12c0 |         TOS_PUBLIC_KEY~0x51 |        0x0 |      0x0 |     $PS1 |            1 |                verified(6C9E), sha256_ok |
+|  |   |    25 | 0xddec00 |  0x5b70 |              DMCU_ERAM~0x58 |        0x0 |      0x0 |     $PS1 |      0.0.0.0 |                           verified(EBDF) |
+|  |   |    26 | 0xde4800 |   0x220 |               DMCU_ISR~0x59 |        0x0 |      0x0 |     $PS1 |      0.0.0.0 |                           verified(EBDF) |
+|  |   |    27 | 0x760000 | 0x40000 |              PSP_NVRAM~0x54 |        0x0 |      0x0 |          |              |                                          |
++--+---+-------+----------+---------+-----------------------------+------------+----------+----------+--------------+------------------------------------------+
+
+
++--+-----------+----------+---------------------------+-------+---------------------+
+|  | Directory |   Addr   |         Generation        | Magic | Secondary Directory |
++--+-----------+----------+---------------------------+-------+---------------------+
+|  |     2     | 0xc63000 | Zen 3 (PSP ID 0xbc0c0140) |  $BHD |       0xec8000      |
++--+-----------+----------+---------------------------+-------+---------------------+
++--+---+-------+----------+----------+------------------+------------+----------+----------+--------------+-------------------------------------------------+
+|  |   | Entry |  Address |     Size |             Type | Subprogram | Instance | Magic/ID | File Version |                                       File Info |
++--+---+-------+----------+----------+------------------+------------+----------+----------+--------------+-------------------------------------------------+
+|  |   |     0 | 0xc64000 |   0x4000 |        APCB~0x60 |        0x0 |      0x0 |          |              |                                                 |
+|  |   |     1 | 0xc68000 |   0x4000 |   APCB_COPY~0x68 |        0x0 |      0x0 |          |              |                                                 |
+|  |   |     2 | 0xc6c000 |   0x4000 |   APCB_COPY~0x68 |        0x0 |      0x8 |          |              |                                                 |
+|  |   |     3 |      0x0 |      0x0 |             APOB |        0x0 |      0x0 |          |              |                          destination(0xa200000) |
+|  |   |     4 | 0xef0000 | 0x110000 |             BIOS |        0x0 |      0x0 |          |              | destination(0x9ef0000), reset image, copy image |
+|  |   |     5 | 0xc70000 |   0x4890 |    PMU_CODE~0x64 |        0x0 |      0x1 |     0x05 |     0.0.10.1 |        compressed, veri-failed(4F75), sha256_ok |
+|  |   |     6 | 0xc74900 |    0x360 |    PMU_DATA~0x65 |        0x0 |      0x1 |     0x05 |     0.0.10.1 |        compressed, veri-failed(4F75), sha256_ok |
+|  |   |     7 | 0xc74d00 |   0x4ae0 |    PMU_CODE~0x64 |        0x0 |      0x4 |     0x05 |     0.0.10.1 |        compressed, veri-failed(4F75), sha256_ok |
+|  |   |     8 | 0xc79800 |    0x340 |    PMU_DATA~0x65 |        0x0 |      0x4 |     0x05 |     0.0.10.1 |        compressed, veri-failed(4F75), sha256_ok |
+|  |   |     9 | 0xec8000 |    0x400 | BIOS_L2_PTR~0x70 |        0x0 |      0x0 |          |              |                                                 |
++--+---+-------+----------+----------+------------------+------------+----------+----------+--------------+-------------------------------------------------+
+
+
++--+-----------+----------+---------------------------+-------+---------------------+
+|  | Directory |   Addr   |         Generation        | Magic | Secondary Directory |
++--+-----------+----------+---------------------------+-------+---------------------+
+|  |     3     | 0xec8000 | Zen 3 (PSP ID 0xbc0c0140) |  $BL2 |                     |
++--+-----------+----------+---------------------------+-------+---------------------+
++--+---+-------+----------+----------+----------------------------+------------+----------+----------+--------------+-------------------------------------------------+
+|  |   | Entry |  Address |     Size |                       Type | Subprogram | Instance | Magic/ID | File Version |                                       File Info |
++--+---+-------+----------+----------+----------------------------+------------+----------+----------+--------------+-------------------------------------------------+
+|  |   |     0 | 0x738000 |   0x4000 |                  APCB~0x60 |        0x0 |      0x0 |          |              |                                                 |
+|  |   |     1 | 0xec9000 |   0x4000 |             APCB_COPY~0x68 |        0x0 |      0x0 |          |              |                                                 |
+|  |   |     2 | 0xecd000 |   0x4000 |             APCB_COPY~0x68 |        0x0 |      0x8 |          |              |                                                 |
+|  |   |     3 |      0x0 |      0x0 |                       APOB |        0x0 |      0x0 |          |              |                          destination(0xa200000) |
+|  |   |     4 | 0xef0000 | 0x110000 |                       BIOS |        0x0 |      0x0 |          |              | destination(0x9ef0000), reset image, copy image |
+|  |   |     5 | 0x740000 |  0x10000 |          APOB_NV_COPY~0x63 |        0x0 |      0x0 |          |              |                                                 |
+|  |   |     6 | 0xed1000 |   0x4890 |              PMU_CODE~0x64 |        0x0 |      0x1 |     0x05 |     0.0.10.1 |        compressed, veri-failed(4F75), sha256_ok |
+|  |   |     7 | 0xed5900 |    0x360 |              PMU_DATA~0x65 |        0x0 |      0x1 |     0x05 |     0.0.10.1 |        compressed, veri-failed(4F75), sha256_ok |
+|  |   |     8 | 0xed5d00 |   0x4ae0 |              PMU_CODE~0x64 |        0x0 |      0x4 |     0x05 |     0.0.10.1 |        compressed, veri-failed(4F75), sha256_ok |
+|  |   |     9 | 0xeda800 |    0x340 |              PMU_DATA~0x65 |        0x0 |      0x4 |     0x05 |     0.0.10.1 |        compressed, veri-failed(4F75), sha256_ok |
+|  |   |    10 | 0xedac00 |   0x15c0 |       MICROCODE_PATCH~0x66 |        0x0 |      0x0 |          |    0xa500014 |        patch_level(0xa500014), date(11/11/2024) |
+|  |   |    11 | 0xedc200 |    0x248 | TEE_PRE_MEM_DRIVER_FW~0x6a |        0x0 |      0x0 |          |      0.0.0.0 |                       verified(C04C), sha256_ok |
++--+---+-------+----------+----------+----------------------------+------------+----------+----------+--------------+-------------------------------------------------+
+
+
