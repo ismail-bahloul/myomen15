@@ -29,10 +29,13 @@ clear and does not silently look like success.
 
 2. The actual write-back -- this is the one that matters:
 
-     dmpstore -l dumps\Setup-preloop.dat
+     dmpstore Setup -guid EC87D643-EBA4-4BB5-A1E5-3F3E36B20DA9 -l dumps\Setup-preloop.dat
 
-   (No need to repeat -guid/name here -- confirmed in testing that -l
-   restores whatever the file actually contains.)
+   The name and -guid MUST be repeated here. Confirmed in testing: without
+   them, -l silently falls back to filtering on the default
+   EFI_GLOBAL_VARIABLE GUID, reports "No matching variables found" for
+   that wrong GUID, and never touches Setup at all -- which looks like
+   nothing happened, but isn't actually the answer to the question.
 
    Read the status line carefully. Two possible outcomes:
      - "Load and set variables from file" followed by the Setup entry
