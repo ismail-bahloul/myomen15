@@ -83,11 +83,21 @@ read-only · `⚪` no effect · `🔴` refused. Each row links its evidence.
 | IOMMU / vfio | 🟡 | 24 groups, registered, nothing bound |
 | SMBus / i2c busses | 🟡 | reachable, not scanned |
 
+### Discrete GPU (NVIDIA)
+
+| What | | Detail |
+|---|---|---|
+| **Lock the GPU clock** | ✅ | `nvidia-smi --lock-gpu-clocks=min,max`; **measured** — 80 W → 41 W under load at a 1000 MHz cap → [`dgpu-control.md`](dgpu-control.md) |
+| Lock the memory clock | ✅ | `nvidia-smi --lock-memory-clocks` |
+| Set the power limit | 🔴 | `nvidia-smi -pl` → *not supported* |
+| Clock offsets (the curve) | 🟡 | attributes read (−1000…+1000 MHz / −2000…+6000), writes refused (no `Coolbits`, Wayland) |
+| Voltage / V/F curve | 🔴 | not exposed — this is an **underclock**, not an undervolt |
+
 ## The short version
 
 | Question | Answer |
 |---|---|
-| Can I undervolt, or use Curve Optimizer? | **The SMU says no** — proven on both OSes. But an untested second road exists (`\AOD`, via SMM), which is what HP's own software uses. |
+| Can I undervolt, or use Curve Optimizer? | **The SMU says no** — proven on both OSes. The second road (`\AOD`, via SMM) was then tested with a power-limit lever and is inert. |
 | Can I read what the SMU is actually doing? | **Yes.** The PM table decodes to 9 limits + 9 live values in one `read()`. |
 | Can I read the BIOS settings from the running OS? | **Yes.** Plain EFI variables — and identical in the flash chip, twice. Writing them back is refused for the setup store, but the standard EFI globals *are* writable. |
 | Can I talk to any EC register or I/O port? | **Yes.** The firmware ships a generic byte bridge (`M040`/`M041`/`M31A`/`M319`), verified 256/256 against `ec_probe`. |
@@ -96,6 +106,7 @@ read-only · `⚪` no effect · `🔴` refused. Each row links its evidence.
 | Can I set a power limit in the BIOS? | That setting is **inert**; the HP EC owns those values. |
 | Do power limits written by the OS stick? | **Yes** — except a `platform_profile` write makes the EC re-apply its own. |
 | Can I modify the BIOS? | **No** — HP Sure Start is active, and the payload is PSS-signed. |
+| Can I undervolt the GPU? | **Not on Linux** — the voltage is not exposed; a clock lock is the closest lever (underclock, ×2 power saving). The real V/F curve is a Windows tool. → [`dgpu-control.md`](dgpu-control.md) |
 
 ## What is actually interesting here
 
@@ -161,12 +172,27 @@ is visible.
   declares `M040`/`M041` (read/write any EC byte) and `M31A`/`M319` (read/write
   any I/O port). Verified against `ec_probe`: **256 of 256 registers agree**.
   `M319` reaches I/O port `0xB2`, the AMD SMM channel. → [`acpi-bridge.md`](acpi-bridge.md)
-- **The Curve Optimizer gate has an untested second road, with a catch.** The
+- **The Curve Optimizer gate's "second road" was tested, and it is inert.** The
   repo's central negative result — CO refused — was measured through the **SMU
   mailbox**, on both OSes. SSDT2 declares `\AOD` with a literal `Set Curve
   Optimizer` command that does **not** use the mailbox: it pokes SMM via I/O
-  `0xB2`, the way HP's own software does. It may well be refused by the same SMU,
-  but it has never been tried. → [`acpi-bridge.md`](acpi-bridge.md) §2
+  `0xB2`, the way HP's own software does. Driving that same road with a lever
+  whose effect is independently known — a power limit — moved nothing, while
+  `ryzenadj` moved the same value instantly (and the `power-profile-watch`
+  service had to be stopped, or it reverted both writes before the read). →
+  [`acpi-bridge.md`](acpi-bridge.md) §2
+- **The Curve Optimizer branch inside `AodSmmSsp` was disassembled, and a real
+  candidate bug turned out not to be one.** Tracing the SMI handler's own
+  command dispatcher (no decompiler — `r2ghidra` doesn't build against this
+  `radare2` version, so this is raw `radare2` disassembly) found the `Set
+  Curve Optimizer` branch decoding a caller-controlled value with one masked
+  field (the core index) and one **unmasked** field used as an array index —
+  a real asymmetry. Tracing where that index's target buffer (`AODT`) actually
+  comes from, in the companion `AodDxe` module, found a genuine
+  `AllocatePool(EfiACPIMemoryNVS, 0x220C, ...)` matching the DSDT's declared
+  region exactly — which means the worst case for the unmasked index still
+  lands inside the allocated buffer. Found, traced, closed: not an
+  out-of-bounds write. → [`acpi-bridge.md`](acpi-bridge.md#the-curve-optimizer-branch-itself-traced--and-the-aodt-allocation-confirmed)
 - **A crash that this repo caused, and kept.** Chasing a read-back for the above
   meant reading `\AOD`'s full state, which `acpi_call` truncates at 42 values.
   Enlarging that buffer means editing the `acpi_call` DKMS module — and doing so
@@ -202,6 +228,14 @@ is visible.
   uses. Self-restoring, and separately confirmed reverted by the running
   `power-profile-watch` service on its own — the raw path and `ryzenadj`'s are
   provably the same mailbox. → [`smu-raw.md`](smu-raw.md)
+- **A response node that lies, and what lifting it showed.** The `ryzen_smu`
+  sysfs node reports `0x01 OK` for a `Failed` — a driver bug: a non-OK code
+  that arrives before the retry counter runs out falls through to `return OK`.
+  Read from the rsp register over SMN instead, the Curve Optimizer gate gets a
+  shape: the SMU answers `0xFE UnknownCmd` for deliberate garbage but `0xFF
+  Failed` for `set-coall` / `set-coper` / `set-cogfx` — it *knows* the commands
+  and refuses them on purpose. A firmware policy, not a missing command and not
+  a transport. → [`smu-raw.md`](smu-raw.md)
 - **"Encrypted" was mostly wrong, in two different ways.** Of the four firmware
   regions flagged at entropy ≈ 8.0: two (`0xb00000`, `0xef0000`) were
   EFI/Tiano-*compressed*, not encrypted — `uefiextract` was failing silently
@@ -239,6 +273,13 @@ is visible.
   `Tctl`, and killed the guess that the whole `0x40`-`0x49` row was a bank of
   sensors: only `0x48` moves there. A later, *longer* load showed `0x49` moves
   too (`0x38` -> `0x3A`) — a slow channel, not a constant. → [`ec-map.md`](ec-map.md)
+- **The one lever beyond the CPU's gates is on the other GPU.** Everything
+  CPU-side that could have been unlocked turned out gated in signed firmware.
+  The dGPU is a different vendor and a different gate: its clock **is** lockable
+  (`nvidia-smi --lock-gpu-clocks`), and — measured under a full load — a
+  1000 MHz cap cut power from **80 W to 41 W**. It is an underclock, not an
+  undervolt (Linux never exposes the voltage), but it is a real lever with no
+  owner. → [`dgpu-control.md`](dgpu-control.md)
 
 ## Open fronts
 
@@ -264,9 +305,21 @@ What has not been tried yet, ordered by how much it would unlock:
   measured data point, but not yet correlated to any actual write behaviour,
   and not the same mechanism as the PSP-enforced Sure Start signature check.
   → [`chipsec-recon.md`](chipsec-recon.md)
+- **A governor for the lever that has no owner.** The dGPU clock lock is real
+  (`nvidia-smi --lock-gpu-clocks`) and the CPU side already has a governor
+  (`power-profile-watch`) — the coherent move is **one** governor over the CPU
+  power limits, the GPU clock, the fans and the profile, not three tools that
+  ignore each other. → [`dgpu-control.md`](dgpu-control.md)
+- **`AOD_SETUP`.** An EFI variable name found hard-coded in `AodSmmSsp` (two
+  `GetVariable` calls, both with correctly-checked `EFI_STATUS`), absent from
+  `/sys/firmware/efi/efivars/` on this machine and not in `efi-nvram.md`'s
+  catalogue. Not chased past finding it. → [`acpi-bridge.md`](acpi-bridge.md)
 - **Closed, do not chase:** Curve Optimizer, BIOS flashing, EFI setup-variable
-  writes (`EPERM`). MSR reads are open (raw `rdmsr` works via CHIPSEC) but lead
-  nowhere new — CO stays SMU-gated regardless.
+  writes (`EPERM`), the `\AOD`/SMM road (driven and inert above), and the
+  Curve Optimizer branch's unmasked array index inside `AodSmmSsp` (traced to
+  the confirmed `AODT` allocation size — stays in-bounds). MSR reads are open
+  (raw `rdmsr` works via CHIPSEC) but lead nowhere new — CO stays SMU-gated
+  regardless.
 
 ## What is in this repository
 
@@ -279,12 +332,13 @@ What has not been tried yet, ordered by how much it would unlock:
 | [`smu-raw.md`](smu-raw.md) | The raw SMU/SMN layer under `ryzenadj`: the nodes, Cezanne's mailbox addresses, an end-to-end `GetSmuVersion` from userspace, and why the write path is left untouched so far. |
 | [`ec-map.md`](ec-map.md) | The mapped embedded-controller registers (fans, three temperatures), how each was verified, and what is not in the EC. |
 | [`h2ra-region.md`](h2ra-region.md) | The `H2RA` memory region at `0xfe700000` — a third, independent path to the fan tachometers. |
+| [`dgpu-control.md`](dgpu-control.md) | The other end of the machine: the RTX 3070 Laptop GPU. A different gate from the CPU's — a clock lock that works, a power limit that does not, no voltage exposed. An underclock, not an undervolt. |
 | [`battery-charge-control.md`](battery-charge-control.md) | `GBCC` / `SBCC` / `MBDC` decoded from the DSDT, the measured proof the charge cap works and is reversible, and the EC capacity registers (`BADC`/`BFCC`) that explain why the OS cannot see the design capacity. |
 | [`efi-nvram.md`](efi-nvram.md) | The EFI variable store: the BIOS answers as readable variables, the clear-text copies in the flash, and what the image does and does not expose. |
 | [`chipsec-recon.md`](chipsec-recon.md) | Talking to the chip directly instead of through HP's software: fixing CHIPSEC's kernel driver for a newer kernel, what that shows about the MSR block, and a from-scratch AMD platform file that reads the FCH's own write-protect registers. |
 | [`BIOS_arborescence_OMEN.md`](BIOS_arborescence_OMEN.md) | The full SmokelessUMAF menu tree, transcribed from the 133 photos. |
 | [`record/`](record/) | The point-in-time investigation, kept as written. Start with the Linux report, then the Windows verdict. |
-| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`, `omenkbd.py`, `omenwatch.py`, `aodread.py`, plus `omenmon.py` (live power/thermal TUI), `limitwatch.py` (what resets the SMU limits), `pmtable-cores.py` (the per-core PM table groups), `smuraw.py` (SMN reads, query-class SMU mailbox commands, and one self-restoring mutating write), `batterycctl.py` (battery charge control), `ecsweep.py` (EC dump/diff), `chipsec-km-msr-api.patch` (the driver fix for newer kernels), `chipsec-cezanne.xml` (the AMD platform file), `chipsec-recon.log` (raw command output), `bios-unwrap.sh` (unwraps the AMI update capsule, parses it as UEFI and as an AMD PSP directory), `bios-image-report.txt` (the full 684-file UEFI structural report), and `psp-directory-report.txt` (the signed PSP module list, per-file verification status). |
+| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`, `omenkbd.py`, `omenwatch.py`, `aodread.py`, plus `omenmon.py` (live power/thermal TUI), `limitwatch.py` (what resets the SMU limits), `pmtable-cores.py` (the per-core PM table groups), `smuraw.py` (SMN reads, query-class SMU mailbox commands, and one self-restoring mutating write), `smu-gate-probe.py` (reads the true SMU response from the rsp register, exposing the sysfs node's masking, and shows the CO gate is a recognised-and-refused command), `smu-gate-probe.log` (its raw output), `batterycctl.py` (battery charge control), `ecsweep.py` (EC dump/diff), `chipsec-km-msr-api.patch` (the driver fix for newer kernels), `chipsec-cezanne.xml` (the AMD platform file), `chipsec-recon.log` (raw command output), `bios-unwrap.sh` (unwraps the AMI update capsule, parses it as UEFI and as an AMD PSP directory), `bios-image-report.txt` (the full 684-file UEFI structural report), `psp-directory-report.txt` (the signed PSP module list, per-file verification status), and `aod-smm-handler.txt` (the `\AOD` SMI handler `AodSmmSsp` located in the image: its dependency expression, and the measured absence of any SMU mailbox address or SMU protocol), `aod-power-limit-probe.txt` (the same road driven with a power-limit lever, with the `power-profile-watch` confound removed: inert), and `aod-smm-curve-optimizer-trace.txt` (the SMI handler's own command dispatcher disassembled, the `Set Curve Optimizer` branch's unmasked array index found and traced to the confirmed `AllocatePool(EfiACPIMemoryNVS, 0x220C, ...)` backing `AODT` — in-bounds, not exploitable — plus the still-open `AOD_SETUP` EFI variable lead). |
 | [`evidence/power-profile-watch`](evidence/power-profile-watch) | Re-applies the power profile the instant `platform_profile` is written — the 5-minute re-apply window, closed. |
 | [`img_smokelessUMAF/`](img_smokelessUMAF/) | The 133 photographs of the SmokelessUMAF menus, kept as primary evidence. |
 
