@@ -150,13 +150,19 @@ is visible.
   variables, and the same bytes are also sitting in the flash chip *in clear,
   twice* — outside the encrypted volumes. Diffing `Setup` against `SetupDefault`
   says this machine has **eleven** options off-default. → [`efi-nvram.md`](efi-nvram.md)
-- **The setup store's lock is Linux's, not the firmware's.** `efivarfs`
-  marking `Setup` immutable had been read as the machine refusing the
-  write. It doesn't: a direct `SetVariable` from the real UEFI Shell,
-  outside efivarfs entirely, writes `Setup` back with its own bytes and
-  succeeds — confirmed byte-identical before and after. Getting there took
-  two wrong `dmpstore` invocations first, both rehearsed and caught in a
-  local QEMU + OVMF test VM before touching the real firmware. →
+- **The setup store's lock is Linux's, not the firmware's — and a real
+  value change, not just a no-op, checks out three independent ways.**
+  `efivarfs` marking `Setup` immutable had been read as the machine
+  refusing the write. It doesn't: a direct `SetVariable` from the real
+  UEFI Shell writes `Setup` back with its own bytes and succeeds. Pushed
+  further — flipping the TPM enable bit (`Setup` offsets 3-4) to a
+  genuinely different value — the change survived multiple reboots into
+  different environments, the native BIOS menu's own "Enable" action
+  produced the identical bytes at the identical offsets, and Linux saw a
+  real effect (`/dev/tpm0` appeared, `tpm_crb_acpi` bound). Reverting it
+  cleanly took a second attempt too: the first revert file replayed a
+  stale snapshot and would have overwritten an unrelated menu change made
+  in between. →
   [`firmware-limits.md`](firmware-limits.md#correction-the-setup-lock-is-linuxs-not-the-firmwares)
 - **The PM table was readable the whole time.** `ryzen_smu` had been exposing 2372
   bytes of raw SMU state as a plain read-only file. It decodes to `float32` — nine
@@ -303,13 +309,13 @@ What has not been tried yet, ordered by how much it would unlock:
   untouched by the TPM toggle). Nine remain (`21, 22, 23, 174, 244, 276, 278,
   280, 284, 316`), and naming them needs the two-leg method of
   [`efi-nvram.md`](efi-nvram.md) §7 — now with tooling for it,
-  `setupdiff.py twoleg`: two reboots per option. Now that a direct
-  `SetVariable` on `Setup` from the UEFI Shell is confirmed to work
-  (`firmware-limits.md`), this could plausibly move to poking one offset at
-  a time from a script instead of hunting for the right menu item to
-  toggle — untried, and a different, higher-stakes experiment than the
-  no-op write already proven, since it means an actually different value,
-  not writing the same bytes back.
+  `setupdiff.py twoleg`: two reboots per option. A direct `SetVariable` on
+  `Setup` from the UEFI Shell is now confirmed to work for a genuinely
+  different value, not just a no-op (`firmware-limits.md`), so this could
+  move to poking one offset at a time from a script instead of hunting for
+  the right menu item to toggle — untried on an *unnamed* offset
+  specifically, where (unlike the already-understood TPM bit) the effect
+  of a given value isn't known ahead of time.
 - **`postcode`.** `hp-wmi` exposes a firmware POST code that reads a stable
   `0x70`. Read, but not decoded any further.
 - **The memory side.** The firmware's own SPD table names a module that is not

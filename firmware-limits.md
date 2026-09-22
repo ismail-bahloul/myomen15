@@ -100,16 +100,41 @@ path to writing `Setup` directly (naming the nine still-unlabelled offsets
 programmatically, for instance) that this page had previously written off
 as closed.
 
-Two honest limits on what this proves, so it isn't over-read: only a
-same-value write-back was tested, on `Setup` specifically — not yet an
-actually different value, and not yet the other setup-family variables.
 Getting the exact `dmpstore` invocation right took two failed attempts
 first (wrong argument order, then `-l` silently falling back to the default
 `EFI_GLOBAL_VARIABLE` GUID when not given its own `-guid`) — both rehearsed
 and caught in a local QEMU + OVMF test VM before touching the real
 firmware, and both left an unambiguous byte-identical pair of dumps that
-looked like "nothing happened" for the wrong reason each time. Full
-transcript and tooling: [`evidence/uefi-shell-probe/`](evidence/uefi-shell-probe/).
+looked like "nothing happened" for the wrong reason each time.
+
+**A genuinely different value was tested next, not just a no-op — and it
+checks out three independent ways.** `Setup` offsets 3-4 (the TPM enable
+bit, named in [`efi-nvram.md`](efi-nvram.md)'s two-leg method) were flipped
+from `01 01` to `00 00` with a hand-patched, CRC-recomputed `dmpstore`
+file. That alone would just be a claim; what makes it solid is that it was
+checked three ways that don't depend on each other:
+
+1. The new value **persisted across multiple reboots** — into
+   Smokeless_UMAF and back into Linux — not just within the writing
+   session.
+2. The **native BIOS menu**, used the normal way (`Trusted Computing` →
+   `TPM Embedded Security Device` → `Enabled`, saved), produced the
+   *identical* bytes at the identical offsets. The raw write and the
+   firmware's own save path agree exactly.
+3. **Linux saw a real effect**: `/dev/tpm0`/`/dev/tpmrm0` appeared, and
+   `dmesg` showed `tpm_crb_acpi` binding to the ACPI TPM2 table.
+
+Reverting it taught its own lesson: the first prepared revert file was
+built by patching the *original* pre-test snapshot, which would have
+overwritten an unrelated change (`Hidden` → visible) made through the menu
+in between — not a clean revert of just the tested bit. The revert that
+was actually used was built from a **fresh** dump of the then-current
+`Setup`, patching only offsets 3-4 back. Full transcript, both revert
+files, and the tooling: [`evidence/uefi-shell-probe/`](evidence/uefi-shell-probe/).
+
+Not yet tested: the other setup-family variables (`AmdSetup`,
+`AMD_PBS_SETUP`, `HPSetupData`, `AMITSESetup`) — only `Setup` itself has
+been written to so far.
 
 ## BIOS power limits are a POST-time seed, not a policy
 

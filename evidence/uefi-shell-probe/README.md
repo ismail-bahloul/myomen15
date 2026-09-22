@@ -22,9 +22,36 @@ No error, and `Setup-preloop.dat`/`Setup-postloop.dat` (kept in this
 directory) are byte-identical — a clean no-op, not a silent partial write.
 Full writeup: [`firmware-limits.md`](../../firmware-limits.md#correction-the-setup-lock-is-linuxs-not-the-firmwares).
 
-Only a same-value write-back was tested, on `Setup` specifically — not yet
-an actually different value, and not yet the other setup-family
-variables (`AmdSetup`, `AMD_PBS_SETUP`, `HPSetupData`, `AMITSESetup`).
+**A genuinely different value was then tested too, and cross-validated three
+independent ways.** `Setup` offsets 3-4 (the TPM enable bit, named via the
+two-leg method in `efi-nvram.md`) were flipped from `01 01` (disabled) to
+`00 00` (enabled) with a hand-patched, CRC-recomputed `dmpstore` file
+(`Setup-tpm-ENABLE-test.dat`) — see
+[`tpm-apply-result.txt`](tpm-apply-result.txt) and
+[`Setup-after-apply.dat`](Setup-after-apply.dat). Then, independently:
+
+1. **The value persisted across multiple real reboots** — into
+   Smokeless_UMAF (a different tool entirely) and back into Linux — not
+   just within the shell session that wrote it.
+2. **The native BIOS menu was used to do the same thing the "normal" way**
+   (take TPM out of `Hidden`, set `TPM Embedded Security Device` to
+   `Enabled`, save) — and produced the exact same bytes, `00 00`, at the
+   exact same offsets. The raw write and the menu's own save path agree.
+3. **The OS saw a real effect**: `/dev/tpm0`/`/dev/tpmrm0` appeared, and
+   `dmesg` showed the kernel binding `tpm_crb_acpi` to the ACPI TPM2 table.
+
+Reverting used a lesson from `efi-nvram.md` §7 the hard way: the first
+prepared revert file (`Setup-tpm-DISABLE-revert.dat`) was built by patching
+the *original* pre-test snapshot — replaying it would have overwritten the
+`Hidden`-state change made through the menu in between, not just the TPM
+bit. The revert that was actually used
+(`Setup-tpm-DISABLE-revert-fresh.dat`, loaded by `tpm-revert-fresh.nsh`) was
+built from a **fresh** dump of the then-current `Setup`, patching only
+offsets 3-4 back to `01 01` — confirmed by
+[`tpm-revert-fresh-result.txt`](tpm-revert-fresh-result.txt) and
+[`Setup-after-revert-fresh.dat`](Setup-after-revert-fresh.dat), and by a
+fresh `efivarfs` read afterward. The stale file is kept, not deleted — it's
+the mistake that mattered, and the fix is the point.
 
 ## What's here
 
