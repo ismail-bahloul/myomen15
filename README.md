@@ -164,6 +164,12 @@ is visible.
   stale snapshot and would have overwritten an unrelated menu change made
   in between. →
   [`firmware-limits.md`](firmware-limits.md#correction-the-setup-lock-is-linuxs-not-the-firmwares)
+- **A second named offset, and a cleaner two-leg result than the TPM's.**
+  Toggling `AMD PBS > USB Camera Enable` names `AMD_PBS_SETUP` offset 82 —
+  `01 -> 00 -> 01`, zero noise offsets on either leg, unlike the TPM
+  experiment's five. The bit is real and clean; what it disables in
+  hardware isn't confirmed — the built-in webcam still enumerates in
+  `lsusb` after setting it to `Disabled`. → [`efi-nvram.md`](efi-nvram.md) §8
 - **The PM table was readable the whole time.** `ryzen_smu` had been exposing 2372
   bytes of raw SMU state as a plain read-only file. It decodes to `float32` — nine
   limits and nine live values — and it settles a discrepancy this repo had left

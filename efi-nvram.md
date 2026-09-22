@@ -364,7 +364,35 @@ Two explanations were on the table before the `Hidden` run:
 
 `Hidden` decided it: **B.** One more reason to distrust any single-leg diff.
 
-## 8. The `StdDefaults` name table
+## 8. `AMD_PBS_SETUP` offset 82 is `USB Camera Enable`
+
+The first named offset outside the `Setup` table. Same two-leg method as §7,
+this time on `AMD_PBS_SETUP` (the AMD PBS menu's own answers), toggling
+`Device Manager > AMD PBS > USB Camera Enable` off then back on:
+
+```
+$ python3 setupdiff.py twoleg before-usbcam after-usbcam revert-usbcam
+
+=== AMD_PBS_SETUP ===
+  1 offset(s) moved out AND back (real signal):
+    offset  82: before-usbcam=0x01 -> after-usbcam=0x00 -> revert-usbcam=0x01  default=0x01
+```
+
+Cleaner than the TPM result: **zero** noise offsets on either leg, in any of
+the six tracked tables. Whatever makes `Setup` shuffle bytes on every visit
+(§7) either doesn't apply to `AMD_PBS_SETUP`, or didn't trigger for this
+particular option.
+
+**The physical effect doesn't obviously follow the bit**, though — `lsusb`
+still shows the built-in `HP Wide Vision HD Camera` after setting this to
+`Disabled` and rebooting. Two explanations, neither confirmed: the option
+gates a different, external USB camera port rather than the integrated one
+(HP's naming distinguishes "USB Camera" from "Front Camera 0/1" elsewhere in
+the same menu), or the gate needs a colder boot than a warm reset from the
+setup browser to take hold. The BIOS-level bit is real and clean; what it
+actually disables in hardware is not yet confirmed.
+
+## 9. The `StdDefaults` name table
 
 `StdDefaults-4599d26f-…` (1088 B) begins with an `NVARS` header followed by a
 322-byte copy of the `Setup` table and then a list of `NVAR` records. Those
@@ -387,7 +415,7 @@ The names are what make the opaque `Setup` blob legible: they are the *record*
 names, not the question names, but they bound the search when mapping offsets to
 questions.
 
-## 9. The flash copies and the live variable are *not* byte-comparable
+## 10. The flash copies and the live variable are *not* byte-comparable
 
 This is a negative result worth recording, because the obvious next step was to
 use the one-byte difference between the two flash copies to index the table.
@@ -420,7 +448,7 @@ reproducible, but it cannot be read as *an offset into the same table* without
 first understanding the two encodings. Mapping question names to offsets needs
 the IFR, and the IFR is in the encrypted volume.
 
-## 10. How this was read (reproducible)
+## 11. How this was read (reproducible)
 
 ```bash
 # 1. The setup answers, at runtime — no privilege beyond reading efivarfs
@@ -443,7 +471,7 @@ For the record, the flash entry is laid out as
 runtime variable is 140 bytes starting `07 00 00 00`. As §8 shows, those two
 forms do **not** line up at any offset — do not assume a fixed prefix.
 
-## 11. The write path, and why it is not the way in
+## 12. The write path, and why it is not the way in
 
 Reading is not a dead end; writing to the **setup** store is.
 
@@ -469,7 +497,7 @@ So the correct conclusion is not "the setup is locked" — it is **"the setup is
 readable, and it is readable *twice*"**. Reading is what gives leverage here;
 writing is guarded by Sure Start and a signature that cannot be reproduced.
 
-## 12. What this changes in the rest of the repo
+## 13. What this changes in the rest of the repo
 
 - The claim *"the BIOS update payload cannot even be extracted"* is too strong:
   the container cannot be extracted **as an Aptio image**, but the flash chip
@@ -482,7 +510,7 @@ writing is guarded by Sure Start and a signature that cannot be reproduced.
   stored (`AmdSetup`, 1448 B) and readable, so the setting *is* recorded. That
   it has no effect on the SMU limits is a separate, already-measured fact.
 
-## 13. Next steps, in order of value
+## 14. Next steps, in order of value
 
 1. **Name the offsets.** Two of the eleven are now named: **offset 9** was
    ruled out as a TPM effect (§7 — it moves during the TPM cycle, but as
