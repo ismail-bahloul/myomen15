@@ -14,8 +14,10 @@ available from a standard tool:
 Read-only. It never writes to the machine.
 
 Usage:
-    omenmon.py                 watch, target 35/42/35 W and 85 C
-    omenmon.py --target 54 65 54 --temp 100
+    omenmon.py                 watch, target auto-picked from AC/battery state
+                                (35/42/35 W, 85 C on AC; 15/18/15 W, 65 C on
+                                battery -- matching /usr/local/bin/power-profile)
+    omenmon.py --target 54 65 54 --temp 100   override, e.g. for PERF mode
     omenmon.py --interval 0.5
 
 Keys: q quit, r force redraw.
@@ -192,8 +194,13 @@ def draw(stdscr, args) -> None:
             stdscr.addstr(row, 4, "pm_table unavailable (ryzen_smu not loaded?)")
             row += 1
         else:
-            targets = {"STAPM": args.target[0], "PPT fast": args.target[1],
-                       "PPT slow": args.target[2], "Tctl": args.temp}
+            on_battery = profile == "battery"
+            tgt = args.target if args.target is not None else (
+                [15.0, 18.0, 15.0] if on_battery else [35.0, 42.0, 35.0])
+            temp_tgt = args.temp if args.temp is not None else (
+                65.0 if on_battery else 85.0)
+            targets = {"STAPM": tgt[0], "PPT fast": tgt[1],
+                       "PPT slow": tgt[2], "Tctl": temp_tgt}
             for name, _off, unit in PM_FIELDS:
                 lim = pm["limits"][name]
                 live = pm["live"][name]
@@ -248,8 +255,10 @@ def main() -> None:
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument("--target", nargs=3, type=float, metavar=("STAPM", "FAST", "SLOW"),
-                   default=[35.0, 42.0, 35.0], help="expected SMU limits in W")
-    p.add_argument("--temp", type=float, default=85.0, help="expected Tctl limit in C")
+                   default=None,
+                   help="expected SMU limits in W (default: auto, from AC/battery state)")
+    p.add_argument("--temp", type=float, default=None,
+                   help="expected Tctl limit in C (default: auto, from AC/battery state)")
     p.add_argument("--interval", type=float, default=1.0, help="refresh seconds")
     args = p.parse_args()
     try:
