@@ -100,7 +100,7 @@ own thermal mode, not AMD CBS.
 
 ## Undervolt / Curve Optimizer: locked on the SMU path (dead end *there*)
 
-Not possible through the **SMU mailbox** on this machine — on **either** OS. Six
+Not possible through the **SMU mailbox** on this machine — on **either** OS. Seven
 independent confirmations:
 
 1. `ryzenadj --set-coall`, `--set-coper` and `--set-cogfx` all return
@@ -127,6 +127,13 @@ independent confirmations:
    while the whole OC/CO command family is refused (`0x55` set-coall, `0x54`
    set-coper, `0x64` set-cogfx, `0x2F` enable-oc, `0x30` disable-oc, `0x49`
    pbo-scalar, `0x65` PM-table transfer).
+7. **The raw mailbox, with the driver's masking of failures lifted.** The
+   `mp1_smu_cmd` sysfs node reports `0x01` even for a `Failed` — a driver bug,
+   see [`smu-raw.md`](smu-raw.md#the-response-node-masks-failures). Read from
+   the rsp register over SMN instead, the SMU answers `0xFE UnknownCmd` for a
+   deliberately-invalid ID but `0xFF Failed` for `set-coall` / `set-coper` /
+   `set-cogfx`: it *recognises* the CO family and refuses it deliberately. →
+   [`smu-raw.md`](smu-raw.md#is-the-curve-optimizer-gate-a-transport-problem-measured-no)
 
 Point 6 also settles the obvious hypothesis: UXTU reaches the SMU by the **same
 path as Linux** (PawnIO → `RyzenSMU.bin` → SMN indirect via PCI config
@@ -138,7 +145,7 @@ points 3–5 and with HP Sure Start.
 **Do not** install ZenTune (ex-UXTU4Linux) hoping for CO, and **do not** patch
 `ryzenadj` for it.
 
-### But there is a second road, and it has not been tried
+### The second road, measured: it is inert
 
 Every confirmation above goes through the **SMU mailbox** (`ryzenadj` on Linux,
 PawnIO → `RyzenSMU.bin` on Windows). SSDT2 declares a second `PNP0C14` device,
@@ -160,20 +167,29 @@ That is the path HP's own tuning software uses, and it asks the **BIOS**, not
 the SMU. The same table exposes `Set PPT Limit`, `Set TDC/EDC Limit`, `Set
 Scalar`, `Set IOD VDDG`, and `Set Soc TDC/EDC`.
 
-**This is not a claim that it works.** The SMM handler may forward straight to
-the SMU and get the same `FAILED`. What is now established is only that the
-interface exists, that the firmware documents it down to the command ID, and
-that it has never been exercised. The conclusion above stands for the mailbox;
-it does not cover this.
+**This road was untested when the rest of this section was written. It has now
+been driven, with a lever whose effect is independently known and readable — a
+power limit.** `Set PPT Limit` is ACMD `0x00050001` → `R23B`; called through
+`\AOD.AM05` at 25000 and 12000 mW, and `Set TDC Limit` (`0x00050002`) at 45000,
+**none of them moved the SMU's PPT or TDC limits**, while the same values set
+through `ryzenadj` moved them immediately. The `power-profile-watch` service had
+to be stopped for the test: it polls the PM table every second and re-applies
+the profile, which reverted **both** the AOD write and a control write before
+the read. So the road is live but **inert** for this class of control — the same
+shape of result [`h2ra-region.md`](h2ra-region.md) found. A Curve Optimizer
+write here would plausibly be equally inert, and cannot be read back to tell.
+Detail: [`evidence/aod-power-limit-probe.txt`](evidence/aod-power-limit-probe.txt).
 
-The read path is not usable as a check — `\AOD.AM04` returns zeros — so any
-test here would have to be judged by **effect**, not by return value. Given this
-repo has already been caught once by a write that succeeded and did nothing,
-that is worth stating plainly rather than discovering. Detail:
+The handler itself is located in the image — `AodSmmSsp` — and, measured, it
+carries no SMU mailbox address and depends on no SMU protocol; see
+[`acpi-bridge.md`](acpi-bridge.md) §2 and
+[`evidence/aod-smm-handler.txt`](evidence/aod-smm-handler.txt).
+
+`\AOD.AM04` returns zeros, so the road can only be judged by **effect** — which
+is exactly what the test above did, on a lever already known to work. `\AOD.AM01`
+answers `0x5` and `\AOD.AM03` returns the command table, so the interface is
+live; it simply does not drive the SMU. Detail:
 [`acpi-bridge.md`](acpi-bridge.md).
-
-`\AOD.AM01` answers `0x5` and `\AOD.AM03` returns the command table today, so
-the interface is live.
 
 ## BIOS modding: not possible (HP Sure Start)
 

@@ -1,0 +1,122 @@
+AodSmmSsp / AodDxe -- tracing the Curve Optimizer dispatch and the AODT allocation
+===================================================================================
+
+Goal: acpi-bridge.md documented that AodSmmSsp carries no SMU mailbox address
+and depends on no SMU protocol, but stopped short of reading the handler's own
+logic. This traces the actual "Set Curve Optimizer" command path inside it, and
+answers the question that was left open: what is AODT actually backed by, and
+does the handler validate its inputs.
+
+Tooling: radare2 6.2.0 (pacman, cachyos-extra-v3). No working decompiler --
+r2ghidra fails to build against this r2 version (`r_type_func_key` missing from
+the installed r_type API); analysis below is from raw disassembly (`pd`) plus
+byte-pattern search (`/x`) and cross-reference (`axt`), not pseudo-C.
+
+Extraction
+----------
+Modules pulled from the already-unwrapped 088D1.bin (see bios-unwrap.sh) via
+UEFITool NE alpha 75, targeting each module's GUID directly. Two of the three
+have duplicate hits across the Sure Start A/B volumes; the plain `imagefile`
+(no argument) full dump into `<image>.dump/` finds all of them, and the right
+copy is picked from there rather than fighting the tool's -o handling for
+multi-match GUIDs:
+
+    UEFIExtract 088D1.bin                         # -> 088D1.bin.dump/, ~2900 files
+    find 088D1.bin.dump -iname '*AodPei*'
+    find 088D1.bin.dump -iname '*AodDxe*'
+    # AodSmmSsp GUID: 5EA93CAF-A8DD-4400-9FF6-FE343BCAF308
+    # AodPei     GUID: C8F6D366-DDF1-4960-9D57-82F2655A1294  (TE, i386, 3360 B)
+    # AodDxe     GUID: E68C55B8-C77B-4F66-834F-D73BFB9F29B3  (PE32+, x86-64, 10272 B)
+    # AodSetupDxe GUID: 55538D1E-B4C5-4BD5-B594-9B5BA9774F1E (not analysed here)
+
+1. The command dispatcher in AodSmmSsp.pe32
+--------------------------------------------
+`fcn.00012f18` (366 basic blocks, ~6 KB) is the SMI handler's command dispatch.
+It is reached from the registered software SMI 0xB9 (confirmed separately --
+`fcn.00012430` calls the SW SMI dispatch registration with `qword [var_18h] =
+0xb9`, matching the ASL's `ASMI(0xB9)` exactly).
+
+The dispatch is a linear `cmp ecx, <MBCB literal>` chain, not a jump table:
+
+    0x14577  cmp ecx, 0x100030
+    0x14597  cmp ecx, 0x100031
+    0x145b7  cmp ecx, 0x100032   ; <-- Set Curve Optimizer (matches R308's MBCB write)
+    0x14656  cmp ecx, 0x100036
+    0x14673  cmp ecx, 0x100037
+    ...
+
+This confirms the ASL's literal `MBCB = 0x00100032` for `Set Curve Optimizer`
+(firmware-limits.md) is exactly what the handler tests for -- the `0x0005000A`
+seen in `\AOD.AM03`'s command table is a UI/ACPI-side descriptor id, unrelated
+to the value actually placed in the mailbox.
+
+2. The Curve Optimizer branch (MBCB == 0x100032)
+--------------------------------------------------
+At 0x145c3, on match:
+
+    mov r8d, dword [rbx+0x99]     ; SVAL, the caller-supplied 32-bit CO value
+    mov ecx, r8d
+    shr ecx, 0x1c                 ; top nibble = core index
+    and cl, 0xf                   ; masked to 0-15
+    mov byte [rax+0x170], cl      ; rax = qword [0x15788], the AODT base
+
+    ...
+    mov eax, r8d
+    shr eax, 0x10                 ; bits 23:16 of SVAL
+    movzx edx, al                 ; <-- used as an array index, NO mask applied
+    ...
+    mov byte [rdx+rax+0x174], cl        ; AODT_base + 0x174 + idx
+    mov word [rax+rdx*2+0x1b4], r8w     ; AODT_base + 0x1b4 + idx*2
+
+`edx` is fully attacker-controlled (any value 0-255, from a byte of the SVAL
+dword the ASL copies verbatim from Arg0 with no validation) and unmasked,
+unlike the core-index nibble handled two lines above it -- a real asymmetry,
+and the reason this looked promising.
+
+3. What AODT actually is -- traced in AodDxe.pe32
+----------------------------------------------------
+`[0x15788]` (AodSmmSsp's cached AODT pointer) is zero in the static image and
+never written anywhere in that module -- it has to be negotiated with a
+companion module. AodDxe.pe32's `fcn.000116b0` settles it:
+
+    0x11740  mov esi, 0x220c        ; size -- exact match to the DSDT's declared
+                                     ;   OperationRegion (AODT, SystemMemory, 0xB6EA5018, 0x220C)
+    0x11745  mov ecx, 0xa           ; EfiACPIMemoryNVS
+    0x1174a  mov edx, esi
+    0x1174c  call qword [rax+0x40]  ; gBS->AllocatePool(EfiACPIMemoryNVS, 0x220C, &Buffer)
+
+This is a real, standard `AllocatePool` call (registers match the MS x64
+convention: rcx=PoolType, rdx=Size, r8=Buffer-out), for exactly 0x220C bytes,
+in `EfiACPIMemoryNVS` -- a memory type that is reserved and stable across a
+given platform/BIOS/RAM configuration, which is why the DSDT can afford to
+hardcode `0xB6EA5018` as a literal SystemMemory address for it.
+
+The same function also contains a 4-byte tag comparison chain against literal
+ASCII 'OBD2', 'AODT', 'OBIT', 'OBIU' (confirmed by re-aligning the disassembly
+-- the naive linear disassembly first misread the 'AODT' bytes as a `push rsp`
+instruction, which is what made this look like noise; it isn't). The exact
+control-flow relationship between this tag walk and the AllocatePool call above
+is not fully untangled -- left open, not asserted.
+
+4. Verdict on the Curve Optimizer index: not an overflow
+------------------------------------------------------------
+With the real allocation size confirmed at 0x220C (8716) bytes, the two
+worst-case writes from part 2 land at:
+
+    base + 0x174 + 0xFF       = base + 0x273   (< 0x220C)
+    base + 0x1B4 + 0xFF*2     = base + 0x3B2   (< 0x220C)
+
+Both stay inside the allocated pool. The missing mask is a real asymmetry
+against the neighbouring (masked) core-index nibble, and could plausibly
+corrupt an unrelated field *within* AODT if triggered with an out-of-range
+index -- but it is not a pool/SMRAM overflow, and not the memory-safety bug
+that would have been worth pursuing further. Closed as: found, traced,
+not exploitable as an OOB write.
+
+5. Still open, not pursued further
+--------------------------------------
+`AOD_SETUP` -- referenced twice in AodSmmSsp's dispatcher (0x12f9a, 0x146a7),
+via what reads as a standard `GetVariable("AOD_SETUP", guid, ...)` call with a
+correctly-checked EFI_STATUS. This variable does **not** exist in
+`/sys/firmware/efi/efivars/` on this machine at runtime, and it is not one of
+the variables catalogued in efi-nvram.md. Not chased further this session.

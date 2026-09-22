@@ -89,11 +89,12 @@ UXTU's own PawnIO path. Both of those go through the **SMU mailbox**.
 AMD APMC channel, i.e. it asks the BIOS, not the SMU. That is a genuinely
 different road, and it is the one HP's own software uses.
 
-**This does not mean it works.** The SMM handler may simply forward to the same
-SMU and get the same refusal. But the honest statement is: the interface exists,
-it is documented by the firmware itself down to the command ID, and **it has
-never been tried**. The repo's "do not chase CO" conclusion was about the SMU
-path, and it stands for that path. It does not cover this one.
+**This does not mean it works — and it has now been tried, with a known-working
+lever.** Driving the same road with a power limit (`Set PPT Limit`, ACMD
+`0x00050001` → `R23B`) moved the SMU's limits not at all, while `ryzenadj` moved
+the identical value instantly. The road is live but inert for that class of
+control; a CO write here would plausibly be equally inert. Detail:
+[`firmware-limits.md`](firmware-limits.md#the-second-road-measured-it-is-inert).
 
 The interface answers today:
 
@@ -105,8 +106,92 @@ The interface answers today:
 
 The read path returning zeros means there is no usable read-back — which is
 exactly the trap this repo was caught by once before (a write that succeeds and
-echoes a constant). Anything done here must be verified by **effect**, not by
-return value.
+echoes a constant). The power-limit test above therefore judged the road by
+**effect**, not by return value.
+
+### The SMM handler behind `ASMI(0xB9)`, located in the image
+
+The SSDT shows what `ASMI(0xB9)` actually is: `Method (ASMI, 1)` is just
+`APMC = Arg0; Sleep (0x0A)` over `OperationRegion (PSMI, SystemIO, 0xB2, 2)` —
+it writes the APMC port and raises an SMI, carrying nothing. The payload sits in
+a shared region the SSDT declares as `OperationRegion (AODT, SystemMemory,
+0xB6EA5018, 0x220C)`, whose first fields are the mailbox (`MBSN`, `MBVS`,
+`MBCB`, `MBMC`) followed by the whole tuning block (`PPTL`, `TDCL`, `EDCL`,
+`SCAS`, `COPS`, …). `R308` fills `AODT` and rings the doorbell; the SMM handler
+reads `AODT` and acts.
+
+That handler is identifiable in the flash image: it is **`AodSmmSsp`** (SMM
+module GUID `5EA93CAF-A8DD-4400-9FF6-FE343BCAF308`, PE32, `0x4A04` bytes),
+alongside `AodPei`, `AodDxe` and `AodSetupDxe`. It was unwrapped with the same
+`TianoCompress` path [`firmware-limits.md`](firmware-limits.md) documents.
+
+Two of its properties were measured, and they bear directly on whether the SMM
+road could bypass the SMU gate:
+
+- **It contains no SMU mailbox address.** A scan of the PE32 for Cezanne's SMN
+  mailbox constants (`0x3B10528`, `0x3B10564`, `0x3B10998`, `0x3B10A20`,
+  `0x3B10A80`, `0x3B10A88` — the addresses [`smu-raw.md`](smu-raw.md) reads and
+  writes) finds **none**, and no hardcoded MMIO base either. `AodSmmSsp` does
+  not poke the SMN mailbox the way `ryzenadj` does.
+- **It depends on protocols, not addresses.** Resolving its decoded dependency
+  expression against the image gives only generic UEFI protocols — MmBase
+  (`F4CCBFB7-…`), MmAccess (`C2702B74-…`), PCD (`13A3F0F6-…`), the Metronome
+  arch protocol (`26BACCB2-…`) — plus four *vendor* GUIDs absent from EDK2. One
+  of those is AOD-private: `AB776607-6169-44E8-B8F1-50129D4A25DB` is referenced
+  **only** by `AmdCpmOemSmm`, `AodDxe` and `AodSmmSsp`. **No SMU protocol
+  appears.**
+
+So the SMM handler reaches the SMU (if at all) through a lower AMD module
+(fabric/SoC or `AmdCpmOemSmm`), not a private SMU handle of its own. **That
+narrows the open question but does not settle it** — the same note stands under
+[`firmware-limits.md`](firmware-limits.md#the-second-road-measured-it-is-inert):
+the SMU mailbox is source-agnostic (both the OS and SMM submit the same SMN
+write), so a gate that is a *policy in the SMU firmware on a recognised
+command* would refuse an SMM-submitted copy too. The residual opening is that
+`\AOD` raises an SMI and might reach a channel the MP1 mailbox is not — which is
+why the write remains the only decisive test. Evidence:
+[`evidence/aod-smm-handler.txt`](evidence/aod-smm-handler.txt).
+
+### The Curve Optimizer branch itself, traced — and the AODT allocation confirmed
+
+`AodSmmSsp`'s own command dispatcher (`fcn.00012f18`, ~6 KB, reached from the
+software SMI `0xB9` registered in the module's entry point — matching
+`ASMI(0xB9)` exactly) is a linear `cmp ecx, <MBCB literal>` chain, not a jump
+table. `cmp ecx, 0x100032` is the `Set Curve Optimizer` case — confirming the
+ASL's literal `MBCB = 0x00100032` write is exactly what the handler tests for,
+and that `\AOD.AM03`'s `0x0005000A` is a UI-side descriptor id, unrelated to
+the value actually placed in the mailbox.
+
+On that branch, the handler decodes the caller-supplied 32-bit CO value: the
+top nibble (core index) is correctly masked to 0–15, but a middle byte of the
+same value is used **unmasked** as an array index into `AODT` (`base+0x174+idx`
+and `base+0x1B4+idx·2`) — a real asymmetry against its masked neighbour two
+instructions above, and the reason this looked like a candidate memory-safety
+bug worth chasing.
+
+It isn't one, and tracing why closes the question cleanly rather than leaving
+it open. `AodSmmSsp` caches its `AODT` pointer in a global that is zero in the
+static image and never written in that module — it has to come from a
+companion driver. `AodDxe`'s `fcn.000116b0` settles it with a real
+`gBS->AllocatePool(EfiACPIMemoryNVS, 0x220C, &Buffer)` — the exact size the
+DSDT declares for `OperationRegion (AODT, SystemMemory, 0xB6EA5018, 0x220C)`,
+in a memory type (ACPI NVS) stable enough across boots on a fixed platform for
+the DSDT to hardcode that address as a literal. With the real allocation size
+confirmed, the worst case for the unmasked index (`idx` up to 255) lands at
+`base+0x273` and `base+0x3B2` — both comfortably inside the 8716-byte pool.
+**Found, traced, not exploitable as an out-of-bounds write** — the missing
+mask could still misdirect a value to the wrong internal `AODT` field if
+triggered with an out-of-range index, but it does not escape the buffer.
+
+One thread from this pass is left open, not chased further: `AodSmmSsp`
+references an EFI variable named `AOD_SETUP` twice (a `GetVariable` call with
+correctly-checked `EFI_STATUS`), which does **not** exist in
+`/sys/firmware/efi/efivars/` on this machine and is not among the variables
+`efi-nvram.md` catalogues. Full trace, exact addresses, and the extraction
+method (UEFITool's default full dump was needed — targeted GUID extraction
+misbehaves on this image because `AodPei`/`AodDxe` each have duplicate hits
+across the two Sure Start volumes): →
+[`evidence/aod-smm-curve-optimizer-trace.txt`](evidence/aod-smm-curve-optimizer-trace.txt).
 
 ## 3. The HP performance-mode selector (`OCPC` / `OCPS`)
 
@@ -257,14 +342,19 @@ The RGB one is notable: the keyboard is 4-zone RGB, the data lives in `H2RA` at
 
 ## 6. What is untested, and why
 
-Everything in sections 2–4 that writes has been left alone. Three reasons, in
-order:
+A `\AOD` write is opaque by construction: `R308` hands a value to the BIOS and
+gets nothing back, so what the handler did can only be judged by effect. The one
+write done here — a power limit, chosen because its effect is independently
+known and readable — showed the road is inert for that class of control, and
+was reversed cleanly. That is why a **Curve Optimizer** write is still not the
+move, three reasons in order:
 
-1. **The read-back is unusable.** `\AOD.AM04` returns zeros, so a CO write here
-   cannot be verified the way the repo now verifies everything else. The lesson
-   from the UXTU failure applies directly.
-2. **SMM is opaque by construction.** `R308` hands a value to the BIOS and gets
-   nothing back. There is no way to know what the handler did with it.
+1. **The road does not drive the SMU.** A known-working lever through it moved
+   nothing (see §2 and [`firmware-limits.md`](firmware-limits.md#the-second-road-measured-it-is-inert));
+   a CO write would plausibly be equally inert.
+2. **The read-back is unusable.** `\AOD.AM04` returns zeros, so even if CO did
+   apply, it could not be read back — and the UXTU failure already showed a
+   silent no-op looks applied.
 3. **The risk is asymmetric.** The repo's value is that it documents a machine
    that still works. A rejected SMU command is harmless; a mis-used SMM command
    on a firmware-owned register is not obviously so.

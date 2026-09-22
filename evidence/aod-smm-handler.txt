@@ -1,0 +1,81 @@
+AOD SMM handler, located in the flash image (HP OMEN 15-en1xxx, BIOS F.30)
+===========================================================================
+
+What this answers: which SMM module services the \AOD ACPI interface's
+`ASMI(0xB9)`, and whether that module reaches the SMU by a channel the OS
+cannot (the open A/B question in acpi-bridge.md §2 / firmware-limits.md).
+
+Mechanism (from SSDT2, disassembled with `iasl -d`)
+---------------------------------------------------
+- `Device (AOD)` declares `OperationRegion (PSMI, SystemIO, 0xB2, 0x02)` with
+  fields `APMC`/`APMD`; `Method (ASMI, 1)` is just `APMC = Arg0; Sleep(0x0A)`.
+  So `ASMI(0xB9)` writes the APMC port (I/O 0xB2) and raises an SMI. It carries
+  no payload itself.
+- The payload is a shared region the SSDT declares as
+  `OperationRegion (AODT, SystemMemory, 0xB6EA5018, 0x220C)`; its first fields
+  are the mailbox (`ASCD`, `ASTS`, `MBSN`, `MBVS`, `MBCB`, `MBMC`) followed by
+  the tuning block (`PPTL`, `TDCL`, `EDCL`, `SCAS`, `COPS`, `OTDC`, `OEDC`, ...).
+  R308 sets `MBVS=0x05`, `COPS=SVAL`, `MBCB=0x00100032`, then `ASMI(0xB9)`.
+  The SMI is a doorbell; the handler reads AODT and acts.
+
+The handler
+-----------
+`AodSmmSsp` -- SMM module, file GUID 5EA93CAF-A8DD-4400-9FF6-FE343BCAF308,
+PE32 image section 0x4A04 bytes, file offset 6E6CD8h. Siblings: `AodPei`,
+`AodDxe`, `AodSetupDxe`. (It is the only AOD SMM module in the image.)
+
+Measured properties relevant to the A/B question
+------------------------------------------------
+1. NO SMU mailbox address. A byte scan of the PE32 for Cezanne's SMN mailbox
+   constants used by smu-raw.md (0x3B10528, 0x3B10564, 0x3B10998, 0x3B10A20,
+   0x3B10A80, 0x3B10A88) finds zero hits, and no hardcoded MMIO base in the
+   0xB6xxxxxx range either. AodSmmSsp does not poke the SMN mailbox itself.
+
+2. It depends on protocols, not addresses. UEFIExtract decoded its MM
+   dependency expression; resolving each GUID (EDK2 MdePkg/Include names the
+   standard ones, the rest are absent from EDK2 = vendor):
+
+     F4CCBFB7-F6E0-47FD-9DD4-10A8F150C191  EFI_MM_BASE (generic UEFI)
+     C2702B74-800C-4131-8746-8FB5B89CE4AC  EFI_MM_ACCESS (generic UEFI)
+     13A3F0F6-264A-3EF0-F2E0-DEC512342F34  PCD protocol (generic UEFI)
+     26BACCB2-6F42-11D4-BCE7-0080C73C8881  Metronome arch protocol (generic)
+     881B4AB6-17B0-4BDF-88E2-D429DA425FFD  vendor (AMD/CPM), opaque
+     B0E7F06E-867A-4FBF-BDD0-91A76ED92F91  vendor; shared with AmdSocFp6*,
+                                           FchShasta*, AodSetupDxe
+     AB776607-6169-44E8-B8F1-50129D4A25DB  vendor; referenced ONLY by
+                                           AmdCpmOemSmm, AodDxe, AodSmmSsp
+     8151730C-E1D3-4C8C-917B-A39B7ED48265  vendor; shared with AmdApcbSmmV3
+
+   No protocol named for the SMU appears. So the handler reaches whatever it
+   reaches through a lower AMD module (fabric/SoC or AmdCpmOemSmm), not
+   through a private SMU handle of its own.
+
+What this does and does not settle
+----------------------------------
+It narrows the A/B question: AodSmmSsp is an ordinary SMM driver dispatching a
+command table, with no direct SMU access. It does NOT prove an SMM bypass is
+impossible. The principled reading is that the SMU mailbox is source-agnostic
+(both the OS and SMM submit the same SMN write), so a gate that is a policy in
+the SMU firmware on a *recognised* command (smu-raw.md) would refuse an
+SMM-submitted copy too. The residual opening is that `\AOD` raises an SMI and
+might reach a channel the MP1 mailbox is not -- which is why the write stays
+the only decisive test.
+
+Reproducing
+-----------
+Prereqs: `uefiextract` (LongSoft/UEFITool) and `TianoCompress` (EDK2 BaseTools,
+built by evidence/bios-unwrap.sh).
+
+    cp /boot/EFI/HP/BIOS/Current/088D1.bin <work>/
+    PATH=<edk2>/BaseTools/Source/C/bin:$PATH uefiextract <work>/088D1.bin
+    # module lands at .../5C60F367-..../<n> AodSmmSsp/1 PE32 image section/body.bin
+    # MM dependency expression: .../0 MM dependency section/info.txt
+    objdump -D -Mintel ".../1 PE32 image section/body.bin"   # 0x36F5 bytes .text
+
+    # the SMU-address scan (expects no hits):
+    python3 -c 'import struct;d=open("AodSmmSsp.pe32","rb").read();
+    print([hex(a) for a in (0x3B10528,0x3B10564,0x3B10998,0x3B10A20,0x3B10A80,0x3B10A88)
+    if struct.pack("<I",a) in d])'
+
+    # the depex:
+    cat ".../0 MM dependency section/info.txt"

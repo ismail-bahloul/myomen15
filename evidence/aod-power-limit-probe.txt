@@ -1,0 +1,90 @@
+The \AOD / SMM road, exercised: it is inert for power limits
+============================================================
+HP OMEN 15-en1xxx, BIOS F.30, SMU 64.74.0. Read-only apart from reversible
+power-limit writes; everything restored (see "state" at the end).
+
+Question
+--------
+firmware-limits.md's "second road": the \AOD ACPI interface reaches the SMU by
+SMM (ASMI -> I/O 0xB2), not by the MP1 mailbox. Could it do what the mailbox
+refuses (Curve Optimizer)? The handler `AodSmmSsp` was located in the image and
+carries no SMU mailbox address (aod-smm-handler.txt). This tests whether the
+road does anything at all, using a lever whose effect is already known and
+readable: a power limit.
+
+Method
+------
+`Set PPT Limit` is ACMD 0x00050001 -> method R23B, which does
+    SVAL = Arg0[0x04]; MBVS=0x05; PPTS = SVAL; MBCB=0x0010000B; ASMI(0xB9)
+(`Set TDC Limit` = 0x00050002 -> R23C, sets TDCS). It is called through
+`\AOD.AM05`, a buffer argument, ACMD in the first dword (little-endian), value
+in the second:
+
+    '\AOD.AM05 {0x01,0x00,0x05,0x00, 0xA8,0x61,0x00,0x00}'   # PPT = 25000 mW
+
+Result is read from the SMU PM table via `ryzenadj --info` (the same instrument
+firmware-limits.md uses).
+
+The confound, and how it was removed
+------------------------------------
+`power-profile-watch.service` (already documented) polls the PM table every 1 s
+and re-applies the profile within ~3 s of any change (MIN_INTERVAL = 3.0). The
+first attempt therefore showed nothing for *both* AOD and a ryzenadj control --
+the write was being reverted before the read. The service was stopped
+(`systemctl stop power-profile-watch`) for the clean run below, then restarted.
+
+Control (proves the instrument is live)
+---------------------------------------
+With the watcher stopped:
+
+    ryzenadj --slow-limit=25000 --fast-limit=25000
+    -> PM table: PPT fast 25.000, slow 25.000   (baseline was 18.000/15.000)
+    ryzenadj --fast-limit=22000
+    -> PM table: PPT fast 22.000
+
+So a power limit is changeable and readable on this machine.
+
+The \AOD / SMM drive (watcher stopped throughout)
+-------------------------------------------------
+    before:  PPT fast 18.000 / slow 15.000 / APU 15.000 ; TDC VDD 58.000 / SOC 15.000
+
+    \AOD.AM05 {Set PPT Limit, 25000 mW}   -> PM table: UNCHANGED (18/15/15)
+    \AOD.AM05 {Set PPT Limit, 12000 mW}   -> PM table: UNCHANGED (18/15/15)
+    \AOD.AM05 {Set TDC Limit, 45000 mA}   -> PM table: UNCHANGED (58/15)
+
+    \AOD.AM01 -> 0x5  (interface live; AM03 returns the command table)
+
+The AODT read-back (offsets BBVS@0x0C, BBCB@0x10 within AM05's 256-char reply)
+reads 0 both at rest and immediately after the write, so the shared region's
+mailbox fields are not observable as persistent state either.
+
+Conclusion
+----------
+The \AOD/SMM road is live (it answers, and its command table is present) but
+**does not drive the SMU's live PPT or TDC limits** through this interface,
+while the same levers work through the normal mailbox. It is inert for this
+class of control -- the same shape of result H2RA gave (a writable surface with
+no effect). A Curve Optimizer write down this road would plausibly be equally
+inert, and could not be read back to tell either way. This makes the "second
+road" an observed dead end, not merely an untried one.
+
+Not claimed: why it is inert. The units or the command mapping could differ, or
+the SMM handler could route to a register that is not the live one; this
+measures the effect on the SMU, nothing about the mechanism.
+
+State left behind
+-----------------
+`systemctl start power-profile-watch` -> active. PM table restored to baseline:
+STAPM 15.000, PPT fast 18.000 / slow 15.000 / APU 15.000, TDC VDD 58.000 /
+SOC 15.000, EDC VDD 110.000 / SOC 20.000.
+
+Reproducing
+-----------
+    sudo systemctl stop power-profile-watch
+    sudo ryzenadj --info | grep PPT          # baseline
+    printf '%s' '\AOD.AM05 {0x01,0x00,0x05,0x00,0xA8,0x61,0x00,0x00}' | sudo tee /proc/acpi/call
+    sleep 1.5; sudo ryzenadj --info | grep PPT      # unchanged
+    sudo ryzenadj --fast-limit=22000; sleep 1
+    sudo ryzenadj --info | grep PPT          # 22.000 -- instrument is live
+    sudo systemctl start power-profile.service       # restore
+    sudo systemctl start power-profile-watch
