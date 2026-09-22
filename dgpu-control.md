@@ -55,6 +55,18 @@ On **Windows**, through a V/F-curve tool (MSI Afterburner and the like). That is
 untested here — the machine dual-boots Windows 11, so it is reachable, just not
 from Linux. This page does not claim it works, only names where it would.
 
+## D3Cold Support: tested, and it breaks boot
+
+`AMD PBS > D3Cold Support` is one of the few non-`Auto` values in that menu
+(`Disabled`), and a plausible lever for letting the dGPU power all the way
+down when idle on the iGPU. **Tested, and it doesn't work on this
+machine**: setting it to `Enabled` leaves Limine reachable, but selecting
+either Linux or Windows from it hangs — neither OS actually boots. Setting
+it back to `Disabled` restores normal boot immediately. This is the risk
+this page already flagged before testing it ("NVIDIA + Linux + D3Cold is
+known-troublesome territory") — now measured, not just anticipated.
+**Closed: leave `D3Cold Support` on `Disabled`.**
+
 ## If anything is built, build it coherent
 
 The CPU side already has a governor (`power-profile-watch`) and a monitor
