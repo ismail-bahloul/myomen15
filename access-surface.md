@@ -19,11 +19,12 @@ This page exists so the same ground is not re-covered, and so a surface that is
 | Fan control | `nbfc` (EC), `hp-wmi` `pwm1_enable` | `pwm1_enable=2` (auto) |
 | Platform profile | `/sys/class/platform-profile/` | `cool` / `balanced` / `performance` |
 | **Battery charge control** | EC bridge → `MBDC` (0xA6); `\WMID.GBCC` reads it | Setting a mode **stops charging** (no held threshold seen down to 55 %), `GBCC` confirms it, reversible. The cap that *holds* is **`Adaptive Battery Extender`** (`SHEN`, EC `0xC5` bit 7 — enabled), which lowers `BFCC`. See [`battery-charge-control.md`](battery-charge-control.md) |
-| **AMD overclocking (`\AOD`)** | `acpi_call` → `\AOD.WMAA` | PPT/TDC/EDC/Scalar/Curve Optimizer via SMM. Never tried. See [`acpi-bridge.md`](acpi-bridge.md) |
+| **AMD overclocking (`\AOD`)** | `acpi_call` → `\AOD.WMAA` | PPT/TDC/EDC/Scalar/Curve Optimizer via SMM. **Driven and inert**: a power-limit lever through it moves nothing, while `ryzenadj` moves the same value instantly. Handler `AodSmmSsp` located in the image, no SMU mailbox address of its own. See [`acpi-bridge.md`](acpi-bridge.md) §2 |
 | **Performance mode** | EC `OCPC` (0xBA) / `OCPS` (0xBB) | Maps to dGPU power limits via `\DPTC`. `OCPC` is EC-owned (read-only); `OCPS` accepts a write but the effect is not established. See [`ec-map.md`](ec-map.md) |
 | **Keyboard RGB (4 zones)** | Reported by the EC in `H2RA`, but there is **no Linux interface** and writes there do nothing | 🟡 **found, not controllable** |
 | EFI setup answers | `/sys/firmware/efi/efivars/` | 137 vars, read-only. See [`efi-nvram.md`](efi-nvram.md) |
 | DSDT / 16 SSDT | `/sys/firmware/acpi/tables/` | 95 KB DSDT, disassembles cleanly with `iasl` |
+| **dGPU clock lock** | `nvidia-smi --lock-gpu-clocks=min,max` (NVML, root) | The RTX 3070 Laptop. **Measured effective** — 80 W → 41 W under load at a 1000 MHz cap. Memory clock lock also accepted. See [`dgpu-control.md`](dgpu-control.md) |
 
 ## Reachable, NOT yet used
 
@@ -39,6 +40,7 @@ visible rather than forgotten.
 | SMBus / i2c | `i2c-3`, `i2c-4`, `i2c-5`, `i2c-6`, `i2c-7` | `i2cdetect`, `i2cget` available. SPD is on this bus; nothing scanned yet. |
 | `hp-wmi` `display`, `dock` | `cat` | Both read `0`. |
 | `hp_accel` | module exists, not loaded | The accelerometer driver is shipped but idle. |
+| dGPU clock offsets | `nvidia-settings` with `Coolbits` set (needs an X restart) | The offset attributes already read (−1000…+1000 MHz / −2000…+6000); only the permission is missing. Would shift the whole curve — a wider underclock, still not a voltage. |
 
 ## Measured as blocked — do not retry
 
@@ -50,7 +52,9 @@ visible rather than forgotten.
 | **SPM auth token** | `ENOTSUP` / `EPERM` | `enhanced-bios-auth`, `is_enabled=0`, `key_mechanism = not provisioned`. No BIOS admin password set. |
 | **BIOS flashing** | blocked by design | Payload is PSS/RSA-signed; Sure Start restores on tamper. Not attempted, deliberately. |
 | **`hp-wmi` `als`, `hddtemp`, `tablet`** | `EINVAL` / `ENODEV` | Nodes exist, hardware does not answer. |
-| **Curve Optimizer** | refused | SMU rejects the whole OC/CO family on both OSes. Dead end, do not chase. |
+| **Curve Optimizer** | refused | SMU rejects the whole OC/CO family on both OSes. The raw mailbox shows *why it is a real gate*: `0xFF Failed` for a recognised command, not `0xFE UnknownCmd` (and the sysfs response node was masking that — read the rsp over SMN). → [`smu-raw.md`](smu-raw.md#is-the-curve-optimizer-gate-a-transport-problem-measured-no) |
+| **dGPU power limit** | not supported | `nvidia-smi -pl` → *"Changing power management limit is not supported for GPU"*. A 1–100 W range is reported but not user-enforced. |
+| **dGPU voltage / V/F curve** | not exposed | Nothing via NVML, nothing via `nvidia-settings`. There is no Linux undervolt for this GPU. → [`dgpu-control.md`](dgpu-control.md) |
 
 ## A note on two `hp-wmi` quirks
 

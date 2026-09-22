@@ -1,0 +1,71 @@
+dGPU probe -- raw log (dgpu-control.md)
+=======================================
+HP OMEN 15-en1xxx · RTX 3070 Laptop GPU · driver 615.71.09 · vBIOS
+94.04.3D.00.C3 · board part 249D-750-A1 · CachyOS kernel 7.2.4-3-cachyos ·
+Wayland session, amdgpu (iGPU) drives the display. Read-only until the two
+reversible clock-lock tests; nothing left set.
+
+Identity / limits
+-----------------
+$ nvidia-smi --query-gpu=name,driver_version,vbios_version,compute_cap,
+    power.default_limit,power.min_limit,power.max_limit,clocks.max.graphics,
+    clocks.max.memory --format=csv
+NVIDIA GeForce RTX 3070 Laptop GPU, 615.71.09, 94.04.3D.00.C3, 8.6,
+80.00 W, 1.00 W, 100.00 W, 2100 MHz, 6001 MHz
+
+Power limit is not user-settable (the 1-100 W range is informational):
+
+$ sudo nvidia-smi -pl 70
+Changing power management limit is not supported for GPU: 00000000:01:00.0.
+Treating as warning and moving on.
+All done.
+$ nvidia-smi --query-gpu=power.limit --format=csv,noheader
+[N/A]
+
+Clock offsets exist and read, but writes are refused without Coolbits (and this
+is a Wayland session):
+
+$ DISPLAY=:0 nvidia-settings -q GPUGraphicsClockOffsetAllPerformanceLevels
+  Attribute '...': 0.
+    The valid values ... are in the range -1000 - 1000 (inclusive).
+$ DISPLAY=:0 nvidia-settings -q GPUMemoryTransferRateOffsetAllPerformanceLevels
+  Attribute '...': 0.    ... range -2000 - 6000 (inclusive).
+$ DISPLAY=:0 nvidia-settings -a "[gpu:0]/GPUGraphicsClockOffsetAllPerformanceLevels=-200"
+ERROR: The current user does not have permission for operation
+ERROR: Error assigning value -200 ... (Operation not permitted for the current user).
+$ grep -rn Coolbits /etc/X11/xorg.conf*      # nothing -- Coolbits not configured
+
+No voltage anywhere:
+
+$ nvidia-smi -q -d VOLTAGE          # -> no voltage fields
+$ DISPLAY=:0 nvidia-settings -q all | grep -iE "vddc|voltage"   # -> nothing
+
+The lock that works, under a real load
+--------------------------------------
+Load: evidence/gpuload.cu (`nvcc -O2 -o /tmp/gpuload gpuload.cu; /tmp/gpuload &`).
+
+$ /tmp/gpuload &  sleep 4
+$ nvidia-smi --query-gpu=clocks.gr,clocks.sm,utilization.gpu,power.draw --format=csv,noheader
+1560 MHz, 1560 MHz, 100 %, 79.81 W
+1560 MHz, 1560 MHz, 100 %, 79.58 W
+
+$ sudo nvidia-smi --lock-gpu-clocks=300,1000
+GPU clocks set to "(gpuClkMin 300, gpuClkMax 1000)" for GPU 00000000:01:00.0
+All done.
+990 MHz, 990 MHz, 100 %, 41.17 W
+990 MHz, 990 MHz, 100 %, 40.68 W
+
+$ sudo nvidia-smi --reset-gpu-clocks
+All done.
+1545 MHz, 1545 MHz, 100 %, 79.32 W
+
+$ pkill gpuload
+
+Memory clock lock was also accepted:
+$ sudo nvidia-smi --lock-memory-clocks=5000
+Memory clocks set to "(memClkMin 5000, memClkMax 5000)" for GPU 00000000:01:00.0
+
+Conclusion: GPU clock locking is accepted *and effective* (80 W -> 41 W at
+1000 MHz, under full load). Power limit is not settable. Clock offsets are
+blocked by permissions. Voltage is not exposed. So the dGPU offers clock
+control -- an underclock -- but no undervolt. State left clean: no lock applied.
