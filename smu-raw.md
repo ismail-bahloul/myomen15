@@ -28,6 +28,11 @@ to `mp1_smu_cmd`, then read the response code from the same node. The codes are
 the driver's own: `0x01` OK, `0xFF` failed, `0xFE` unknown command, `0xFD`
 rejected-prereq, `0xFC` rejected-busy, and so on.
 
+**That last step was wrong, and this section used to assert it.** The response
+node does *not* report the code faithfully — it reports `0x01` for a `Failed`.
+See "The response node masks failures" below; the true code has to be read from
+the rsp register over `smn`.
+
 `GetSmuVersion` — command `0x02`, the one the driver itself sends at init, so a
 known-good query:
 
@@ -123,6 +128,64 @@ mechanism `firmware-limits.md` already documents. The raw sysfs path and
 `ryzenadj`'s own path are provably the same mailbox, the same command, the
 same effect.
 
+## The response node masks failures
+
+Everything above read the response code back from `mp1_smu_cmd` itself. **That
+node does not report the code faithfully: it reports `0x01` for any non-OK code
+that arrives before the driver's retry counter runs out.** From the driver's own
+`smu_send_command()` (`/usr/src/ryzen_smu-*/smu.c`):
+
+```c
+do
+  read rsp -> tmp
+while (tmp == 0 && retries--);
+
+if (tmp != SMU_Return_OK && !retries) { ...; return tmp; }
+return SMU_Return_OK;
+```
+
+The SMU answers a rejected command in microseconds, so the loop exits with
+`retries` still non-zero, the `!retries` guard is false, and the function falls
+through to `return SMU_Return_OK`. A `0xFF Failed` comes back out of the node as
+`0x01 OK`. Nothing in `smuraw.py` caught it, because every command that script
+sends is, in fact, OK.
+
+The truth lives in the **rsp register**, readable through `smn` (MP1
+`0x3B10564`, RSMU `0x3B10A80`). `evidence/smu-gate-probe.py` reads both and
+prints them side by side, so the masking is visible rather than assumed.
+
+## Is the Curve Optimizer gate a transport problem? Measured: no
+
+With the masking lifted, the gate has a shape. The SMU distinguishes a command
+it does not know (`0xFE UnknownCmd`) from one it knows and refuses (`0xFF
+Failed`). Sending deliberate garbage IDs and then the CO family gives:
+
+```
+invalid 0xEE / 0x7E / 0x99 / 0xAB (MP1)            -> 0xFE UnknownCmd
+invalid 0xEE / 0x7E (RSMU)                         -> 0xFE UnknownCmd
+set-coall 0x55 / set-coper 0x54 / set-cogfx 0x64   -> 0xFF Failed
+```
+
+The CO commands answer `Failed`, **not** `UnknownCmd`. The firmware therefore
+*implements and recognises* them and refuses them on purpose — a policy, not a
+missing command, and not a transport an OS client could route around. This is
+the raw mailbox's own statement of what `firmware-limits.md` concluded from
+`ryzenadj` and UXTU, now down to the exact status codes.
+
+Consequence for the one remaining road: `\AOD`/SMM
+([`firmware-limits.md`](firmware-limits.md#the-second-road-measured-it-is-inert))
+does not send this mailbox message at all — it pokes SMM. A gate that
+*recognises* the command and refuses it reads naturally as a firmware policy
+that is independent of who is asking, which makes an SMM bypass less likely. It
+does not prove it: the SMM road is still untried, and this measurement does not
+speak for it.
+
+The CO commands were sent here only with argument `0`
+(`EncodeCurveOptimiserOffset(0) == 0`, "offset zero") — a no-op whatever the
+SMU decides. Nothing moved: `ryzenadj --info` is unchanged and `GetSmuVersion`
+still answers. Raw log:
+[`evidence/smu-gate-probe.log`](evidence/smu-gate-probe.log).
+
 ## What is written now, and what still isn't
 
 Sending a command **is** a write — six `u32`s to `smu_args`, one `u32` to
@@ -143,7 +206,8 @@ because a wrong SMN address isn't a register with a known meaning to check
 against first.
 
 Tooling: `evidence/smuraw.py` — `mailbox`, `smn <addr>`, `version`, `pmver`,
-`drambase`, `stapmtest`.
+`drambase`, `stapmtest`; and `evidence/smu-gate-probe.py` — `controls`, `gate`,
+`all` (the masking correction, and the gate discriminator above).
 
 ## Reproducing
 
@@ -154,4 +218,7 @@ sudo python3 evidence/smuraw.py version
 sudo python3 evidence/smuraw.py pmver
 sudo python3 evidence/smuraw.py drambase
 sudo python3 evidence/smuraw.py stapmtest
+
+# the response-node masking, and the CO gate's true status codes
+sudo python3 evidence/smu-gate-probe.py all
 ```

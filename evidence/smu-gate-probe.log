@@ -1,0 +1,35 @@
+== sanity (known-good queries) ==
+  GetSmuVersion                          mp1_smu_cmd op=0x02  sysfs=0x01  TRUE=0x01 (OK             )
+       args_back = 0x00404A00 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+  GetPmTableVersion (MP1)                mp1_smu_cmd op=0x0D  sysfs=0x01  TRUE=0x01 (OK             )
+       args_back = 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+  GetPmTableVersion (RSMU)               rsmu_cmd    op=0x06  sysfs=0x01  TRUE=0x01 (OK             )
+       args_back = 0x00400005 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+
+== negative controls (deliberately invalid IDs -> UnknownCmd) ==
+  invalid MP1 0xEE                       mp1_smu_cmd op=0xEE  sysfs=0x01  TRUE=0xFE (UnknownCmd     )  <-- MASKED (sysfs said OK, SMU said UnknownCmd)
+       args_back = 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+  invalid MP1 0x7E                       mp1_smu_cmd op=0x7E  sysfs=0x01  TRUE=0xFE (UnknownCmd     )  <-- MASKED (sysfs said OK, SMU said UnknownCmd)
+       args_back = 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+  invalid MP1 0x99                       mp1_smu_cmd op=0x99  sysfs=0x01  TRUE=0xFE (UnknownCmd     )  <-- MASKED (sysfs said OK, SMU said UnknownCmd)
+       args_back = 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+  invalid MP1 0xAB                       mp1_smu_cmd op=0xAB  sysfs=0x01  TRUE=0xFE (UnknownCmd     )  <-- MASKED (sysfs said OK, SMU said UnknownCmd)
+       args_back = 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+  invalid RSMU 0xEE                      rsmu_cmd    op=0xEE  sysfs=0x01  TRUE=0xFE (UnknownCmd     )  <-- MASKED (sysfs said OK, SMU said UnknownCmd)
+       args_back = 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+  invalid RSMU 0x7E                      rsmu_cmd    op=0x7E  sysfs=0x01  TRUE=0xFE (UnknownCmd     )  <-- MASKED (sysfs said OK, SMU said UnknownCmd)
+       args_back = 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+
+== CO set family, ZERO offset (no-op arg): known vs unknown ==
+  set-coall 0x55 arg=0                   mp1_smu_cmd op=0x55  sysfs=0x01  TRUE=0xFF (Failed         )  <-- MASKED (sysfs said OK, SMU said Failed)
+       args_back = 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+  set-coper 0x54 arg=0                   mp1_smu_cmd op=0x54  sysfs=0x01  TRUE=0xFF (Failed         )  <-- MASKED (sysfs said OK, SMU said Failed)
+       args_back = 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+  set-cogfx 0x64 arg=0                   mp1_smu_cmd op=0x64  sysfs=0x01  TRUE=0xFF (Failed         )  <-- MASKED (sysfs said OK, SMU said Failed)
+       args_back = 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
+
+  Interpretation: Failed vs the UnknownCmd of the invalid IDs above.
+
+== read-back: nothing should have moved ==
+  GetSmuVersion again                    mp1_smu_cmd op=0x02  sysfs=0x01  TRUE=0x01 (OK             )
+       args_back = 0x00404A00 0x00000000 0x00000000 0x00000000 0x00000000 0x00000000
