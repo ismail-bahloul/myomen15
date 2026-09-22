@@ -1,4 +1,4 @@
-# Pre-boot UEFI Shell probe — preparing and running it
+# Pre-boot UEFI Shell probe — result, and how to reproduce it
 
 Goal: use the real UEFI Shell (not the SmokelessUMAF setup browser) to reach
 `dmpstore`, which calls `GetVariable`/`SetVariable` directly, outside
@@ -8,44 +8,71 @@ write `Setup`/`AmdSetup`/etc. a real firmware lock, or a Linux-side
 convention layered on top of a firmware that would actually accept the
 write?
 
-Two phases, deliberately kept separate: a read-only recon that is
-automated and safe to run unattended, and a single write test that is
-**not** automated — run it interactively, one command at a time, so a
-bad result is caught before doing anything else.
+## Result
+
+**The firmware accepts it. The lock is Linux's.** Writing `Setup` back
+with its own unchanged bytes, via `dmpstore` from the real Shell, succeeds:
+
+```
+Load and set variables from file: dumps\Setup-preloop.dat.
+Variable NV+RT+BS 'EC87D643-EBA4-4BB5-A1E5-3F3E36B20DA9:Setup' DataSize = 0x142
+```
+
+No error, and `Setup-preloop.dat`/`Setup-postloop.dat` (kept in this
+directory) are byte-identical — a clean no-op, not a silent partial write.
+Full writeup: [`firmware-limits.md`](../../firmware-limits.md#correction-the-setup-lock-is-linuxs-not-the-firmwares).
+
+Only a same-value write-back was tested, on `Setup` specifically — not yet
+an actually different value, and not yet the other setup-family
+variables (`AmdSetup`, `AMD_PBS_SETUP`, `HPSetupData`, `AMITSESetup`).
 
 ## What's here
 
-- `startup.nsh` — phase 1, read-only. Dumps `Setup`, `SetupDefault`,
-  `StdDefaults`, `AmdSetup`, `AMD_PBS_SETUP`, `HPSetupData`,
-  `NewHPSetupData`, `AMITSESetup` individually, plus one `dmpstore -all`
-  catch-all, to files under `dumps\` on the USB key. Safe to auto-run
-  (EDK2 Shell runs `startup.nsh` automatically if present at the root of
-  the boot volume).
-- `phase2-writeback-test.txt` — the exact commands for the write-back
-  test, meant to be typed one at a time at the Shell prompt, not run as a
-  script.
+- `startup.nsh` — phase 1, read-only, auto-runs on boot. Dumps `Setup`,
+  `SetupDefault`, `StdDefaults`, `AmdSetup`, `AMD_PBS_SETUP`,
+  `HPSetupData`, `NewHPSetupData`, `AMITSESetup` individually, plus one
+  `dmpstore -all` catch-all, to files under `dumps\` on the USB key.
+- `verify-writeback.nsh` — phase 2, automated. Does the no-op write-back
+  on `Setup` and redirects `dmpstore`'s own status line to
+  `dumps\writeback-result.txt`, so the answer is a file, not a memory of
+  what flashed on screen.
+- `phase2-writeback-test.txt` — the same test as `verify-writeback.nsh`,
+  but as commands meant to be typed one at a time at the Shell prompt
+  instead — kept for anyone who wants to watch each step live rather than
+  run the script.
+- `writeback-result.txt`, `Setup-preloop.dat`, `Setup-postloop.dat` — the
+  actual output from the real machine, kept as evidence.
 
-**Both were rehearsed end to end in a local QEMU + OVMF test VM (this
-machine already has `edk2-ovmf` and `qemu-base` installed) before being
-put on the real USB key.** Three real bugs were caught this way and would
-otherwise have needed a real reboot per fix:
+**All of it was rehearsed end to end in a local QEMU + OVMF test VM (this
+machine already has `edk2-ovmf` and `qemu-base` installed) before touching
+the real USB key or the real firmware.** That caught four real bugs, two
+of them only after a first real-hardware run had already produced a
+result that looked like an answer and wasn't:
 
 1. `REM` is not a comment in EDK2 Shell scripts — it's just an unknown
    command. Comments were removed rather than guessed at again.
 2. The Shell does **not** default to any current filesystem, even inside
    an autorun script — `mkdir dumps` and every relative path failed until
-   an explicit `fs1:` was added at the top. `fs1:` was picked to match
-   *this machine's own mapping*, confirmed from the real boot log
-   (`FS1:` = the USB key, `FS0:` = the internal NVMe ESP) — if the USB
-   port or attached devices change, check the mapping table printed at
-   Shell startup and adjust the first line of `startup.nsh` accordingly.
+   an explicit `fs1:` was added at the top. `fs1:` matches *this
+   machine's own mapping*, confirmed from its actual boot log (`FS1:` =
+   the USB key, `FS0:` = the internal NVMe ESP) — if the USB port or
+   attached devices change, check the mapping table printed at Shell
+   startup and adjust the first line of the scripts accordingly.
 3. `dmpstore`'s real argument order is `dmpstore <name> -guid <guid> -s
    <file>` (name and `-guid` first, `-s`/`-l` last) — the first draft had
    `-s`/`-guid` before the name, which parses as "too many arguments".
-   `-l <file>` was separately confirmed to restore whatever the file
-   contains without needing `-guid`/name repeated, and to report a clear
-   `Write Protected` (not a silent no-op) for a genuinely protected
-   variable, tested against real read-only OVMF variables.
+4. **The one that produced a fake answer on the first real run:** `-l
+   <file>` needs its own `<name> -guid <guid>` repeated, exactly like
+   `-s` does. Without it, `-l` silently filters on the default
+   `EFI_GLOBAL_VARIABLE` GUID instead of whatever the file actually
+   contains, reports "No matching variables found" for that wrong GUID,
+   and never touches `Setup` at all. The first real-hardware run did
+   exactly this: `Setup-preloop.dat`/`Setup-postloop.dat` came back
+   byte-identical, which looked like a successful no-op but actually meant
+   nothing had been attempted. This was caught by reproducing the same
+   false-success shape in the QEMU VM against a variable with a
+   similarly non-default GUID, then fixing it and confirming the fix
+   there before re-running on the real machine.
 
 ## Preparing the USB key
 
@@ -65,6 +92,7 @@ sudo mount /dev/sdX1 /mnt/usb
 sudo mkdir -p /mnt/usb/EFI/BOOT
 sudo cp /usr/share/edk2-shell/x64/Shell_Full.efi /mnt/usb/EFI/BOOT/BOOTX64.EFI
 sudo cp evidence/uefi-shell-probe/startup.nsh /mnt/usb/startup.nsh
+sudo cp evidence/uefi-shell-probe/verify-writeback.nsh /mnt/usb/verify-writeback.nsh
 sync
 sudo umount /mnt/usb
 ```
@@ -78,15 +106,11 @@ command.
 1. Reboot, enter the firmware's Boot Manager, pick the USB key.
 2. `startup.nsh` runs automatically (phase 1) and writes its output files
    to the same USB key. Let it finish, then it prints `phase 1 done`.
-3. For phase 2, **do not run a script** — read
-   `phase2-writeback-test.txt` and type each command by hand at the
-   `Shell>` prompt, checking the result of each before continuing.
-4. Boot back into Linux and copy the dump files off the USB key —
-   they're the input for the next analysis pass.
+3. At the `FS1:\>` prompt, type `verify-writeback.nsh` to run phase 2.
+4. Reboot back into Linux and copy the dump files off the USB key.
 
 ## What to bring back
 
-Everything the USB key now has under `\dumps\`, plus whatever the Shell
-printed for the phase 2 `dmpstore -l` write-back attempt (a screenshot or
-a transcript is fine — that status line is the actual answer to the open
-question).
+Everything under `\dumps\`, especially `writeback-result.txt` — it's
+UTF-16 with a BOM (`dmpstore`'s own encoding for redirected output), so
+decode it before reading, e.g. `python3 -c "print(open('writeback-result.txt','rb').read().decode('utf-16'))"`.

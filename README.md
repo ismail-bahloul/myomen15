@@ -44,7 +44,7 @@ read-only · `⚪` no effect · `🔴` refused. Each row links its evidence.
 |---|---|---|
 | Read the BIOS settings | ✅ | plain EFI variables at runtime → [`efi-nvram.md`](efi-nvram.md) |
 | Write the standard EFI globals | ✅ | `Boot####`, `BootOrder`, `Timeout`, `OsIndications`, … |
-| Write the BIOS setup store | 🔴 | `EPERM` — efivarfs marks those inodes immutable |
+| Write the BIOS setup store | 🟡 | `EPERM` under Linux (`efivarfs` marks those inodes immutable), but a direct `SetVariable` from the real UEFI Shell **succeeds** — the lock is Linux's, not the firmware's → [`firmware-limits.md`](firmware-limits.md#correction-the-setup-lock-is-linuxs-not-the-firmwares) |
 | Unlock the hidden menus | 🟡 | `SmokelessUMAF` / `SREP`, **pre-boot only**; `Custom Core Pstates` stays empty |
 | Modify or flash the firmware | 🔴 | HP Sure Start + a PSS/RSA signature. Definitive — but Sure Start is no longer just a name: the actual recovery volumes are unwrapped and their modules named → [`firmware-limits.md`](firmware-limits.md#three-of-the-four-encrypted-regions-are-now-identified) |
 | The AMD CBS power menu | ⚪ | inert — it only seeds POST values the HP EC then overrides |
@@ -99,7 +99,7 @@ read-only · `⚪` no effect · `🔴` refused. Each row links its evidence.
 |---|---|
 | Can I undervolt, or use Curve Optimizer? | **The SMU says no** — proven on both OSes. The second road (`\AOD`, via SMM) was then tested with a power-limit lever and is inert. |
 | Can I read what the SMU is actually doing? | **Yes.** The PM table decodes to 9 limits + 9 live values in one `read()`. |
-| Can I read the BIOS settings from the running OS? | **Yes.** Plain EFI variables — and identical in the flash chip, twice. Writing them back is refused for the setup store, but the standard EFI globals *are* writable. |
+| Can I read the BIOS settings from the running OS? | **Yes.** Plain EFI variables — and identical in the flash chip, twice. Linux refuses to write the setup store back (`efivarfs` marks it immutable), but a direct `SetVariable` from the real UEFI Shell accepts it — the lock is Linux's, not the firmware's. |
 | Can I talk to any EC register or I/O port? | **Yes.** The firmware ships a generic byte bridge (`M040`/`M041`/`M31A`/`M319`), verified 256/256 against `ec_probe`. |
 | Can I cap battery charging? | **Yes — and it is already on.** The BIOS option is **`Adaptive Battery Extender`**: one EC bit, `SHEN` (`0xC5` bit 7), currently `1`. It works by lowering `BFCC`, the reported full capacity (85 % of the 70.9 Wh pack), so the OS cannot see it. Read it with the EC bridge or `\_SB.WMID.ABES`. The `MBDC` register is a *different* lever: it stops charging, it does not hold a level. |
 | Can I control the keyboard lighting? | **No** — the EC publishes the state in `H2RA`, but writes there (including the firmware's own `LM05`) change nothing. |
@@ -150,6 +150,14 @@ is visible.
   variables, and the same bytes are also sitting in the flash chip *in clear,
   twice* — outside the encrypted volumes. Diffing `Setup` against `SetupDefault`
   says this machine has **eleven** options off-default. → [`efi-nvram.md`](efi-nvram.md)
+- **The setup store's lock is Linux's, not the firmware's.** `efivarfs`
+  marking `Setup` immutable had been read as the machine refusing the
+  write. It doesn't: a direct `SetVariable` from the real UEFI Shell,
+  outside efivarfs entirely, writes `Setup` back with its own bytes and
+  succeeds — confirmed byte-identical before and after. Getting there took
+  two wrong `dmpstore` invocations first, both rehearsed and caught in a
+  local QEMU + OVMF test VM before touching the real firmware. →
+  [`firmware-limits.md`](firmware-limits.md#correction-the-setup-lock-is-linuxs-not-the-firmwares)
 - **The PM table was readable the whole time.** `ryzen_smu` had been exposing 2372
   bytes of raw SMU state as a plain read-only file. It decodes to `float32` — nine
   limits and nine live values — and it settles a discrepancy this repo had left
@@ -295,7 +303,13 @@ What has not been tried yet, ordered by how much it would unlock:
   untouched by the TPM toggle). Nine remain (`21, 22, 23, 174, 244, 276, 278,
   280, 284, 316`), and naming them needs the two-leg method of
   [`efi-nvram.md`](efi-nvram.md) §7 — now with tooling for it,
-  `setupdiff.py twoleg`: two reboots per option.
+  `setupdiff.py twoleg`: two reboots per option. Now that a direct
+  `SetVariable` on `Setup` from the UEFI Shell is confirmed to work
+  (`firmware-limits.md`), this could plausibly move to poking one offset at
+  a time from a script instead of hunting for the right menu item to
+  toggle — untried, and a different, higher-stakes experiment than the
+  no-op write already proven, since it means an actually different value,
+  not writing the same bytes back.
 - **`postcode`.** `hp-wmi` exposes a firmware POST code that reads a stable
   `0x70`. Read, but not decoded any further.
 - **The memory side.** The firmware's own SPD table names a module that is not
@@ -338,7 +352,7 @@ What has not been tried yet, ordered by how much it would unlock:
 | [`chipsec-recon.md`](chipsec-recon.md) | Talking to the chip directly instead of through HP's software: fixing CHIPSEC's kernel driver for a newer kernel, what that shows about the MSR block, and a from-scratch AMD platform file that reads the FCH's own write-protect registers. |
 | [`BIOS_arborescence_OMEN.md`](BIOS_arborescence_OMEN.md) | The full SmokelessUMAF menu tree, transcribed from the 133 photos. |
 | [`record/`](record/) | The point-in-time investigation, kept as written. Start with the Linux report, then the Windows verdict. |
-| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`, `omenkbd.py`, `omenwatch.py`, `aodread.py`, plus `omenmon.py` (live power/thermal TUI), `limitwatch.py` (what resets the SMU limits), `pmtable-cores.py` (the per-core PM table groups), `smuraw.py` (SMN reads, query-class SMU mailbox commands, and one self-restoring mutating write), `smu-gate-probe.py` (reads the true SMU response from the rsp register, exposing the sysfs node's masking, and shows the CO gate is a recognised-and-refused command), `smu-gate-probe.log` (its raw output), `batterycctl.py` (battery charge control), `ecsweep.py` (EC dump/diff), `chipsec-km-msr-api.patch` (the driver fix for newer kernels), `chipsec-cezanne.xml` (the AMD platform file), `chipsec-recon.log` (raw command output), `bios-unwrap.sh` (unwraps the AMI update capsule, parses it as UEFI and as an AMD PSP directory), `bios-image-report.txt` (the full 684-file UEFI structural report), `psp-directory-report.txt` (the signed PSP module list, per-file verification status), and `aod-smm-handler.txt` (the `\AOD` SMI handler `AodSmmSsp` located in the image: its dependency expression, and the measured absence of any SMU mailbox address or SMU protocol), `aod-power-limit-probe.txt` (the same road driven with a power-limit lever, with the `power-profile-watch` confound removed: inert), and `aod-smm-curve-optimizer-trace.txt` (the SMI handler's own command dispatcher disassembled, the `Set Curve Optimizer` branch's unmasked array index found and traced to the confirmed `AllocatePool(EfiACPIMemoryNVS, 0x220C, ...)` backing `AODT` — in-bounds, not exploitable — plus the still-open `AOD_SETUP` EFI variable lead). |
+| [`evidence/`](evidence/) | Tooling and raw data: `smu.cs`, `load.cs`, the 26 benchmark runs, the two A/B CSVs, `setupdiff.py`, `tpmstate.py`, `batterycc.py`, `ecbridge.py`, `omenkbd.py`, `omenwatch.py`, `aodread.py`, plus `omenmon.py` (live power/thermal TUI), `limitwatch.py` (what resets the SMU limits), `pmtable-cores.py` (the per-core PM table groups), `smuraw.py` (SMN reads, query-class SMU mailbox commands, and one self-restoring mutating write), `smu-gate-probe.py` (reads the true SMU response from the rsp register, exposing the sysfs node's masking, and shows the CO gate is a recognised-and-refused command), `smu-gate-probe.log` (its raw output), `batterycctl.py` (battery charge control), `ecsweep.py` (EC dump/diff), `chipsec-km-msr-api.patch` (the driver fix for newer kernels), `chipsec-cezanne.xml` (the AMD platform file), `chipsec-recon.log` (raw command output), `bios-unwrap.sh` (unwraps the AMI update capsule, parses it as UEFI and as an AMD PSP directory), `bios-image-report.txt` (the full 684-file UEFI structural report), `psp-directory-report.txt` (the signed PSP module list, per-file verification status), and `aod-smm-handler.txt` (the `\AOD` SMI handler `AodSmmSsp` located in the image: its dependency expression, and the measured absence of any SMU mailbox address or SMU protocol), `aod-power-limit-probe.txt` (the same road driven with a power-limit lever, with the `power-profile-watch` confound removed: inert), `aod-smm-curve-optimizer-trace.txt` (the SMI handler's own command dispatcher disassembled, the `Set Curve Optimizer` branch's unmasked array index found and traced to the confirmed `AllocatePool(EfiACPIMemoryNVS, 0x220C, ...)` backing `AODT` — in-bounds, not exploitable — plus the still-open `AOD_SETUP` EFI variable lead), and [`uefi-shell-probe/`](evidence/uefi-shell-probe/) (a pre-boot UEFI Shell dump-and-writeback probe for the setup variables, rehearsed in a local QEMU + OVMF VM before touching the real firmware — the writeback test it settles is that `Setup`'s Linux-side lock is `efivarfs`'s, not the firmware's). |
 | [`evidence/power-profile-watch`](evidence/power-profile-watch) | Re-applies the power profile the instant `platform_profile` is written — the 5-minute re-apply window, closed. |
 | [`img_smokelessUMAF/`](img_smokelessUMAF/) | The 133 photographs of the SmokelessUMAF menus, kept as primary evidence. |
 

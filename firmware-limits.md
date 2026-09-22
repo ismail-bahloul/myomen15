@@ -76,6 +76,41 @@ the BIOS payload is PSS/RSA-signed — a modified image cannot be re-signed.
 One writable variable worth knowing: **`OsIndications`** — the standard bit a
 bootloader sets to ask the firmware to process a capsule update.
 
+### Correction: the setup lock is Linux's, not the firmware's
+
+The line above — "readable and not writable" — turns out to describe
+`efivarfs`, not the firmware underneath it. Calling `SetVariable` on `Setup`
+directly from the real UEFI Shell (`dmpstore`, outside efivarfs entirely,
+via a USB key prepared with `edk2-shell`'s `Shell_Full.efi`) with `Setup`'s
+own unchanged bytes — the same no-op already proven on the writable
+`Timeout` — **succeeds**:
+
+```
+Load and set variables from file: dumps\Setup-preloop.dat.
+Variable NV+RT+BS 'EC87D643-EBA4-4BB5-A1E5-3F3E36B20DA9:Setup' DataSize = 0x142
+```
+
+No error, and the before/after dumps are byte-identical, confirming a clean
+no-op rather than a silent partial write. The `immutable` inode flag
+`efivarfs` sets on `Setup` (and, by the same mechanism, `AmdSetup`,
+`AMD_PBS_SETUP`, `HPSetupData`, `AMITSESetup`, `SetupDefault`) is a **Linux
+policy layered on top of a firmware that accepts the write** — not a Sure
+Start-enforced lock at this layer. That distinction matters: it reopens a
+path to writing `Setup` directly (naming the nine still-unlabelled offsets
+programmatically, for instance) that this page had previously written off
+as closed.
+
+Two honest limits on what this proves, so it isn't over-read: only a
+same-value write-back was tested, on `Setup` specifically — not yet an
+actually different value, and not yet the other setup-family variables.
+Getting the exact `dmpstore` invocation right took two failed attempts
+first (wrong argument order, then `-l` silently falling back to the default
+`EFI_GLOBAL_VARIABLE` GUID when not given its own `-guid`) — both rehearsed
+and caught in a local QEMU + OVMF test VM before touching the real
+firmware, and both left an unambiguous byte-identical pair of dumps that
+looked like "nothing happened" for the wrong reason each time. Full
+transcript and tooling: [`evidence/uefi-shell-probe/`](evidence/uefi-shell-probe/).
+
 ## BIOS power limits are a POST-time seed, not a policy
 
 `ryzenadj` writes the SMU limits directly; the BIOS *System Configuration*

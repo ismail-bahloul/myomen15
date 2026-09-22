@@ -1,0 +1,2 @@
+Load and set variables from file: dumps\Setup-preloop.dat.
+Variable NV+RT+BS 'EC87D643-EBA4-4BB5-A1E5-3F3E36B20DA9:Setup' DataSize = 0x142
