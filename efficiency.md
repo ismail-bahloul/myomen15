@@ -6,81 +6,90 @@ on this machine the AC profile caps **both** frequency (3.2 GHz) and power
 the power cap alone gives the same work per joule — in which case the cap would
 be "doing nothing but hurting peak responsiveness".
 
-Measured, on AC, under `amd-pstate-epp`, kernel `7.2.6-1-cachyos`. Three
-configs, each: a fixed all-core load (the same loop as the Windows harness in
-§3, `evidence/load.c`), a 20 s warmup, a 40 s measurement window, and power +
-frequency sampled every second (`evidence/powsample.py`). The re-apply units
-(`power-profile-watch`, `power-profile.timer`) were stopped for the run so
-nothing clobbered a test config, and restored after.
+Measured on AC under `amd-pstate-epp`, kernel `7.2.6-1-cachyos`. Each config: a
+fixed all-core load (the loop from §3, `evidence/load.c`), a 20 s warmup, a 40 s
+window, power + frequency sampled every second (`evidence/powsample.py`), the
+re-apply units stopped so nothing clobbered a config.
 
-## The result
+## Correction first: the first run was ~2× low
 
-| Config | Throughput | STAPM VALUE | PPT VALUE SLOW | mean freq | Tctl | fan1 | **nJ / iteration** |
+The numbers originally on this page were **about half** the reproducible value —
+`ac` measured 3079 Mi/s where the same config re-measures at ~6400. The machine
+**rebooted between the two runs** (a Windows session), so they were different
+boots, and the exact cause of the halving is **not established**. It is recorded
+here, not papered over.
+
+Three independent re-runs agree at ~6400 Mi/s for the same ~3.07 GHz config, so
+the new numbers are the ones to trust:
+
+```
+eff-test.sh  'ac'        6391 Mi/s
+governor     'balanced'  6461 Mi/s     (same CPU settings as 'ac')
+direct       ./load      6426 Mi/s
+```
+
+A back-of-envelope cycle count agrees with ~6400, not 3079 (16 threads at
+3.07 GHz needs ~16 cycles/iteration to give 3079 — implausible for this loop,
+which fits ~8). **What the correction changes is the conclusion**, not just the
+scale — see below.
+
+## The result (reproduced)
+
+| Config | Throughput | PPT VALUE SLOW | mean freq | Tctl | fan1 | mJ / Miter | Mi/s per W |
 |---|---|---|---|---|---|---|---|
-| **AC** — 35 W **+ 3.2 GHz cap** | 3079.6 Mi/s | 12.86 W | 20.77 W | 3.07 GHz | 71.2 °C | 1594 | **6.74** |
-| **35 W, no cap** | 3787.5 Mi/s | 16.45 W | 33.45 W | 3.72 GHz | 81.8 °C | 2277 | **8.83** |
-| **PERF** — 54 W, no cap | 3739.4 Mi/s | 20.06 W | 34.66 W | 3.75 GHz | 83.0 °C | 2806 | **9.27** |
+| **AC** — 35 W **+ 3.2 GHz cap** | 6391.2 Mi/s | 30.83 W | 3.07 GHz | 80.0 °C | 2276 | 4.824 | 207 |
+| **35 W, no cap** | 6956.3 Mi/s | 34.18 W | 3.38 GHz | 82.6 °C | 2853 | 4.913 | 204 |
+| **PERF** — 54 W, no cap | 7412.0 Mi/s | 45.92 W | 3.63 GHz | 90.0 °C | 3708 | 6.195 | 161 |
+| governor `quiet` | 5682.2 Mi/s | 21.93 W | 2.71 GHz | 67.3 °C | 1367 | 3.859 | 259 |
+| governor `balanced` | 6461.6 Mi/s | 29.06 W | 3.07 GHz | 75.1 °C | 2000 | 4.498 | 222 |
+| governor `performance` | 7716.3 Mi/s | 50.54 W | 3.71 GHz | 89.8 °C | 3709 | 6.549 | 153 |
+| governor `battery` | 4193.4 Mi/s | 12.80 W | 2.12 GHz | 65.2 °C | 1366 | 3.052 | 328 |
 
-Power caveat, stated up front: `STAPM VALUE` has a 275 s time constant and does
-**not** settle inside a 40 s window, so it understates package power here —
-badly for the capped config. `PPT VALUE SLOW` (a ~5 s average) is the honest
-proxy for a 40 s run, and is what the nJ/iteration column uses. STAPM is kept
-beside it only for continuity with §3, which named it.
+`mJ / Miter` = millijoules per million iterations (`PPT VALUE SLOW` ÷
+throughput). `PPT VALUE SLOW`, a ~5 s average, is the package-power proxy for a
+40 s run; `STAPM VALUE` has a 275 s constant and does not settle in 40 s, so it
+is not used here. The three governor rows are the same harness with
+[`governor.md`](governor.md) modes applied (`evidence/gov-modes-test.sh`).
 
-## What it says
+## What it says now
 
-Two things fall out, and the second overturns the §3 guess.
-
-1. **Raising the power limit to 54 W earns nothing on this workload.** PERF
-   (3739 Mi/s) is the same as 35 W-no-cap (3788 Mi/s) — a 1.3 % difference,
-   inside the ±2.5 % run-to-run soak noise this repo already measured. The load
-   simply never needs 54 W: the 35 W-no-cap run drew 33.45 W (just under its
-   cap) and PERF drew 34.66 W, both far below 54. So `apply_perf`'s power
-   headroom is unused by a sustained all-core load; its only real effect there
-   is the `performance` governor.
-
-2. **The frequency cap is the most efficient config, not a no-op.** 6.74
-   nJ/iteration against 8.83 (no cap, same 35 W) and 9.27 (PERF). So the power
-   cap *alone* does **not** give the same work per joule — it is ~24 % worse.
-   The cap earns its keep: at 3.2 GHz the parts sit further down the voltage /
-   frequency curve, and the same work costs less energy.
-
-   The price is throughput: 3079 vs 3788 Mi/s, **-19 %**. So the AC cap is a
-   real trade-off — **-19 % speed for ~+24 % efficiency** — not the free
-   responsiveness win §3 hoped the cap might be wasting, and not the no-op it
-   feared either.
-
-Stated the other way, work per watt:
-
-```
-AC      3079.6 / 20.77 = 148.3  Mi/s per W
-nocap   3787.5 / 33.45 = 113.2  Mi/s per W
-PERF    3739.4 / 34.66 = 107.9  Mi/s per W
-```
+1. **The 3.2 GHz cap is efficiency-neutral, not a win.** `ac` (capped) and
+   `nocap` (35 W, uncapped) are within ~2 % on work per joule (207 vs
+   204 Mi/s·W⁻¹) — and a *repeat of the same config* (`ac` 207 vs the governor's
+   identical `balanced` 222) spreads ~7 %, so that 2 % is inside the noise.
+   **This overturns the original conclusion**, which had the cap ~24 % ahead;
+   that gap was an artefact of the low first run.
+2. **The cap still costs throughput** — ~9 % (6391 vs 6956). So at 3.2 GHz its
+   value is **thermals and noise, not energy**.
+3. **54 W buys little and costs efficiency.** PERF is +6.6 % throughput over
+   `nocap` for **+26 %** energy per unit work (161 vs 204 Mi/s·W⁻¹) — the
+   original "54 W earns nothing" was too strong; it earns ~7 % of speed, at a
+   real efficiency price.
+4. **Deeper caps do earn their keep.** `quiet` (2.71 GHz) and `battery`
+   (2.12 GHz) reach 259 and 328 Mi/s·W⁻¹ — 25 % and 60 % better than `ac`. So
+   "capping helps" is true, but the *3.2 GHz* point is roughly flat; it is the
+   **lower** caps that pay.
 
 ## Caveats
 
-- **One workload.** A branchy, cache-bound floating loop. Efficiency ordering
-  is workload-dependent: a memory-bound load that does not saturate the cores'
-  power would flatten these differences, and a load that can use 54 W would
-  change outcome (1). The *shape* — capped = most efficient, 54 W = no gain on
-  a load that tops out at ~34 W — is what this measures, not a universal law.
-- **Thermal soak.** Configs ran in sequence (AC → no-cap → PERF), so the later
-  ones started warmer (fan1 1594 → 2277 → 2806). The ±2.5 % soak noise is
-  smaller than the 19 % / 24 % effects here, so the ordering holds, but an
-  interleaved A/B/A would tighten it.
-- The `iGPU`/`dGPU` were not loaded, so whole-system power is not measured —
-  this is a CPU-package comparison only.
+- **One workload.** A branchy FP loop. Efficiency ordering is workload-dependent.
+- **Run-to-run spread is ~7 %**, measured directly (the same 3.07 GHz / 35 W
+  config gave 207 and 222 Mi/s·W⁻¹ in two runs). Differences under ~10 % are not
+  resolved by one run each; A/B/A would be needed to tighten them.
+- **The first-run anomaly (~2×) is unexplained.** The reboot between runs is the
+  only known difference; a power-source or thermal-state difference is possible
+  but was not captured.
+- The iGPU/dGPU were not loaded — this is a CPU-package comparison only.
 
 ## Reproducing
 
 ```bash
 gcc -O2 -pthread -o evidence/load evidence/load.c
-./evidence/eff-test.sh            # stops/restores the re-apply units itself
-python3 evidence/eff-analyze.py   # the table above
+./evidence/eff-test.sh          # ac / no-cap / perf
+./evidence/gov-modes-test.sh    # the governor modes
+python3 evidence/eff-analyze.py ac nocap perf gov-quiet gov-balanced gov-performance gov-battery
 ```
 
-Tooling: `evidence/load.c` (the load), `evidence/powsample.py` (the sampler),
-`evidence/eff-test.sh` (the three-config harness), `evidence/eff-analyze.py`
-(the summary), and the raw per-second samples in
+Tooling: `evidence/load.c`, `evidence/powsample.py`, `evidence/eff-test.sh`,
+`evidence/gov-modes-test.sh`, `evidence/eff-analyze.py`, raw samples in
 `evidence/autonomous-pass/eff-*.csv`.

@@ -244,6 +244,12 @@ is visible.
   keyboard backlight says otherwise: **writes there are ignored**, including via
   the firmware's own `LM05` method. `H2RA` is a one-way publication. That closes
   the hope of driving the fans through it. → [`h2ra-region.md`](h2ra-region.md)
+- **`H2RA`'s "fan curve table" is static, and `FMR1`/`FMR2` are not duties.** A
+  fan-setpoint sweep showed the two `18 18 1b 1d 1f 22 28 2a` runs and the two
+  `1a 1b 1f 26 28` runs never move with fan speed — they are the firmware's
+  **declared** curves (`24 24 27 29 31 34 40 42` % and `26 27 31 38 40`), so
+  `FMR1`/`FMR2` are the top of the curve, not live registers. Only the
+  tachometers track the fans. → [`h2ra-region.md`](h2ra-region.md)
 - **The `EIO` on MSR reads was Linux, not this machine.** Getting CHIPSEC
   running at all meant patching its kernel driver for a renamed kernel API
   first — and once it ran, a raw `rdmsr` through it returned correct values
@@ -422,10 +428,10 @@ What has not been tried yet, ordered by how much it would unlock:
 
 Grouped by what they act on — this is the working surface of the repo:
 
-- **SMU, power limits and the CPU load** — `smuraw.py` (SMN reads, query-class SMU mailbox commands, and one self-restoring mutating write), `smu-gate-probe.py` + `.log` (the true SMU response read from the rsp register — it exposes the sysfs node's masking, and shows the CO gate is a recognised-and-refused command), `pmtable-cores.py` (the per-core PM table groups), `omenmon.py` (live power/thermal TUI), `limitwatch.py` / `limitrace.py` / `ec-revert-ab-test.sh` / `nbfc_on.csv` / `nbfc_off.csv` (what resets the SMU limits — the A/B), `load.c` (the Linux CPU load; the Windows twin is `load.cs`), `powsample.py` / `eff-test.sh` / `eff-analyze.py` (the joules-per-iteration harness), and `power-profile-watch` + `.service` (the re-apply governor), and `omen-governor` (the proposed unified governor over all four levers — see [`governor.md`](governor.md)).
+- **SMU, power limits and the CPU load** — `smuraw.py` (SMN reads, query-class SMU mailbox commands, and one self-restoring mutating write), `smu-gate-probe.py` + `.log` (the true SMU response read from the rsp register — it exposes the sysfs node's masking, and shows the CO gate is a recognised-and-refused command), `pmtable-cores.py` (the per-core PM table groups), `omenmon.py` (live power/thermal TUI), `limitwatch.py` / `limitrace.py` / `ec-revert-ab-test.sh` / `nbfc_on.csv` / `nbfc_off.csv` (what resets the SMU limits — the A/B), `load.c` (the Linux CPU load; the Windows twin is `load.cs`), `powsample.py` / `eff-test.sh` / `eff-analyze.py` (the joules-per-iteration harness), and `power-profile-watch` + `.service` (the re-apply governor), and `omen-governor` (the proposed unified governor over all four levers — see [`governor.md`](governor.md)), plus `gov-modes-test.sh` (measures each governor mode under load).
 - **Embedded controller** — `ecbridge.py` (the ACPI EC/I-O bridge), `ecsweep.py` (EC dump/diff), `ecwatch.py` (registers under load), `omenkbd.py` / `omenwatch.py` (keyboard backlight, the `H2RA` watch), and `batterycctl.py` / `batterycc.py` (battery charge control).
 - **Firmware, EFI and the setup store** — `setupdiff.py` (the setup tables, `twoleg`), `tpmstate.py` (the TPM variables), `setup-poke.py` (a CRC-correct `dmpstore` `.dat`, built or inspected), `chipsec-cezanne.xml` / `chipsec-km-msr-api.patch` / `chipsec-recon.log`, `bios-unwrap.sh` / `bios-image-report.txt` / `psp-directory-report.txt` (unwrapping the AMI capsule and parsing it as UEFI and as an AMD PSP directory), `aodread.py` / `aod-smm-handler.txt` / `aod-smm-curve-optimizer-trace.txt` / `aod-power-limit-probe.txt` (the `\AOD` SMI handler, located and disassembled), and the rehearsed probes `uefi-shell-probe/`, `tpm-experiment/`, `usbcam-experiment/`, `aod-setup-probe/`.
-- **The lowest layers** — `smnscan.py` (SMN reads cross-checked between the sysfs node and the raw PCI config window), `msrread.py` (raw MSR reads with the validity discriminators), `memdump.py` (read-only `/dev/mem` hexdump), and `deep-recon/` (the raw PCI-config, SMN, SPI-MMIO and MSR captures).
+- **The lowest layers** — `smnscan.py` (SMN reads cross-checked between the sysfs node and the raw PCI config window), `msrread.py` (raw MSR reads with the validity discriminators), `memdump.py` (read-only `/dev/mem` hexdump), `h2ra-sweep.sh` (which `H2RA` bytes are a static curve vs the fans), and `deep-recon/` (the raw PCI-config, SMN, SPI-MMIO and MSR captures).
 - **The dGPU, and the Windows side** — `dgpu-probe.txt` (the Linux probe), `gpuload.cu` (the CUDA GPU load), `ab-log-analyze.py` (RTSS CSV logs), `hml-analyze.py` (Afterburner's own `HardwareMonitoring.hml`; `--windows` is how the passes are compared), `nv-surface.sh` (the exposed NVIDIA surface), and `dgpu-windows/` (the extracted windows; the 36 MB raw `.hml` are local, not versioned).
 - **Benchmarks and captures** — `results.jsonl` (the 26 Windows benchmark runs), `ab-test.log`, `smu.cs` (the Windows SMU prober), and `autonomous-pass/` (the IOMMU, ESRT, i²c, efficiency and EC-under-load captures).
 
