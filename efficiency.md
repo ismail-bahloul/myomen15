@@ -116,6 +116,35 @@ Beware the clock when measuring this: the PM table's per-core effective clock
 on burst exit, so it must not be used as an instantaneous peak. Throughput and
 power are the reliable instruments. See [`pm-table.md`](pm-table.md).
 
+### What the cap removal actually costs thermally
+
+The single-thread +26 % is not free, and the cost is **workload-shaped**. A
+controlled A/B (`evidence/thermal-ab.sh`, sampled at 1 Hz, run in both orders to
+cancel the "warmer second pass" bias) over idle → 1 thread → cooldown →
+14 threads:
+
+| Phase | OLD: 35 W **+ 3.2 GHz cap** | NEW: 28 W, **no cap** |
+|---|---|---|
+| idle | 57.5–60.8 °C, fan 1061–1143 | 59.4–59.7 °C, fan 1137–1143 |
+| **1 thread, 60 s** | 59.9–64.5 °C, fan 1029–1139, 10.3 W | **73.2–73.3 °C**, fan 1606–1649, 15.0 W |
+| **14 threads, 50 s** | 71.7–74.5 °C, fan 1526–1812, 27.9 W | 73.9–74.5 °C, fan 1879–1903, 27.1 W |
+| cooldown | 57.0–61.0 °C | 62.3–62.6 °C |
+
+So:
+
+- **Idle and all-core are unchanged.** The 14-thread temp is the same (within
+  ~2 °C) and the package power is the same or *lower* (27.1 vs 27.9 W) — the
+  power cap, not the frequency cap, was doing the all-core work.
+- **Only a sustained single thread gets hotter: +9…+13 °C and ~+500 rpm.** That
+  is the 4.0 GHz boost spending 15 W in one core instead of 10 W at 3.2 GHz.
+  Note it is very reproducible on the new side (73.2 / 73.3 °C across both
+  orderings) and bounded: 73 °C is ~11 °C under the 85 °C AC limit, and the fan
+  lands on a mid step (~1650 rpm, ~28 %), not at its ceiling.
+- The extra heat is therefore a **noise** cost on the light path, not a
+  throttling or durability one. It shows up on long single-threaded work — a
+  build, a JS-heavy page, an emulator — not on app-launch bursts, which [cost the
+  same either way](#a-burst-costs-the-same-either-way).
+
 ### The better instrument: a lower power cap, not a frequency cap
 
 The frequency cap's cooling is really just "less all-core power", and a **power**
@@ -154,9 +183,12 @@ gcc -O2 -pthread -o evidence/load evidence/load.c
 python3 evidence/eff-analyze.py ac nocap perf gov-quiet gov-balanced gov-performance gov-battery
 ./evidence/st-ab.sh             # single-thread capped vs uncapped (3 reps each)
 ./evidence/burst-peak.sh        # burst peak power/heat, capped vs uncapped
+./evidence/thermal-ab.sh        # thermal A/B across idle / 1 thread / 14 threads
+python3 evidence/thermal-analyze.py old new
 ```
 
 Tooling: `evidence/load.c`, `evidence/powsample.py`, `evidence/eff-test.sh`,
 `evidence/gov-modes-test.sh`, `evidence/eff-analyze.py`, `evidence/st-ab.sh`,
-`evidence/burst-peak.sh`, raw samples in `evidence/autonomous-pass/eff-*.csv`
-and `evidence/autonomous-pass/st-*.csv`.
+`evidence/burst-peak.sh`, `evidence/thermal-ab.sh` + `evidence/thermal-analyze.py`,
+raw samples in `evidence/autonomous-pass/eff-*.csv`,
+`evidence/autonomous-pass/st-*.csv` and `evidence/autonomous-pass/thermal-*.csv`.

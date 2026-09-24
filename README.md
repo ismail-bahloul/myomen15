@@ -287,7 +287,9 @@ is visible.
   cap** — 28 W with no cap matches the capped config's all-core heat and gives
   back the single-thread speed. A short burst (an app launch) costs the same
   either way (~10 W peak, ~60.5 °C), so the cap cannot be defended as "quieter
-  bursts". → [`efficiency.md`](efficiency.md)
+  bursts". The only thing the cap removal heats is a *sustained single thread*:
+  **+9–13 °C and ~+500 rpm** on one busy core, while idle and all-core are
+  unchanged. → [`efficiency.md`](efficiency.md)
 - **The raw SMU layer went from read to written, on purpose and in order.**
   Two query commands first (`GetPmTableVersion`, `GetDramBaseAddress`), each
   cross-checked against a value independent of the command itself, before a
