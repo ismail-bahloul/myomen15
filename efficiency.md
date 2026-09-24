@@ -72,21 +72,49 @@ is not used here. The three governor rows are the same harness with
 
 ## The cap's cost depends on the workload
 
-`evidence/cap-single-thread.sh` closes the gap the 16-thread table leaves: the
-cap bounds the *ceiling*, so its cost is small where the all-core ceiling is
-already low, and large where a core would otherwise boost.
+`evidence/st-ab.sh` closes the gap the 16-thread table leaves: the cap bounds the
+*ceiling*, so its cost is small where the all-core ceiling is already low, and
+large where a core would otherwise boost. It pins one thread to core 0, runs
+3 alternating reps per config (to average out whatever slow state the SMU carries
+between runs), and measures throughput plus power and temperature:
 
-| Load | capped 3.2 GHz | uncapped (same 35 W) | cost |
+| Load | capped 3.2 GHz (28 W) | uncapped (28 W) | cost |
 |---|---|---|---|
-| 1 thread | 418.8 Mi/s @ 3.17 GHz | 531.9 Mi/s @ 4.02 GHz | **−21 %** |
+| 1 thread | 417.7 Mi/s @ 3.17 GHz, 10.4 W, 65.8 °C | 526.1 Mi/s @ 3.96 GHz, 13.7 W, 72.6 °C | **−20.6 %** |
 | 16 threads | 6391 Mi/s | 6956 Mi/s | −8 % |
+
+The 1-thread row is three reps per config, and the spread is tight (cap 417.4–
+418.1, no-cap 525.8–526.3 Mi/s), so the −21 % is solid; it agrees with the older
+`cap-single-thread.sh` run (−21 %, 418.8 vs 531.9).
 
 So the cap taxes **light work ~21 %** — where the core is not hot and the cap
 buys nothing — to keep *sustained* loads ~3.4 W cooler (30.8 vs 34.2 W, ~11 %).
-It is a blunt instrument: the 35 W power cap already binds only under load and
-lets a light thread boost to ~4 GHz; the **frequency** cap is what also neuters
-the light case. If the goal is cool-and-quiet under load, the power cap and the
-fan curve do that; the frequency cap's extra cost lands on responsiveness.
+It is a blunt instrument: the power cap already binds only under load and lets a
+light thread boost to ~4 GHz; the **frequency** cap is what also neuters the
+light case. If the goal is cool-and-quiet under load, the power cap and the fan
+curve do that; the frequency cap's extra cost lands on responsiveness.
+
+### A burst costs the same either way
+
+The −21 % is a *sustained* single-thread figure. Real interactive work is bursty:
+an app launch or a keystroke response occupies a core for well under a second.
+`evidence/burst-peak.sh` runs that shape — six 1 s bursts on two cores, pinned,
+sampled at 50 Hz from the PM table — capped vs uncapped:
+
+| Burst (1 s, 2 threads) | peak PPT-fast | peak PPT-slow | peak Tctl |
+|---|---|---|---|
+| capped 3.2 GHz | 10.2 W | 8.1 W | 61.0 °C |
+| no cap | 10.1 W | 8.1 W | 60.4 °C |
+
+No difference: a burst peaks at ~10 W either way, ~3.7 W below the sustained
+single-thread case, and Tctl is identical within noise. The extra power the cap
+withholds is only spent when a core is held busy for many seconds — opening and
+closing apps quickly does **not** reach it.
+
+Beware the clock when measuring this: the PM table's per-core effective clock
+(`0x3e0`) was seen to read **above the 4.465 GHz part limit** (6.35, 6.50 GHz)
+on burst exit, so it must not be used as an instantaneous peak. Throughput and
+power are the reliable instruments. See [`pm-table.md`](pm-table.md).
 
 ### The better instrument: a lower power cap, not a frequency cap
 
@@ -102,7 +130,9 @@ cap delivers that without touching the light case. Measured
 Same all-core power and heat (within ~0.6 W and ~2 °C), and **+26 % on a single
 thread**. So dropping the frequency cap and lowering the power cap to ~30 W keeps
 the cooling and gives back the responsiveness. The cap was the wrong instrument:
-the power cap binds only under load, the frequency cap binds always.
+the power cap binds only under load, the frequency cap binds always. The profile
+now deployed as AC applies exactly this: **28 W, no frequency cap**
+(`TDP_AC=28000`, `FREQ_AC=4465000`).
 
 ## Caveats
 
@@ -122,8 +152,11 @@ gcc -O2 -pthread -o evidence/load evidence/load.c
 ./evidence/eff-test.sh          # ac / no-cap / perf
 ./evidence/gov-modes-test.sh    # the governor modes
 python3 evidence/eff-analyze.py ac nocap perf gov-quiet gov-balanced gov-performance gov-battery
+./evidence/st-ab.sh             # single-thread capped vs uncapped (3 reps each)
+./evidence/burst-peak.sh        # burst peak power/heat, capped vs uncapped
 ```
 
 Tooling: `evidence/load.c`, `evidence/powsample.py`, `evidence/eff-test.sh`,
-`evidence/gov-modes-test.sh`, `evidence/eff-analyze.py`, raw samples in
-`evidence/autonomous-pass/eff-*.csv`.
+`evidence/gov-modes-test.sh`, `evidence/eff-analyze.py`, `evidence/st-ab.sh`,
+`evidence/burst-peak.sh`, raw samples in `evidence/autonomous-pass/eff-*.csv`
+and `evidence/autonomous-pass/st-*.csv`.

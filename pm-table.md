@@ -127,6 +127,15 @@ delivers. (Whether `0x3c0` is best named "requested" or "last decided P-state"
 is not settled; what is settled is that it is not an average — it held its value
 across the whole idle sample instead of decaying.)
 
+### Caveat: `0x3e0` glitches above the part limit
+
+`0x3e0` is fine for a *window mean*, but as an *instantaneous peak* it lies:
+on burst exit it was read at **6.35 and 6.50 GHz** — above the 4.465 GHz limit of
+this 5800H. The value is real in the table; it is just not a frequency. So a
+"peak clock" claim built on `max(0x3e0)` is not trustworthy, and throughput or
+PPT is the right instrument for anything about a transient. (Found while
+measuring burst heat; see [`efficiency.md`](efficiency.md).)
+
 ### Why `cpufreq` could not be the reference
 
 ```
