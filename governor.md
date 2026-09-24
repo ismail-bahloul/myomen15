@@ -49,6 +49,24 @@ one); the `quiet` row is new, and the fan column is a *bias*, not a curve.
 `auto` is not a mode but a policy: pick `balanced`/`performance` on AC and
 `battery` on battery, exactly as `power-profile` does today.
 
+### The modes, measured
+
+`evidence/gov-modes-test.sh` applies each mode and runs the fixed load from
+[`efficiency.md`](efficiency.md)'s harness. Same load, four settings:
+
+| Mode | mean clock | throughput | package power | work / joule |
+|---|---|---|---|---|
+| `battery` | 2.12 GHz | 4193 Mi/s | 12.80 W | **328** Mi/s·W⁻¹ |
+| `quiet` | 2.71 GHz | 5682 Mi/s | 21.93 W | 259 |
+| `balanced` | 3.07 GHz | 6462 Mi/s | 29.06 W | 222 |
+| `performance` | 3.71 GHz | 7716 Mi/s | 50.54 W | 153 |
+
+A clean monotone ladder: each step up buys throughput at a real, measured
+efficiency cost — `battery` → `performance` is **+84 % throughput for −53 %
+work per joule**. So the `quiet` and `battery` numbers are now measured points,
+not guesses (though whether they are the *optimal* points on these curves is
+still open).
+
 ## The coherence rules — the part that was missing
 
 1. **One writer.** The governor must be the only thing that writes the CPU
@@ -99,10 +117,11 @@ just a power setting, it owns the profile (`systemctl`-level ownership, rule 1).
 ## What is measured, and what is a design choice
 
 - **Measured:** every lever's *existence and direction* (the tables above), the
-  drift and the `platform_profile` interaction, the fan response to `nbfc set`.
-- **Design choice, not measured optimum:** the exact `quiet` numbers, and the
-  per-mode GPU caps. They are sensible points on curves this repo has measured;
-  they are not claimed to be optimal.
+  drift and the `platform_profile` interaction, the fan response to `nbfc set`,
+  and now the **effect of each mode under load** (the ladder above).
+- **Design choice, not measured optimum:** the exact per-mode *target* values.
+  They sit on measured curves and behave as measured, but nothing here claims
+  `quiet`'s 2.8 GHz or `battery`'s 2.4 GHz is the best point on its curve.
 
 ## Failure modes worth designing for
 
