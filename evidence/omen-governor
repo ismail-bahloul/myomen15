@@ -1,0 +1,316 @@
+#!/usr/bin/env python3
+"""omen-governor — one mode, four levers, one writer.
+
+The design is in governor.md. This is the reference implementation: it applies a
+single named mode coherently across the CPU power limits, the CPU frequency/EPP,
+the dGPU clock lock and the platform profile, reads every value back through the
+same instruments the rest of this repo uses, and refuses to write anything
+without --commit.
+
+It is deliberately one file, so it can be read before it is trusted. Fans are
+NOT controlled here: nbfc's `my-nbfc` curve is tuned and stays the fan owner
+(governor.md rule 3).
+
+  status                     read every lever + temps, and guess the active mode
+  apply <mode>               dry-run: print the delta only
+  apply <mode> --commit      actually write it
+  auto [--commit]            balanced/performance on AC, battery off it
+  watch                      subsumes power-profile-watch: re-apply on drift
+
+The mode table is MODES, below. Nothing else to configure.
+"""
+
+from __future__ import annotations
+
+import glob
+import os
+import signal
+import struct
+import subprocess
+import sys
+import time
+
+# ---------------------------------------------------------------------------
+# The modes. cpu = (STAPM, PPT-fast, PPT-slow, APU-slow, Tctl) in mW / degC.
+# The balanced/performance rows are the machine's own tuned profiles; quiet and
+# battery are design choices (governor.md).
+# ---------------------------------------------------------------------------
+MODES = {
+    "quiet":       dict(cpu=(25000, 32000, 25000, 20000, 80), gov="powersave",
+                        maxf=2800000, epp="power", gpu=(0, 1200), profile="cool"),
+    "balanced":    dict(cpu=(35000, 42000, 35000, 22000, 85), gov="powersave",
+                        maxf=3200000, epp="balance_power", gpu=(500, 1800), profile="balanced"),
+    "performance": dict(cpu=(54000, 65000, 54000, 42000, 90), gov="performance",
+                        maxf=4465000, epp="performance", gpu=None, profile="performance"),
+    "battery":     dict(cpu=(15000, 18000, 15000, 15000, 65), gov="powersave",
+                        maxf=2400000, epp="power", gpu=(0, 400), profile="cool"),
+}
+
+ACAD = "/sys/class/power_supply/ACAD/online"
+PROFILE = "/sys/class/platform-profile/platform-profile-0/profile"
+PM_TABLE = "/sys/kernel/ryzen_smu_drv/pm_table"
+PM_LEN = 2372
+CPU_POLICIES = "/sys/devices/system/cpu/cpufreq/policy0"
+MODE_FILE = "/run/omen-governor.mode"
+
+# PM-table float32 offsets: the four limit fields this governor sets.
+PM_OFF = {"stapm": 0x00, "fast": 0x08, "slow": 0x10, "tctl": 0x40}
+
+
+def read_pm() -> dict | None:
+    try:
+        with open(PM_TABLE, "rb") as fh:
+            raw = fh.read(PM_LEN)
+    except OSError:
+        return None
+    if len(raw) < PM_LEN:
+        return None
+    floats = struct.unpack("<%df" % (PM_LEN // 4), raw)
+    return {k: round(floats[o // 4]) for k, o in PM_OFF.items()}
+
+
+def read_profile() -> str:
+    try:
+        with open(PROFILE) as fh:
+            return fh.read().strip()
+    except OSError:
+        return "?"
+
+
+def read_cpufreq() -> dict:
+    out = {}
+    for key, fn in (("gov", "scaling_governor"), ("maxf", "scaling_max_freq"),
+                    ("epp", "energy_performance_preference")):
+        try:
+            with open(os.path.join(CPU_POLICIES, fn)) as fh:
+                out[key] = fh.read().strip()
+        except OSError:
+            out[key] = "?"
+    return out
+
+
+def read_ac() -> bool:
+    try:
+        with open(ACAD) as fh:
+            return fh.read().strip() == "1"
+    except OSError:
+        return True
+
+
+def hwmon(name: str) -> str | None:
+    for d in glob.glob("/sys/class/hwmon/hwmon*"):
+        try:
+            if open(d + "/name").read().strip() == name:
+                return d
+        except OSError:
+            pass
+    return None
+
+
+def read_temps() -> dict:
+    out = {}
+    for key, hw, fn in (("Tctl", "k10temp", "temp1_input"),
+                        ("iGPU", "amdgpu", "temp1_input")):
+        d = hwmon(hw)
+        if d:
+            try:
+                out[key] = int(open(d + "/" + fn).read()) / 1000.0
+            except OSError:
+                pass
+    return out
+
+
+def read_fans() -> dict:
+    d = hwmon("hp")
+    out = {}
+    if d:
+        for i in (1, 2):
+            try:
+                out["fan%d" % i] = int(open("%s/fan%d_input" % (d, i)).read())
+            except OSError:
+                pass
+    return out
+
+
+def read_gpu() -> dict:
+    try:
+        q = "clocks.gr,clocks.mem,power.draw,utilization.gpu"
+        r = subprocess.run(["nvidia-smi", "--query-gpu=" + q,
+                            "--format=csv,noheader,nounits"],
+                           capture_output=True, text=True, timeout=5)
+        if r.returncode == 0:
+            gr, mem, pw, util = [x.strip() for x in r.stdout.strip().split(",")]
+            return dict(gr=gr, mem=mem, power=pw, util=util)
+    except (OSError, subprocess.SubprocessError):
+        pass
+    return {}
+
+
+# ---------------------------------------------------------------------------
+# Applying
+# ---------------------------------------------------------------------------
+def _write(path: str, value: str) -> None:
+    with open(path, "w") as fh:
+        fh.write(value)
+
+
+def _apply(cmd: list[str]) -> None:
+    subprocess.run(cmd, check=False, stdout=subprocess.DEVNULL,
+                   stderr=subprocess.DEVNULL)
+
+
+def plan(mode: str) -> list[str]:
+    """The human-readable plan, and the reason a step might be skipped."""
+    m = MODES[mode]
+    pm = read_pm()
+    steps = []
+    if pm:
+        want = dict(zip(("stapm", "fast", "slow"), map(lambda x: x // 1000, m["cpu"][:3])))
+        for k in ("stapm", "fast", "slow"):
+            if pm.get(k) != want[k]:
+                steps.append("CPU %s: %s -> %s W" % (k, pm.get(k), want[k]))
+        if pm.get("tctl") != m["cpu"][4]:
+            steps.append("Tctl: %s -> %s C" % (pm.get("tctl"), m["cpu"][4]))
+    cf = read_cpufreq()
+    for key, val in (("gov", m["gov"]), ("maxf", str(m["maxf"])), ("epp", m["epp"])):
+        if cf.get(key) != val:
+            steps.append("cpufreq %s: %s -> %s" % (key, cf.get(key), val))
+    if m["gpu"]:
+        steps.append("dGPU clock lock -> %d,%d MHz" % m["gpu"])
+    if read_profile() != m["profile"]:
+        steps.append("platform_profile: %s -> %s" % (read_profile(), m["profile"]))
+    return steps
+
+
+def apply_mode(mode: str, commit: bool) -> None:
+    m = MODES[mode]
+    steps = plan(mode)
+    if not steps:
+        print("already in %s -- nothing to do" % mode)
+    else:
+        print("mode %s%s:" % (mode, "" if commit else "  (dry-run -- nothing written)"))
+        for s in steps:
+            print("  " + s)
+    if not commit:
+        return
+
+    s, f, sl, apu, tctl = m["cpu"]
+    # Rule 2, corrected by testing this governor: the profile goes FIRST. Any
+    # write to platform_profile makes the EC re-apply its own limits within ~1 s
+    # (firmware-limits.md), so the CPU limits must land *after* that, not before.
+    try:
+        _write(PROFILE, m["profile"])
+        time.sleep(1.0)
+    except OSError as e:
+        print("cannot write platform_profile: %s" % e, file=sys.stderr)
+    _apply(["ryzenadj", "--stapm-limit=%d" % s, "--fast-limit=%d" % f,
+            "--slow-limit=%d" % sl, "--apu-slow-limit=%d" % apu,
+            "--tctl-temp=%d" % tctl])
+    for cpu in glob.glob("/sys/devices/system/cpu/cpu*/cpufreq/"):
+        for fn, val in (("scaling_governor", m["gov"]),
+                        ("scaling_max_freq", str(m["maxf"])),
+                        ("energy_performance_preference", m["epp"])):
+            try:
+                _write(cpu + fn, val)
+            except OSError:
+                pass
+    if m["gpu"]:
+        _apply(["nvidia-smi", "--lock-gpu-clocks=%d,%d" % m["gpu"]])
+    else:
+        _apply(["nvidia-smi", "--reset-gpu-clocks"])
+    try:
+        _write(MODE_FILE, mode)
+    except OSError:
+        pass
+    print("applied %s" % mode)
+
+
+def auto_mode() -> str:
+    return "balanced" if read_ac() else "battery"
+
+
+def status() -> None:
+    pm = read_pm() or {}
+    cf = read_cpufreq()
+    print("platform_profile : %s%s" % (read_profile(), "" if read_ac() else "   (on battery)"))
+    print("CPU limits (PM)  : STAPM %s W  fast %s W  slow %s W  Tctl %s C"
+          % (pm.get("stapm"), pm.get("fast"), pm.get("slow"), pm.get("tctl")))
+    print("cpufreq          : %s  max %s kHz  epp %s" % (cf.get("gov"), cf.get("maxf"), cf.get("epp")))
+    g = read_gpu()
+    if g:
+        print("dGPU             : %s MHz core  %s MHz mem  %s W  %s %% util"
+              % (g.get("gr"), g.get("mem"), g.get("power"), g.get("util")))
+    t = read_temps()
+    f = read_fans()
+    print("thermals         : " + "  ".join("%s %s C" % (k, v) for k, v in t.items())
+          + ("   fans %s/%s RPM" % (f.get("fan1"), f.get("fan2")) if f else ""))
+    active = "?"
+    for name in MODES:
+        want = [x // 1000 for x in MODES[name]["cpu"][:3]]
+        if [pm.get(k) for k in ("stapm", "fast", "slow")] == want:
+            active = name
+            break
+    print("active mode      : %s" % active)
+
+
+def watch() -> None:
+    """Re-apply the active mode on drift, or on a foreign profile write."""
+    running = True
+
+    def stop(*_):
+        nonlocal running
+        running = False
+
+    signal.signal(signal.SIGTERM, stop)
+    signal.signal(signal.SIGINT, stop)
+
+    try:
+        with open(MODE_FILE) as fh:
+            mode = fh.read().strip()
+    except OSError:
+        mode = auto_mode()
+    if mode not in MODES:
+        mode = auto_mode()
+    print("omen-governor: watching; active mode %s" % mode, flush=True)
+
+    known_pm = read_pm()
+    known_profile = read_profile()
+    while running:
+        time.sleep(1.0)
+        cur_pm = read_pm()
+        cur_profile = read_profile()
+        drift = (cur_pm is not None and known_pm is not None and cur_pm != known_pm)
+        foreign = cur_profile != MODES[mode]["profile"]
+        if drift or foreign:
+            why = "limits moved" if drift else "profile changed to %r" % cur_profile
+            print("omen-governor: %s; re-applying %s" % (why, mode), flush=True)
+            apply_mode(mode, commit=True)
+            known_pm = read_pm()
+            known_profile = read_profile()
+        else:
+            known_pm = cur_pm if cur_pm is not None else known_pm
+
+
+def main() -> None:
+    args = [a for a in sys.argv[1:]]
+    commit = "--commit" in args
+    args = [a for a in args if a != "--commit"]
+    if not args:
+        sys.exit(__doc__.strip().splitlines()[-1])
+    cmd = args[0]
+    if cmd == "status":
+        status()
+    elif cmd == "apply" and len(args) == 2:
+        if args[1] not in MODES:
+            sys.exit("unknown mode: %s (have: %s)" % (args[1], ", ".join(MODES)))
+        apply_mode(args[1], commit)
+    elif cmd == "auto":
+        apply_mode(auto_mode(), commit)
+    elif cmd == "watch":
+        watch()
+    else:
+        sys.exit(__doc__.strip().splitlines()[-1])
+
+
+if __name__ == "__main__":
+    main()
