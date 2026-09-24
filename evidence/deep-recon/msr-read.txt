@@ -1,0 +1,12 @@
+0x00000010 TSC          = 0x000006DB4DD32CE0   live timestamp counter
+0x0000001B APIC_BASE    = 0x00000000FEE00900   known-good per chipsec-recon.md
+0x0000008B PATCH_LEVEL  = 0x000000000A500014   loaded microcode revision
+0xC0000080 EFER         = 0x0000000000009D01   known-good per chipsec-recon.md
+0xC0010015 HWCR         = 0x00000001C9000011   SmmLock bit0 / SmmBaseLock bit31 / SmmPgCfgLock bit33
+0xC0010111 SMM_BASE     = 0x00000000BEF62000   SMM base address
+0xC0010112 SMM_ADDR     = 0x00000000BE000000   TSEG base
+0xC0010113 SMM_MASK     = 0x0000FFFFFF006603   TSEG mask / AVALID / TVALID
+0xC0010114 VM_CR        = 0x0000000000000008   SVM control
+0xC0010010 SYSCFG       = 0x0000000000740000   MtrrFixDramModEn etc.
+0x000001A0 IA32_MISC_ENABLE = ERROR Input/output error   Intel-only; #GP on AMD -- the one read that DID EIO
+0xDEADBEEF invalid      = ERROR Input/output error   nonsense MSR, must EIO if reads are unfiltered

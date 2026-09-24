@@ -21,6 +21,42 @@ still untouched; see "What is written now, and what still isn't" below.
 Reading an SMN register: write the address as one u32, read one u32 back.
 Writing one: write two u32, `(address, value)`. **Only reads were used here.**
 
+## The same SMN, without the module
+
+The driver reaches SMN through the standard AMD indirect window on the root
+complex `00:00.0`: offset `0xB8` is the SMN index, `0xBC` is the data. That is
+a plain PCI config register, so the *same* reads are available with `setpci`
+and no `ryzen_smu` at all:
+
+```
+$ sudo setpci -s 00:00.0 b8.l=3B10A80     # write the SMN address
+$ sudo setpci -s 00:00.0 bc.l             # read the data back
+00000001
+$ sudo python3 evidence/smuraw.py smn 0x3B10A80
+SMN 0x03B10A80 = 0x00000001  (OK)
+```
+
+Cross-checked over the whole `0x3B10000`–`0x3B10FFF` mailbox page, both ways
+(`evidence/smnscan.py diff`): **1021 of 1024 registers agree exactly**. The
+three that differ are volatile — `0x3B10F00` changes on *every* read, so it
+has a read side-effect, and `0x3B10F14` / `0x3B1002C` flip between reads. That
+is itself worth keeping: **an SMN read is not guaranteed to be idempotent**,
+which is one more reason a blind SMN write sweep is the wrong first move.
+
+Two consequences:
+
+- SMN is reachable from a running OS with no kernel module — `setpci` alone is
+  enough. The module is a convenience, not the gate.
+- The page maps cleanly: MP1 `cmd 0x3B10528` / `rsp 0x3B10564` /
+  `args 0x3B10998`, RSMU `cmd 0x3B10A20` / `rsp 0x3B10A80` / `args 0x3B10A88`,
+  and the SMU version `0x00404A00` at `0x3B10058` — all matching what the
+  driver and `ryzenadj` already report. Full non-zero map:
+  `evidence/deep-recon/smn-mailbox-page.txt`.
+
+The window is **read/write** — `0xB8`/`0xBC` accepts a write exactly as the
+sysfs node's two-`u32` form does. Detected, not used: the position on `smn`
+writes below applies to this path identically.
+
 ## The protocol, verified end to end
 
 Sending a command: write the six u32 arguments to `smu_args`, write the command

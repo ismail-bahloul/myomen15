@@ -53,6 +53,17 @@ different and already-tested path (`smu-raw.md`, `record/02-*`), not through
 MSR reads. What it does mean is the `🔴` on that README row overstates where
 the block actually lives.
 
+**Correction, added later — "the Linux allowlist" is wrong too.** `0x1a0` is
+`IA32_MISC_ENABLE`, an **Intel** MSR that does not exist on this AMD part, so
+the read takes a `#GP` and `msr.c` reports `EIO` for *that* reason — not
+because it filtered anything. Read directly through the stock
+`/dev/cpu/N/msr` node (no CHIPSEC, no driver patch), the AMD MSRs return fine:
+`0xC0010015` HWCR, `0xC0000080` EFER (identical to CHIPSEC's `0x9D01`), the
+SMM MSRs — while `0x1a0` and a nonsense MSR both still `EIO`. So there was
+never a block at this layer, and CHIPSEC's driver was never required to read
+an MSR here. What that made readable (SMM lock state, TSEG) is in
+[`msr-and-smm.md`](msr-and-smm.md).
+
 ## A platform CHIPSEC doesn't know, and what it takes to teach it
 
 CHIPSEC 2.0.8 (git HEAD) ships zero AMD platform definitions below Strix Point
@@ -131,7 +142,7 @@ know whether `WriteProtect` here does anything enforceable at all.
 
 | Question | Before this page | After |
 |---|---|---|
-| Are MSRs blocked by hardware/firmware? | Assumed, from `EIO` | **No** — blocked by the Linux `msr` module's own allowlist; raw `rdmsr` via CHIPSEC works and returns correct values |
+| Are MSRs blocked by hardware/firmware? | Assumed, from `EIO` | **No** — and not by Linux either: `0x1a0` is an Intel-only MSR, so the `EIO` was an invalid register, not a policy. Valid AMD MSRs read via the stock node. → [`msr-and-smm.md`](msr-and-smm.md) |
 | Does that reopen Curve Optimizer? | — | **No** — CO is gated at the SMU mailbox, a separate path already tested and refused on both OSes |
 | Can CHIPSEC's own BIOS-write-protect check run here? | Not tried | **No** — that module is Intel-only architecturally, unrelated to platform support |
 | Is there a readable FCH-level write-protect register? | Not known to exist as a measured value | **Yes** — `ROMPROTECT2` has `WriteProtect=1` over a narrow, ambiguous range; not yet correlated to any actual write behaviour |
