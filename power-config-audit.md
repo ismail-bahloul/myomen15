@@ -129,3 +129,10 @@ re-verified above).
   choices that is not "more cooling" (`cool`) or "more power" (`performance`);
   since it has no power effect here and fans are `nbfc`'s, `balanced` is the
   right neutral resting value.
+- **`--power-saving` (battery) is an opaque SMU hint.** `ryzenadj` reports
+  `Successfully enable power_saving`, but a full `ryzenadj --info` diff before/after
+  shows **no** change to any limit or to `CCLK Boost SETPOINT`. Its own `--help`
+  calls it a "hidden option ... behavior depends on CPU generation, Device and
+  Manufacture", so it is a hint to the SMU, not a register this surface can read
+  back. It is harmless and semantically right for battery; it just cannot be
+  credited with a visible effect here.
