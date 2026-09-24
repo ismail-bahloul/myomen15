@@ -1,0 +1,101 @@
+# The deployed power config — audited against its own intent
+
+This is a read-only audit of the config that actually runs on this machine:
+`/usr/local/bin/power-profile` (+ `power-profile-watch`, `power-profile.{service,timer}`),
+`nbfc`, and the GPU locks. It records what each lever was *measured* to do, not
+what the script's comments claim, and it is checked against the three goals the
+config is meant to serve:
+
+- **default / AC**: silence, coolness, overall efficiency;
+- **battery**: minimum power draw (autonomy);
+- **PERF**: unlock the machine.
+
+Method: stop `power-profile-watch.service` and `power-profile.timer`, apply each
+mode with `power-profile <mode>`, and read the result back — from the SMU PM
+table (one 2372-byte read), `ryzenadj --info`, `nvidia-smi`, `iw`, and the `hp`
+hwmon. Runtime only; nothing is written to flash.
+
+## What each mode actually sets
+
+Diffed from `ryzenadj --info`, `ryzenadj --info | diff` between modes. Only the
+limit fields move; the live values move on their own. The firmware seeds
+`54 / 65 / 54` at POST, and `power-profile` overwrites it within ~12 s.
+
+| Field | battery | AC | PERF |
+|---|---|---|---|
+| STAPM LIMIT | 15 W | 28 W | 54 W |
+| PPT LIMIT FAST | 18 W | 36 W | 65 W |
+| PPT LIMIT SLOW | 15 W | 28 W | 54 W |
+| PPT LIMIT APU | 15 W | 22 W | 42 W |
+| THM LIMIT CORE | 65 °C | 85 °C | 90 °C |
+| `scaling_governor` | powersave | powersave | performance |
+| `scaling_max_freq` | 2.4 GHz | 4.465 GHz (no cap) | 4.465 GHz |
+| EPP | `power` | `balance_power` | `performance` |
+| dGPU clock lock | `-lgc 0,400` | `-lgc 500,1800` | `-lgc 500,2100` |
+| dGPU memory | `-lmc 405` | released (`-rmc`) | released (`-rmc`) |
+| WiFi power save | on | off | (untouched) |
+
+TDC and EDC limits (58 / 15 / 110 / 20) are **never written** — they stay at the
+POST values in every mode. That is deliberate-looking (they are not the binding
+constraint at these power caps) but is not stated anywhere; noted here so it is
+not mistaken for a policy.
+
+## Findings (each verified)
+
+1. **The dGPU memory-lock fix is real.** Under GPU load on AC, `clocks.mem`
+   reaches **6001 MHz** — the lock `battery` sets (`-lmc 405`) is released by
+   `apply_ac`'s `-rmc`. Before the fix the memory stayed at 810 MHz (~13 % loss)
+   for the whole AC session. See [`dgpu-control.md`](dgpu-control.md).
+   Repro: `/tmp/gpuload & nvidia-smi --query-gpu=clocks.mem --format=csv`.
+2. **`platform_profile` is a trigger, not a power lever.** Writing
+   `/sys/firmware/acpi/platform_profile` (`cool` / `balanced` / `performance`)
+   does **not** move the SMU limits (28/36/28 held across all three) and does not
+   measurably move fan rpm. It is watched by `power-profile-watch` so that a
+   profile write re-applies the config, and that is its only observed effect.
+   (An earlier read of `54/65/54` right after a write was a transient artefact,
+   not the write: it did not reproduce with the watcher stopped and a clean
+   apply first.)
+3. **The WiFi power-save lever works.** `wlan0` exists, and
+   `iw dev wlan0 get power_save` reads `off` on AC — matching `apply_ac`.
+   So the battery side's `power_save on` is not a silent no-op.
+4. **No `CCLK` asymmetry.** `/usr/bin/ryzenadj --power-saving` (battery) does
+   **not** change `CCLK Boost SETPOINT` (stayed 95 across battery → AC → PERF),
+   so the "sticky `--power-saving` that AC never undoes" that the pattern invites
+   does **not** exist here.
+5. **Fans are `nbfc`'s alone.** `nbfc` runs the custom `my-nbfc` curve
+   (silence-first: 12 % at 50 °C, ~40 % at 83 °C, 100 % at 100 °C), auto control
+   on both fans, critical temp 100 °C. `power-profile` never touches fans, so
+   there is no lever conflict.
+
+## Verdict against the goals
+
+- **Silence / cool (AC):** consistent. 28 W cap + no frequency cap (so light work
+  still boosts — see [`efficiency.md`](efficiency.md)) + a silence-first fan
+  curve + a 1800 MHz dGPU ceiling.
+- **Autonomy (battery):** the levers are all pointed the right way (15 W, 2.4 GHz,
+  EPP `power`, dGPU 400 MHz, memory 405 MHz, WiFi power-save on).
+- **PERF:** raises every CPU limit and unlocks both GPU clock families, with the
+  `-lgc 500,…` floor kept because deep P8 sleep is the real cause of app-launch
+  micro-freezes — not the CPU clock.
+
+No bug was found in this pass (the memory-lock bug had already been fixed and is
+re-verified above).
+
+## Nuances left as-is
+
+- **The AC 1800 MHz dGPU cap does little under load.** With memory at 6001 MHz a
+  compute load already hits the GPU's **80 W** vBIOS default (`power.limit` is
+  `N/A` — not settable below the vBIOS, which is why Windows Afterburner showed
+  no power slider either; see [`dgpu-windows-undervolt.md`](dgpu-windows-undervolt.md)).
+  So capping graphics to 1800 mostly trims idle/near-idle draw, not the loaded
+  ceiling. Left as-is: it is a silence lever, and lowering it further would trade
+  real GPU throughput for little heat.
+- **`PPT LIMIT APU` on battery is 15 W** — the same as STAPM. The iGPU is unused
+  on battery (the dGPU is locked to 400 MHz, not powered off), so this cap only
+  bounds the SoC under load. It is a limit, not a floor, so idle draw is
+  unaffected; not tightened, because a tight APU cap can slow SoC work
+  (memory controllers, display) for no measurable idle gain.
+- **`platform_profile` is left at `balanced`.** It is the only one of the three
+  choices that is not "more cooling" (`cool`) or "more power" (`performance`);
+  since it has no power effect here and fans are `nbfc`'s, `balanced` is the
+  right neutral resting value.
