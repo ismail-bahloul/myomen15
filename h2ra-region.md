@@ -75,11 +75,9 @@ EC 0x2D (GPU setpoint) = 22       H2RA FMR2 = 42
 ```
 
 They do not match, so `FMR1`/`FMR2` are not a plain copy of the EC setpoints.
-They are the same *shape* of value, which suggests a second duty register — but
-that is a hypothesis, not a measurement, and it needs a controlled fan sweep to
-settle. The neighbouring bytes `18 18 1b 1d 1f 22 28 2a` repeated twice in the
-`0x520`–`0x540` window look like a **fan curve table**, which would be worth
-mapping properly.
+**A controlled fan sweep has since settled what they are** — see "The curve
+tables, decoded" below: `FMR1`/`FMR2` are the last byte of two identical static
+8-byte curves, and nothing in that window moves with fan speed.
 
 ## The rest of the region
 
@@ -90,9 +88,36 @@ Beyond the named fields the region has two more clusters that look structured:
 0x8C0: … 07 00 … 1a 1a … 1a 1b 1f 26 28 … 1a 1b 1f 26 28 …
 ```
 
-The two identical 8-byte runs at `0x528` and `0x530`-adjacent, and the two
-identical 5-byte runs at `0x8E5` and `0x8ED`, are almost certainly the two fans'
-entries in two separate tables. Not decoded.
+The two identical 8-byte runs at `0x520`–`0x527` and `0x528`–`0x52F`, and the
+two identical 5-byte runs at `0x8E3` and `0x8EB`, are the two fans' entries in
+two separate tables. **Decoded below.**
+
+## The curve tables, decoded — and they are static
+
+Driving the fans through `nbfc set -s` (0 → 100 %) and reading the region at
+each step (`evidence/h2ra-sweep.sh`) settles both clusters and the
+`FMR1`/`FMR2` question at once:
+
+- **Both clusters are static.** `0x520`–`0x52F` reads
+  `18 18 1b 1d 1f 22 28 2a` twice at *every* setpoint, and `0x8E3`/`0x8EB`
+  read `1a 1b 1f 26 28` twice at every setpoint. So these are the firmware's
+  **declared** fan curves, published but never driven — the same shape as the
+  `SFS1`/`SFS2` finding above.
+- **They decode to a fan curve in percent.** The 8-byte run is
+  `24 24 27 29 31 34 40 42` (%), an ascending 8-step curve; the 5-byte run is
+  `26 27 31 38 40`, a shorter one. Two copies each = the two fans.
+- **`FMR1`/`FMR2` are part of the table, not live.** `0x527` and `0x52F` are the
+  last byte of each 8-byte run (`0x2a` = 42) — constant, which is why they read
+  42 while the EC setpoint was 24 %. The "second duty register" hypothesis is
+  **falsified**: they are the top of the declared curve.
+- **The live fan state is elsewhere.** The only fields that track the setpoint
+  are the tachometers `FS1H:FS1L` (`0x530`–`0x531`) and `FS2H:FS2L`
+  (`0x532`–`0x533`), big-endian `u16`: 20 % → 1166 RPM, 40 % → 2267,
+  60 % → 3428, 80 % → 4549, 100 % → 5674 — a clean monotone map.
+
+One field did drift with the setpoint without being a tachometer: `0x538`–
+`0x539`, big-endian, `0x453b` → `0x4234` from 0 % to 100 %. Slow and fan-linked,
+but not reduced to a unit. Recorded, not explained.
 
 ## The region is a status mirror, not a control channel — measured
 
@@ -170,6 +195,9 @@ sudo python3 evidence/omenkbd.py brightness 100
 
 # the firmware's own method, for comparison
 printf '%s' '\_SB.WMID.LM05' > /proc/acpi/call ; cat /proc/acpi/call
+
+# which H2RA bytes are a static declared curve, and which track the fans
+sudo ./evidence/h2ra-sweep.sh
 ```
 
 **Restore after experimenting.** `omenkbd.py save` before touching anything,
