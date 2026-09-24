@@ -1,0 +1,83 @@
+MSI Afterburner session, 2026-09-24 — loaded windows, extracted from HardwareMonitoring.hml
+=========================================================================================
+
+Source: Afterburner's own 1 Hz monitor log (Windows, driver 610.88, vBIOS
+94.04.3d.00.c3, GPU2 = RTX 3070 Laptop GPU, load = MSI Kombustor 4, AC power).
+The raw .hml dumps are 36 MB and stay local; regenerate this table with:
+
+    python evidence/hml-analyze.py <pass>.hml --windows
+
+Every window below is a contiguous stretch at >=95 % GPU usage, so the columns
+are comparable. "memclk" is the memory clock and doubles as a fingerprint: it
+changes only when the memory offset does, which is what tells the passes apart
+after the fact. Two max values of 1740 MHz are single-sample reading artefacts
+(they coincide with one-sample power glitches down to ~25 W) and are ignored;
+the means are not affected.
+
+GPU1 = AMD Radeon(TM) Graphics   GPU2 = NVIDIA GeForce RTX 3070 Laptop GPU
+
+window                 n  memclk     core mean core min-max power mean   pass
+16:44:49-16:45:23    35  5501/6001       1273   1215- 1740      79.65   P0  stock
+16:55:49-16:57:10    82  5701            1268   1215- 1740      79.74   P1  core -300
+16:57:13-16:57:46    34  5701            1227   1185- 1275      79.84   P1  (same load)
+16:58:11-16:59:49    99  6501            1217   1080- 1260      79.92   P1b mem +500
+17:03:47-17:04:07    21  5501            1296   1245- 1350      79.98   P2  curve, plateau 1502
+17:04:09-17:06:13   125  5501/6001       1268   1185- 1500      77.34   P2  (same load)
+17:06:39-17:08:31   111  5501/6001       1230   1185- 1740      79.42   P2b plateau 1300  -- inconclusive
+17:10:12-17:12:09   117  5501/6001       1217   1125- 1365      79.43   P2c plateau clamped  -- inconclusive
+17:13:58-17:18:58   300  5501/6001        916    645- 1275      75.25   P2d+P2e -- see below
+
+What the profile file says (and why it is the safety argument)
+--------------------------------------------------------------
+
+The per-GPU profile holds two sections, and only `[Startup]` is applied at boot:
+
+  [Startup]    CoreClkBoost=    VFCurve=    MemClkBoost=     <- stayed empty all session
+  [Profile1]   CoreClkBoost=0   MemClkBoost=0   VFCurve=<12 pairs>
+
+`Apply` never writes this file (checked at 16:54, 16:59, 17:16, 17:17), so every
+offset above was runtime-only and none of it could have survived a reboot.
+`[Profile1]` appeared only once a profile was explicitly *saved*, and its hex
+decodes to the **stock** curve -- twelve (voltage, frequency) pairs:
+
+    450 mV/210 MHz   525/300   600/750   675/1110   750/1380   825/1575
+    900/1740        975/1860  1050/1950 1125/2010  1200/2025
+
+so it is a restore point, not a trap. Boot safety rests on `[Startup]` staying
+empty, and that is checkable in a file rather than trusted from a tick box.
+
+What each line is worth
+-----------------------
+
+- **P1 (core offset -300 MHz) vs P0**: 1267.75 -> 1264.25 MHz at the same
+  79.3 W. The slider did nothing. Cross-checked by P1b, which moved the same
+  interface: +500 MHz of memory offset landed exactly (6001 -> 6501 MHz,
+  confirmed by nvidia-smi's own clocks.mem). So the write path reaches the
+  driver, and the core clock offset specifically is ignored.
+
+- **P1b also shows the cost inside the power budget**: at an identical 79.9 W,
+  the core clock drops to 1217 MHz once the memory runs +500 MHz faster. The
+  80 W ceiling is a real, shared budget.
+
+- **P2 / P2b / P2c are inconclusive, by construction.** The workload itself
+  drifts by +-65 MHz (measured inside one untouched load: 1295 MHz over its
+  first 20 s, 1230 MHz over its last 20 s), and the plateaus tried there were
+  1300 and 1200 MHz -- the same size as the drift, and above or beside the
+  natural operating point. They are kept because the two wasted passes are the
+  method lesson: a change has to be distinctive, and a cap has to be judged by
+  the ceiling, not the mean.
+
+- **P2d + P2e are the decisive pass**, and they are one continuous load
+  (17:13:58-17:18:58). It merges here because the plateau was lifted with the
+  load still running -- no idle gap to split on. Splitting it by hand at the
+  step (17:16:51, one sample, usage never leaves 100 %):
+
+      curve plateau ~700 MHz   n=55   core  670 MHz (660-705)   power 69.34 W   temp 66.0 C
+      after Reset, same load   n=15   core 1221 MHz (1155-1275) power 78.72 W   temp 67.3 C
+
+  A 45 % clock reduction bought 12 % of the power. That is a frequency clamp
+  keeping the card near its power ceiling, not a voltage map: the voltage is
+  still being chosen by the stock algorithm.
+
+- For scale, the same GPU on Linux: `nvidia-smi --lock-gpu-clocks=0,1000`
+  holds 1000 MHz at **41 W**. Two OSes, same silicon, very different levers.

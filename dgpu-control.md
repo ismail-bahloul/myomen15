@@ -49,11 +49,35 @@ is the whole point of capping it.
 - It is **not a way past the CPU's gate**, and shares no mechanism with the SMU
   story — only the machine.
 
-## Where a real undervolt lives
+## Where a real undervolt lives: the Windows trip was made, and it is a dead end
 
-On **Windows**, through a V/F-curve tool (MSI Afterburner and the like). That is
-untested here — the machine dual-boots Windows 11, so it is reachable, just not
-from Linux. This page does not claim it works, only names where it would.
+On **Windows**, through a V/F-curve tool. That was [tested on
+2026-09-24](dgpu-windows-undervolt.md#result-measured-2026-09-24) — MSI
+Afterburner 4.6.6, driver `610.88`, the same card — and the answer is that the
+tool has nothing this page's Linux side lacks:
+
+- **No voltage, at all.** The Core Voltage slider is greyed out in all four
+  unlock modes, and the monitor never gains a voltage column (89 properties;
+  only `GPU2 voltage limit`, a 0/1 flag).
+- **No power limit either.** The Power Limit slider is greyed out, exactly where
+  `nvidia-smi -pl` refuses here. The refusal is the vBIOS's, not the OS's — so
+  the `NvAPI_GPU_SetPowerTarget` path this page hoped for is closed too.
+- **The core clock offset slider lies.** Afterburner's write *does* reach the
+  driver (proven by a +500 MHz memory offset landing exactly, 6001 → 6501 MHz),
+  and the core offset changes nothing: −300 MHz left the card at 1264.25 MHz
+  against 1267.75 MHz stock, at the same 79.3 W.
+- **The V/F curve editor is real, but it is a clock clamp, not a voltage map.**
+  Plateauing the curve at ~700 MHz pins the card at 670 MHz under a 100 % load —
+  and it still draws **69.34 W**; release it, in the same continuous load, and
+  the card returns to 1221 MHz at **78.72 W**. A 45 % clock reduction buys 12 %
+  of the power.
+
+The contrast is the point. On Linux, `--lock-gpu-clocks=0,1000` holds 1000 MHz
+at **41 W**, because the driver re-selects a lower voltage to go with the lower
+clock. Afterburner's curve does not touch the voltage, so it buys almost nothing
+while giving up the clock. **The lever that cuts power on this GPU is the Linux
+one, and this page's original guess — that the real undervolt lived on Windows
+— was wrong.**
 
 ## D3Cold Support: tested, and it breaks boot
 
