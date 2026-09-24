@@ -18,7 +18,7 @@ changes the running system until you choose to adopt it.
 | Lever | Tool | Range | Measured behaviour | Source |
 |---|---|---|---|---|
 | CPU power limits | `ryzenadj` | STAPM / PPT-fast / PPT-slow / Tctl | writes take and hold; the SMU re-derives some fields a minute later (the drift) | [`firmware-limits.md`](firmware-limits.md), [`pm-table.md`](pm-table.md) |
-| CPU frequency + EPP | `amd-pstate-epp` | governor, `scaling_max_freq`, `energy_performance_preference` | the 3.2 GHz cap trades −19 % throughput for ~+24 % work/joule | [`efficiency.md`](efficiency.md) |
+| CPU frequency + EPP | `amd-pstate-epp` | governor, `scaling_max_freq`, `energy_performance_preference` | the 3.2 GHz cap is efficiency-neutral (~+2 %, within noise) for ~9 % less throughput; the *deeper* caps do improve work/joule | [`efficiency.md`](efficiency.md) |
 | dGPU clocks | `nvidia-smi` | `--lock-gpu-clocks min,max`, `--lock-memory-clocks` | the clock lock works (1000 MHz holds 41 W); the power limit and the voltage do **not** exist on either OS | [`dgpu-control.md`](dgpu-control.md), [`dgpu-windows-undervolt.md`](dgpu-windows-undervolt.md) |
 | Fans | EC setpoints, via `nbfc` | 0–100 % per fan | `nbfc set -s P` moves them (40 % → 2260/2213 RPM measured); the `my-nbfc` curve is tuned | [`ec-map.md`](ec-map.md) |
 

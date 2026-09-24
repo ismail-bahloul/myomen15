@@ -393,8 +393,11 @@ during the investigation.
 ## 7. §3 is done too (added later)
 
 The joules-per-iteration measurement, and the "does the frequency cap earn
-anything" question, have been carried out. Short version: the 3.2 GHz cap is a
-real efficiency win (~24 % better work-per-joule), **not** the no-op §3.3
-suspected, at a cost of ~19 % peak throughput; and raising the power limit to
-54 W earns nothing on a load that tops out at ~34 W. Full method, table and
-caveats: [`../efficiency.md`](../efficiency.md).
+anything" question, have been carried out — and then corrected: the first run
+was ~2× low (re-measured after a reboot), and it is the *revised* numbers that
+stand. Short version: the 3.2 GHz cap is **efficiency-neutral** within noise
+(~+2 % work-per-joule), **not** the ~24 % win the first run suggested, and it
+costs ~9 % peak throughput; raising the power limit to 54 W buys ~7 % speed for
++26 % energy per unit work. It is the deeper caps (2.1–2.7 GHz) where
+work-per-joule really rises. Full method, both runs, and caveats:
+[`../efficiency.md`](../efficiency.md).

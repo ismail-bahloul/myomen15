@@ -275,11 +275,13 @@ is visible.
   both; they read `MT16ATF2G64HZ-3G2E1` (Micron, 16 GB, DDR4-3200, ×2), so the
   firmware's APCB table naming a Micron `8ATF1G64HZ-2G3B1` really is a profile
   for a module this machine does not have — the QVL dead end, at the source.
-- **The AC frequency cap is a real efficiency win, not a no-op.** A controlled
-  joules-per-iteration run answered `record/03-open-questions.md` §3: the 3.2 GHz
-  cap costs 19 % throughput but buys ~24 % better work-per-joule (6.74 vs 8.83
-  nJ/iteration at the same 35 W), and raising the power limit to 54 W earns
-  nothing on a load that tops out at ~34 W. → [`efficiency.md`](efficiency.md)
+- **The AC frequency cap is *not* the efficiency win it first looked like.** A
+  controlled joules-per-iteration run answered `record/03-open-questions.md` §3,
+  then a re-run corrected it (the first was ~2× low): the 3.2 GHz cap is
+  **efficiency-neutral** within noise (~+2 %) and costs ~9 % throughput, so its
+  value is thermals and noise, not energy. 54 W buys ~7 % speed for **+26 %**
+  energy per unit work. It is the *deeper* caps (2.1–2.7 GHz) where
+  work-per-joule really rises. → [`efficiency.md`](efficiency.md)
 - **The raw SMU layer went from read to written, on purpose and in order.**
   Two query commands first (`GetPmTableVersion`, `GetDramBaseAddress`), each
   cross-checked against a value independent of the command itself, before a
@@ -408,7 +410,7 @@ What has not been tried yet, ordered by how much it would unlock:
 | [`acpi-bridge.md`](acpi-bridge.md) | The SSDTs decoded: the firmware's generic EC/I-O bridge, the `\AOD` overclocking interface, and HP's performance-mode selector. |
 | [`access-surface.md`](access-surface.md) | Everything reachable on this machine, everything measured as blocked, and what is reachable but not yet used. |
 | [`msr-and-smm.md`](msr-and-smm.md) | The layers below the OS: MSR reads without CHIPSEC (and a correction to `chipsec-recon.md`), the SMM lock / TSEG / hidden-SMRAM state, the FCH write-protect registers, and the SMN-over-PCI path. |
-| [`efficiency.md`](efficiency.md) | Energy per unit work under three configs — and why the AC profile's frequency cap is a real efficiency win (~24 % better work/joule), not the no-op it was suspected to be. |
+| [`efficiency.md`](efficiency.md) | Energy per unit work under several configs — and the correction that matters: the AC profile's 3.2 GHz cap is **efficiency-neutral** (~+2 %, within noise), not the ~24 % win a first, ~2×-low run suggested; it is the *deeper* caps that pay. |
 | [`setup-offset-naming.md`](setup-offset-naming.md) | The manual protocol for naming the remaining `Setup` offsets: the two-leg menu method, and the one-reboot poke method (with the `.dat` format and `setup-poke.py`). |
 | [`pm-table.md`](pm-table.md) | The SMU PM table decoded: 9 limits + 9 live values as `float32`, the "50 vs 54" question it settles, and the per-core groups (busy %, and the clocks `0x3c0`/`0x3e0` confirmed against `perf`). |
 | [`smu-raw.md`](smu-raw.md) | The raw SMU/SMN layer under `ryzenadj`: the nodes, Cezanne's mailbox addresses, an end-to-end `GetSmuVersion` from userspace, and why the write path is left untouched so far. |
