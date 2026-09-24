@@ -67,6 +67,36 @@ not mistaken for a policy.
    on both fans, critical temp 100 °C. `power-profile` never touches fans, so
    there is no lever conflict.
 
+## The dGPU cannot sleep — and why (autonomy)
+
+On AC the dGPU sits at **~17 W idle** (`clocks.gr` 510 MHz, `clocks.mem`
+810 MHz) and `power/runtime_status` is `active`. Three separate things hold it
+awake, and only one of them is the current session's fault:
+
+1. **An external monitor is attached.** `card0-DP-2` (the dGPU's output) reads
+   `connected`; the internal panel (`card1-eDP-1`) is on the *iGPU*. So while the
+   external display is plugged in, the dGPU must stay powered — expected, not a
+   misconfiguration.
+2. **`nvidia-persistenced.service` is enabled and active.** Keeping the NVIDIA
+   driver initialised is exactly what that daemon does, and it prevents the GPU
+   from powering down. It is the first thing to stop for a no-monitor battery
+   session.
+3. **`nbfc` holds `/dev/nvidia0` open.** The `my-nbfc` GPU fan curve reads the
+   `@GPU` sensor (NVML), and `lsof` shows `nbfc_service` with the device open — so
+   the GPU cannot suspend while the fan curve polls it. The EC exposes GPU
+   temperature directly ([`ec-map.md`](ec-map.md)), so a curve built on that
+   would not hold the GPU awake.
+
+Releasing the clock locks does **not** change this: after `nvidia-smi -rgc -rmc`
+the graphics clock fell to 405–450 MHz but power stayed ~17 W and
+`runtime_status` stayed `active`. So the AC floor (`-lgc 500,…`) is not what
+keeps the GPU on; the display load dominates its idle draw.
+
+**Not verified:** whether the dGPU actually suspends (and drops to a few watts)
+once the monitor is unplugged *and* both holders above are removed. It cannot be
+tested with the external display attached, and unplugging is a manual step. The
+levers are recorded here so that a battery-autonomy pass can test them.
+
 ## Verdict against the goals
 
 - **Silence / cool (AC):** consistent. 28 W cap + no frequency cap (so light work
