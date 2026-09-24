@@ -93,19 +93,26 @@ So **battery → AC leaves the memory lock in place.** Measured with the CUDA lo
 (`evidence/gpuload.cu`) reading `clocks.mem` under load (`evidence/gpu-lock-e2e.sh`):
 
 ```
-clean, no lock           mem = 6001 MHz
--lgc alone (ac step)     mem = 6001 MHz      so -lgc does not cap memory
--lmc 405 alone           mem =  405 MHz      the lock works
--lmc 405 then -lgc       mem =  810 MHz      the AC step: 405 -> 810, not free
-power-profile battery    mem =  810 MHz
-power-profile ac  after  mem =  810 MHz      <-- the bug
-+ -rmc                   mem = 6001 MHz      the fix
+clean, no lock                      mem = 6001 MHz
+-lgc alone (the ac step)            mem = 6001 MHz   so -lgc does not cap memory
+-lmc 405 alone                      mem =  405 MHz   the lock works
+-lmc 405 then -lgc                  mem =  810 MHz   the bug: the AC step half-releases, never frees
+power-profile battery               mem =  405 MHz   (re-apply units stopped)
+  ... then -> AC, before the fix    mem =  810 MHz   <-- the bug
+  ... then -> AC, with -rmc         mem = 6001 MHz   <-- fixed
 ```
 
-The dGPU memory then runs at **810 MHz instead of 6001** — about 13 % — for the
+The top four rows are the mechanism; the bottom three are the profile transition
+end to end. Note the prerequisite the harness encodes: the re-apply units
+(`power-profile-watch`, `power-profile.timer`) **must be stopped** to test a
+profile — otherwise the watcher reverts the SMU limits within ~1 s and silently
+undoes a `battery` apply. That interaction cost this repo a confused first run.
+
+The dGPU memory then ran at **810 MHz instead of 6001** — about 13 % — for the
 whole AC session after any battery use, until a `perf` switch or a reboot. On AC
-the *graphics* is free to run to 1800 MHz; the *memory* is not free at all.
-Fix, one line in `power-profile`'s `apply_ac`: `nvidia-smi -rmc`.
+the *graphics* is free to run to 1800 MHz; the *memory* was not free at all.
+Fix, one line in `power-profile`'s `apply_ac`: `nvidia-smi -rmc` — **applied** to
+the dotfiles; battery → AC now reaches 6001.
 
 A second, smaller one from the same reading of that function: `apply_perf`
 resets the graphics clocks (`-rgc`), which also removes the **floor** that
