@@ -97,6 +97,61 @@ once the monitor is unplugged *and* both holders above are removed. It cannot be
 tested with the external display attached, and unplugging is a manual step. The
 levers are recorded here so that a battery-autonomy pass can test them.
 
+## The two tradeoffs the config assumes
+
+These are the only places the config makes a real bet. Both are decisions to
+*keep*, not bugs.
+
+**1. `TDP_AC=28 W` — a cooling/efficiency bet, not just "cooler".** The 5800H
+ships configurable 35–54 W and HP seeds it at 45 W, so 28 W is well below stock.
+The measured cost and gain (same harness as [`efficiency.md`](efficiency.md)):
+
+| AC config | all-core | PPT-slow | Mi/s per W |
+|---|---|---|---|
+| 35 W, no cap | 6956 Mi/s | 34.18 W | 204 |
+| 28–30 W, no cap | 6676 Mi/s | 28.88 W | **231** |
+
+So 28 W costs **~4 %** sustained all-core throughput and buys **~13 %** better
+work per joule. That is the right side of the trade for the stated priority
+(silence, coolness, overall efficiency) — the "fast" burst limit of 36 W keeps
+short tasks off the cap. The one thing not yet cross-checked is the *workload*:
+these are FP-spin numbers, and a branchy/integer load (Cinebench-class) could
+shift them. Worth one cross-check before treating the 4 % as universal, not
+before keeping the setting.
+
+**2. The dGPU power limit is not a choice — it is locked.** `nvidia-smi` reports
+`power.default_limit 80 W`, `power.min 1 W`, `power.max 100 W`, which invites
+"raise it to 100 W for PERF". It cannot be raised:
+
+```
+sudo nvidia-smi -pl 100
+Changing power management limit is not supported for GPU: 00000000:01:00.0.
+```
+
+The same vBIOS lock is why Windows Afterburner offered no power slider
+([`dgpu-windows-undervolt.md`](dgpu-windows-undervolt.md)). There is nothing to
+decide here; the GPU always runs at its 80 W default.
+
+## Known fragility: `guard` keys off the governor
+
+`power-profile guard` (what the watcher and the timer invoke) refuses to apply
+when `scaling_governor == performance`:
+
+```bash
+if [ "${1:-}" = "guard" ] && [ "$(cat .../scaling_governor)" = "performance" ]; then
+    log "guard: PERF mode active, re-apply ignored"; exit 0
+fi
+```
+
+That signature is *"the governor is performance"*, which `gamemode`, `cpupower`,
+or any game launcher can also set. During such a window `guard` stops applying,
+so: (a) the drift is no longer corrected, and (b) an AC→battery switch in that
+window would not get the battery limits. The window is usually a game (where the
+28 W cap is not wanted anyway), so the practical exposure is small — but a mode
+marker (`/run/power-profile.mode`) written by the profile itself would be more
+robust than sniffing a global the rest of the system also writes. Left as-is
+because the fix adds state that must be cleared on boot/shutdown.
+
 ## Verdict against the goals
 
 - **Silence / cool (AC):** consistent. 28 W cap + no frequency cap (so light work
@@ -129,6 +184,10 @@ re-verified above).
   choices that is not "more cooling" (`cool`) or "more power" (`performance`);
   since it has no power effect here and fans are `nbfc`'s, `balanced` is the
   right neutral resting value.
+- **`iw dev wlan0` is hard-coded** in all three modes. It works here (`wlan0`
+  exists, `iw dev wlan0 get power_save` reads `off` on AC), and the `|| true`
+  means a rename would fail *silently* rather than crash. Harmless today; noted
+  so a future interface rename is not mistaken for "power save is handled".
 - **`--power-saving` (battery) is an opaque SMU hint.** `ryzenadj` reports
   `Successfully enable power_saving`, but a full `ryzenadj --info` diff before/after
   shows **no** change to any limit or to `CCLK Boost SETPOINT`. Its own `--help`
