@@ -19,6 +19,15 @@ nvram-dump.txt
 /setupdiff-*.json
 /tpmstate-*.json
 
+# MSI Afterburner's raw 1 Hz monitor dumps: 36 MB for one working session, and
+# they accumulate every property whether or not it was asked for. The windows
+# extracted from them ARE versioned, in evidence/dgpu-windows/windows.txt, and
+# evidence/hml-analyze.py regenerates them from any .hml.
+evidence/dgpu-windows/*.hml
+
 # Python bytecode
 __pycache__/
 *.pyc
+
+# Compiled CPU load harness -- built from load.c, whose source IS versioned.
+/evidence/load
