@@ -79,6 +79,41 @@ while giving up the clock. **The lever that cuts power on this GPU is the Linux
 one, and this page's original guess — that the real undervolt lived on Windows
 — was wrong.**
 
+## The clock locks interact: battery → AC leaves the memory clock low
+
+The profiles set the dGPU clocks with `nvidia-smi --lock-*`, and the graphics and
+memory locks are **independent**. That bites on a profile transition:
+
+- `battery` locks graphics `0,400` and **memory `405`**.
+- `ac` locks graphics `500,1800` and does **not** touch memory (its own message
+  says `(mem: dynamic)`).
+- `perf` resets both (`-rgc -rmc`).
+
+So **battery → AC leaves the memory lock in place.** Measured with the CUDA load
+(`evidence/gpuload.cu`) reading `clocks.mem` under load (`evidence/gpu-lock-e2e.sh`):
+
+```
+clean, no lock           mem = 6001 MHz
+-lgc alone (ac step)     mem = 6001 MHz      so -lgc does not cap memory
+-lmc 405 alone           mem =  405 MHz      the lock works
+-lmc 405 then -lgc       mem =  810 MHz      the AC step: 405 -> 810, not free
+power-profile battery    mem =  810 MHz
+power-profile ac  after  mem =  810 MHz      <-- the bug
++ -rmc                   mem = 6001 MHz      the fix
+```
+
+The dGPU memory then runs at **810 MHz instead of 6001** — about 13 % — for the
+whole AC session after any battery use, until a `perf` switch or a reboot. On AC
+the *graphics* is free to run to 1800 MHz; the *memory* is not free at all.
+Fix, one line in `power-profile`'s `apply_ac`: `nvidia-smi -rmc`.
+
+A second, smaller one from the same reading of that function: `apply_perf`
+resets the graphics clocks (`-rgc`), which also removes the **floor** that
+`GPU_AC_MIN=500` exists to provide — the profile's own comment ties that floor to
+"deep P8 sleep (cause of mini-freezes when launching an app)". So in `perf` that
+freeze can return. Unlocking the *ceiling* (`-lgc 500,2100`) keeps the benefit at
+no cost to peak.
+
 ## D3Cold Support: tested, and it breaks boot
 
 `AMD PBS > D3Cold Support` is one of the few non-`Auto` values in that menu
