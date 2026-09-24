@@ -70,6 +70,24 @@ is not used here. The three governor rows are the same harness with
    "capping helps" is true, but the *3.2 GHz* point is roughly flat; it is the
    **lower** caps that pay.
 
+## The cap's cost depends on the workload
+
+`evidence/cap-single-thread.sh` closes the gap the 16-thread table leaves: the
+cap bounds the *ceiling*, so its cost is small where the all-core ceiling is
+already low, and large where a core would otherwise boost.
+
+| Load | capped 3.2 GHz | uncapped (same 35 W) | cost |
+|---|---|---|---|
+| 1 thread | 418.8 Mi/s @ 3.17 GHz | 531.9 Mi/s @ 4.02 GHz | **−21 %** |
+| 16 threads | 6391 Mi/s | 6956 Mi/s | −8 % |
+
+So the cap taxes **light work ~21 %** — where the core is not hot and the cap
+buys nothing — to keep *sustained* loads ~3.4 W cooler (30.8 vs 34.2 W, ~11 %).
+It is a blunt instrument: the 35 W power cap already binds only under load and
+lets a light thread boost to ~4 GHz; the **frequency** cap is what also neuters
+the light case. If the goal is cool-and-quiet under load, the power cap and the
+fan curve do that; the frequency cap's extra cost lands on responsiveness.
+
 ## Caveats
 
 - **One workload.** A branchy FP loop. Efficiency ordering is workload-dependent.
