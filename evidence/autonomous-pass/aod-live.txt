@@ -1,0 +1,6 @@
+\AOD.AM05 returned 42 bytes
+
+current overclocking state, as the firmware reports it
+----------------------------------------------------
+
+raw 0x40-0xB4:

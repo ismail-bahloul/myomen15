@@ -1,0 +1,33 @@
+0  0000:00:01.0  00:01.0 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Renoir 
+1  0000:00:01.1  00:01.1 PCI bridge [0604]: Advanced Micro Devices, Inc. [AMD] Renoir P
+2  0000:00:01.2  00:01.2 PCI bridge [0604]: Advanced Micro Devices, Inc. [AMD] Renoir/C
+3  0000:00:02.0  00:02.0 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Renoir 
+4  0000:00:02.1  00:02.1 PCI bridge [0604]: Advanced Micro Devices, Inc. [AMD] Renoir/C
+5  0000:00:02.2  00:02.2 PCI bridge [0604]: Advanced Micro Devices, Inc. [AMD] Renoir/C
+6  0000:00:02.3  00:02.3 PCI bridge [0604]: Advanced Micro Devices, Inc. [AMD] Renoir/C
+7  0000:00:02.4  00:02.4 PCI bridge [0604]: Advanced Micro Devices, Inc. [AMD] Renoir/C
+8  0000:00:08.0  00:08.0 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Renoir 
+9  0000:00:08.1  00:08.1 PCI bridge [0604]: Advanced Micro Devices, Inc. [AMD] Renoir I
+10  0000:00:14.0  00:14.0 SMBus [0c05]: Advanced Micro Devices, Inc. [AMD] FCH SMBus Con
+10  0000:00:14.3  00:14.3 ISA bridge [0601]: Advanced Micro Devices, Inc. [AMD] FCH LPC 
+11  0000:00:18.0  00:18.0 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Cezanne
+11  0000:00:18.1  00:18.1 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Cezanne
+11  0000:00:18.2  00:18.2 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Cezanne
+11  0000:00:18.3  00:18.3 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Cezanne
+11  0000:00:18.4  00:18.4 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Cezanne
+11  0000:00:18.5  00:18.5 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Cezanne
+11  0000:00:18.6  00:18.6 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Cezanne
+11  0000:00:18.7  00:18.7 Host bridge [0600]: Advanced Micro Devices, Inc. [AMD] Cezanne
+12  0000:01:00.0  01:00.0 VGA compatible controller [0300]: NVIDIA Corporation GA104M [G
+12  0000:01:00.1  01:00.1 Audio device [0403]: NVIDIA Corporation GA104 High Definition 
+13  0000:02:00.0  02:00.0 Ethernet controller [0200]: Realtek Semiconductor Co., Ltd. RT
+14  0000:03:00.0  03:00.0 Network controller [0280]: Intel Corporation Wi-Fi 6 AX200 [80
+15  0000:04:00.0  04:00.0 SD Host controller [0805]: Genesys Logic, Inc GL9750 SD Host C
+16  0000:05:00.0  05:00.0 Non-Volatile memory controller [0108]: SK hynix Gold P31/BC711
+17  0000:06:00.0  06:00.0 Non-Volatile memory controller [0108]: Micron/Crucial Technolo
+18  0000:07:00.0  07:00.0 VGA compatible controller [0300]: Advanced Micro Devices, Inc.
+19  0000:07:00.2  07:00.2 Encryption controller [1080]: Advanced Micro Devices, Inc. [AM
+20  0000:07:00.3  07:00.3 USB controller [0c03]: Advanced Micro Devices, Inc. [AMD] Reno
+21  0000:07:00.4  07:00.4 USB controller [0c03]: Advanced Micro Devices, Inc. [AMD] Reno
+22  0000:07:00.5  07:00.5 Multimedia controller [0480]: Advanced Micro Devices, Inc. [AM
+23  0000:07:00.6  07:00.6 Audio device [0403]: Advanced Micro Devices, Inc. [AMD] Ryzen 

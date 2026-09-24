@@ -141,6 +141,30 @@ it never changes.
 
 Tooling: `evidence/ecsweep.py` (`dump <file>` / `diff <a> <b>`).
 
+### `0xB7` resolved toward "a temperature"; `0x63` still silent
+
+The two unresolved registers above were re-measured under a controlled load at
+two power levels (AC cap → ~71 °C, PERF → ~84 °C), sampling the EC every 5 s
+(`evidence/ecwatch.py`):
+
+```
+idle (Tctl 66 °C)   0x57=66  0x58=68  0x49=59  0x59=56  0xB7=56  0x62=0 0x63=0
+AC   (Tctl 71 °C)   0x57=71  0x58=71  0x49=59  0x59=57  0xB7=57  0x62=0 0x63=0
+PERF (Tctl 84 °C)   0x57=84  0x58=83  0x49=63  0x59=61  0xB7=61  0x62=0 0x63=0
+```
+
+- **`0xB7` tracks temperature clearly.** 56 at 66 °C, 61 at 84 °C — five counts
+  across an 18 °C rise. The earlier note ("57–58, +1 under sustained load") was
+  a shorter load that never got hot enough to show the slope. It moves with
+  `Tctl`/`0x57`, so it reads as a damped or low-resolution temperature channel.
+  Where in the machine it sits is still not established.
+- **`0x63` stays `0` under all three conditions** — idle, 71 °C, 84 °C. The
+  earlier `0x0604` sighting is not reproduced here; whatever produced it is not
+  load or temperature. It is the one offset this pass never saw move.
+
+`0x49` and `0x59` moved alongside (`59→63`, `56→61`), consistent with the
+already-noted slow temperature channels.
+
 ## Negative result: the power limits are *not* in the EC
 
 The obvious hypothesis — that the EC stores the STAPM / PPT / Tctl limits and

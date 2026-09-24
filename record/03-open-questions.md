@@ -387,3 +387,14 @@ during the investigation.
   than polling the limits.
 - §3 (efficiency: joules per iteration, and whether the `scaling_max_freq` cap
   earns anything over the power cap alone) is still open and still worth doing.
+
+---
+
+## 7. §3 is done too (added later)
+
+The joules-per-iteration measurement, and the "does the frequency cap earn
+anything" question, have been carried out. Short version: the 3.2 GHz cap is a
+real efficiency win (~24 % better work-per-joule), **not** the no-op §3.3
+suspected, at a cost of ~19 % peak throughput; and raising the power limit to
+54 W earns nothing on a load that tops out at ~34 W. Full method, table and
+caveats: [`../efficiency.md`](../efficiency.md).
