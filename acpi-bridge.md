@@ -183,15 +183,28 @@ confirmed, the worst case for the unmasked index (`idx` up to 255) lands at
 mask could still misdirect a value to the wrong internal `AODT` field if
 triggered with an out-of-range index, but it does not escape the buffer.
 
-One thread from this pass is left open, not chased further: `AodSmmSsp`
-references an EFI variable named `AOD_SETUP` twice (a `GetVariable` call with
-correctly-checked `EFI_STATUS`), which does **not** exist in
-`/sys/firmware/efi/efivars/` on this machine and is not among the variables
-`efi-nvram.md` catalogues. Full trace, exact addresses, and the extraction
-method (UEFITool's default full dump was needed — targeted GUID extraction
-misbehaves on this image because `AodPei`/`AodDxe` each have duplicate hits
-across the two Sure Start volumes): →
+One thread from this pass was left open, not chased further at the time:
+`AodSmmSsp` references an EFI variable named `AOD_SETUP` twice (a
+`GetVariable` call with correctly-checked `EFI_STATUS`), which did **not**
+exist in `/sys/firmware/efi/efivars/` on this machine and is not among the
+variables `efi-nvram.md` catalogues. Full trace, exact addresses, and the
+extraction method (UEFITool's default full dump was needed — targeted GUID
+extraction misbehaves on this image because `AodPei`/`AodDxe` each have
+duplicate hits across the two Sure Start volumes): →
 [`evidence/aod-smm-curve-optimizer-trace.txt`](evidence/aod-smm-curve-optimizer-trace.txt).
+
+**That thread is now closed.** The `GetVariable("AOD_SETUP", ...)` call turned
+out to gate the *entire* SMI command dispatcher, not just some side path — a
+failed lookup (which it always was, since the variable never existed) bails
+out before the dispatcher ever reaches the `Set PPT Limit`/`Set Curve
+Optimizer` chain. Creating the variable for real (with a size correctly
+computed to avoid an SMRAM heap overflow the dispatcher's own writes would
+otherwise cause — see the write-up for why 1 byte very nearly became a real
+bug) and rerunning the already-established PPT test showed the command chain
+now runs, and the SMU still doesn't move. So the "second road, measured: it
+is inert" conclusion in `firmware-limits.md` was correct, but had been
+resting on an unverified assumption; it now rests on a decisive one. Full
+account: [`evidence/aod-setup-probe/README.md`](evidence/aod-setup-probe/README.md).
 
 ## 3. The HP performance-mode selector (`OCPC` / `OCPS`)
 

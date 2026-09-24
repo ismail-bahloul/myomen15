@@ -240,6 +240,17 @@ shape of result [`h2ra-region.md`](h2ra-region.md) found. A Curve Optimizer
 write here would plausibly be equally inert, and cannot be read back to tell.
 Detail: [`evidence/aod-power-limit-probe.txt`](evidence/aod-power-limit-probe.txt).
 
+**That first PPT test left one assumption unverified, and it has since been
+closed.** `AodSmmSsp`'s dispatcher gates on `GetVariable("AOD_SETUP", ...)`
+before it ever reaches the command chain — a variable that didn't exist, so
+every attempt above (and possibly every attempt anyone has made on this
+model) may have been bailing out before running any command logic at all.
+Creating `AOD_SETUP` for real and rerunning the identical PPT test produced
+the same result — SMU unmoved, control (`ryzenadj`) still live — but this
+time with the command chain confirmed to actually execute. The "inert"
+conclusion stands, now without that gap. Full account:
+[`evidence/aod-setup-probe/README.md`](evidence/aod-setup-probe/README.md).
+
 The handler itself is located in the image — `AodSmmSsp` — and, measured, it
 carries no SMU mailbox address and depends on no SMU protocol; see
 [`acpi-bridge.md`](acpi-bridge.md) §2 and
