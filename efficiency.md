@@ -88,6 +88,22 @@ lets a light thread boost to ~4 GHz; the **frequency** cap is what also neuters
 the light case. If the goal is cool-and-quiet under load, the power cap and the
 fan curve do that; the frequency cap's extra cost lands on responsiveness.
 
+### The better instrument: a lower power cap, not a frequency cap
+
+The frequency cap's cooling is really just "less all-core power", and a **power**
+cap delivers that without touching the light case. Measured
+(`evidence/cap-vs-power-test.sh`):
+
+| Config | all-core | PPT-slow | Tctl | 1-thread |
+|---|---|---|---|---|
+| AC: 35 W **+ 3.2 GHz cap** | 6440 Mi/s | 28.25 W | 74.1 °C | **418.9 Mi/s** |
+| **30 W, no cap** | 6676 Mi/s | 28.88 W | 76.5 °C | **529.1 Mi/s** |
+
+Same all-core power and heat (within ~0.6 W and ~2 °C), and **+26 % on a single
+thread**. So dropping the frequency cap and lowering the power cap to ~30 W keeps
+the cooling and gives back the responsiveness. The cap was the wrong instrument:
+the power cap binds only under load, the frequency cap binds always.
+
 ## Caveats
 
 - **One workload.** A branchy FP loop. Efficiency ordering is workload-dependent.
