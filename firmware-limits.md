@@ -542,6 +542,25 @@ Two rules kept from it:
 The investigation scripts are `evidence/limitwatch.py` and
 `evidence/limitrace.py`; the original A/B is `evidence/ec-revert-ab-test.sh`.
 
+### A better instrument, and what it did *not* settle
+
+`evidence/drift-probe.py` samples the PM-table limits and the five Cezanne
+mailbox registers (MP1 cmd/rsp/arg0, RSMU cmd/rsp) **together**, up to 2 Hz, and
+is validated to catch a `ryzenadj` change within 0.5 s. Two runs with it:
+
+- **No spontaneous drift.** After a bare `ryzenadj` apply (`28/42/28`), the
+  limits held for **240 s** — no movement, mailbox unchanged. So "the drift
+  follows an apply" did not reproduce without a trigger.
+- **The profile writes did not clobber, this time.** Writing `platform_profile`
+  directly (`cool`, then `balanced`, then `performance`) while watching moved
+  **nothing** — not the limits, not the mailbox — which contradicts the "a write
+  re-applies, even the same value" reading above. The clobber *was* seen once,
+  in an early governor run, so it is **intermittent**, not deterministic.
+
+Net: the instrument is better and the mechanism is *less* clear, not more — both
+prior accounts (periodic drift; profile-write trigger) are weaker than this
+section claimed. Recorded as evidence, not a conclusion.
+
 ## Battery charge thresholds: reachable, not exposed
 
 The kernel surface really is empty — `powerdevil` reports "not supported by
