@@ -122,6 +122,38 @@ to a few watts). That needs a re-login with (1) applied and a re-measure of the
 battery draw. It is the single highest-value autonomy experiment left: at ~20 W
 with ~11 W of it asleep-able, the upside is on the order of **2× battery life**.
 
+## The other boot entry already does it (measured)
+
+The Limine config has an entry that binds the dGPU to `vfio-pci`
+(`vfio-pci.ids=10de:249d,10de:228b`). It is the strongest autonomy lever on this
+machine — stronger than anything `power-profile` can do. Measured on battery,
+both boots, stable over 16 s:
+
+| | normal boot (nvidia driver) | **VFIO boot** |
+|---|---|---|
+| dGPU | `active`, ~10–12 W | `runtime_status=suspended` |
+| whole-system draw | ~20 W | **~13.3 W** |
+| idle Tctl / fan1 | ~48 °C / ~660 rpm | 47.8 °C / 672 rpm |
+| external DP monitor | works | **dead** (DP is wired to the dGPU) |
+| dGPU usable (games / CUDA / VM passthrough) | yes | no |
+
+So the VFIO entry removes **~6.7 W — 33 % of the battery draw**, about **1.5× the
+runtime**. That is more than the whole CPU-profile story is worth, and it needs no
+policy: it is just "the dGPU is not there".
+
+**It is D3hot, not D3cold.** The GPU's ACPI node exposes **no `_PR3` power
+resource** (`firmware_node/power_resources` is empty), so the platform cannot cut
+its power; `vfio-pci` runtime-suspends it, which is D3hot / `suspended`. The win
+is real regardless — the mechanism is that the nvidia stack is gone and *nothing
+holds the device*, not that the silicon is unpowered.
+
+Consequences: on this boot `nvidia-smi` does not exist, so `apply_battery`'s
+`-lgc` / `-lmc` lines are no-ops (the `|| true` keeps that safe), and
+`power-profile info` already has a `VFIO (off)` branch. The rest — 15 W, 2.4 GHz,
+EPP `power`, WiFi power-save — applies normally (verified: STAPM 15 W, Tctl 65,
+watcher/timer/nbfc active). This also makes the `KWIN_DRM_DEVICES` route *above*
+the second-best option, for sessions that need the dGPU present.
+
 ## The two tradeoffs the config assumes
 
 These are the only places the config makes a real bet. Both are decisions to
@@ -185,8 +217,9 @@ because the fix adds state that must be cleared on boot/shutdown.
 - **Autonomy (battery):** every *policy* lever is pointed the right way (15 W,
   2.4 GHz, EPP `power`, dGPU 0–400 MHz, memory 405 MHz, WiFi power-save on) —
   but the largest single draw is **not** one of them: the dGPU stays awake at
-  ~10–12 W of the ~20 W total and no profile lever touches that. See "The dGPU
-  cannot sleep" above; it is the highest-value autonomy item left.
+  ~10–12 W of the ~20 W total in the normal boot. The real solution is not a
+  profile at all but the **VFIO boot entry**, which removes the dGPU from the
+  system entirely: ~20 W → **~13.3 W** (−33 %). See the two sections above.
 - **PERF:** raises every CPU limit and unlocks both GPU clock families, with the
   `-lgc 500,…` floor kept because deep P8 sleep is the real cause of app-launch
   micro-freezes — not the CPU clock.
