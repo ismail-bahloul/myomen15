@@ -69,33 +69,58 @@ not mistaken for a policy.
 
 ## The dGPU cannot sleep — and why (autonomy)
 
-On AC the dGPU sits at **~17 W idle** (`clocks.gr` 510 MHz, `clocks.mem`
-810 MHz) and `power/runtime_status` is `active`. Three separate things hold it
-awake, and only one of them is the current session's fault:
+Measured **on battery, external monitor unplugged, battery profile active** (so the
+dGPU clocks are locked to 0–400 MHz / memory 405 MHz):
 
-1. **An external monitor is attached.** `card0-DP-2` (the dGPU's output) reads
-   `connected`; the internal panel (`card1-eDP-1`) is on the *iGPU*. So while the
-   external display is plugged in, the dGPU must stay powered — expected, not a
-   misconfiguration.
-2. **`nvidia-persistenced.service` is enabled and active.** Keeping the NVIDIA
-   driver initialised is exactly what that daemon does, and it prevents the GPU
-   from powering down. It is the first thing to stop for a no-monitor battery
-   session.
-3. **`nbfc` holds `/dev/nvidia0` open.** The `my-nbfc` GPU fan curve reads the
-   `@GPU` sensor (NVML), and `lsof` shows `nbfc_service` with the device open — so
-   the GPU cannot suspend while the fan curve polls it. The EC exposes GPU
-   temperature directly ([`ec-map.md`](ec-map.md)), so a curve built on that
-   would not hold the GPU awake.
+| | value |
+|---|---|
+| whole-system draw | **~20 W** (stable over 12 s) |
+| dGPU alone (`nvidia-smi power.draw`) | **~10–12 W** |
+| dGPU `power/runtime_status` | `active` |
+| dGPU clocks / temp | 210 / 405 MHz, 42–44 °C |
 
-Releasing the clock locks does **not** change this: after `nvidia-smi -rgc -rmc`
-the graphics clock fell to 405–450 MHz but power stayed ~17 W and
-`runtime_status` stayed `active`. So the AC floor (`-lgc 500,…`) is not what
-keeps the GPU on; the display load dominates its idle draw.
+The dGPU is therefore **about half of the idle power draw**, and it is awake, not
+throttled. (Caveat: `power.draw` is the GPU's own board estimate; the two figures
+are consistent in that the non-GPU remainder ~9 W is a plausible 5800H idle +
+panel + RAM. With the monitor still attached it read ~17 W.)
 
-**Not verified:** whether the dGPU actually suspends (and drops to a few watts)
-once the monitor is unplugged *and* both holders above are removed. It cannot be
-tested with the external display attached, and unplugging is a manual step. The
-levers are recorded here so that a battery-autonomy pass can test them.
+**What holds it, by elimination.** `nvidia-persistenced` and `nbfc` are **not**
+the blockers: stopping both (12 s each, with no `nvidia-smi` call — which would
+itself hold the GPU) left `runtime_status=active`. The holders are the desktop
+itself:
+
+| process | open `/dev/nvidia*` fds |
+|---|---|
+| `kwin_wayland` | ~34 |
+| `plasmashell` | ~16 |
+| `zed-editor` | ~14 |
+
+KWin *renders* on the iGPU — `qdbus6 org.kde.KWin /KWin supportInformation`
+reports `OpenGL renderer string: AMD Radeon Graphics (radeonsi, renoir)` — and
+the panel is on the iGPU (`card1-eDP-1`). The NVIDIA is `card0` because it is the
+**boot VGA** (`nvidia_drm modeset=Y`). KWin nonetheless opens *both* DRM nodes
+(its support info lists `Atomic Mode Setting on GPU 0: true` **and** `GPU 1:
+true`), which is the leading explanation for its nvidia handles; whether that is
+DRM enumeration alone or includes a stale GL context is **not settled**.
+
+**This corrects the battery profile's premise.** `apply_battery` locks the dGPU
+to 0–400 MHz and its memory to 405 MHz, but the cost here is *awake vs
+suspended*, not *high clock vs low clock*: releasing the clocks on AC left power
+unchanged at ~17 W, and on battery the GPU is locked low and still draws ~11 W.
+Those locks bound *load* power; they save nothing at idle.
+
+Levers, none of which are testable from here (a re-login, or the user's hands):
+
+1. **`KWIN_DRM_DEVICES=/dev/dri/card1`** so KWin never opens the nvidia node.
+2. Keep **Zed** (and other Vulkan/GL apps) off the discrete GPU — Vulkan picks the
+   3070 by default because it is `card0`.
+3. **Stop `nvidia-persistenced`** — no effect alone, but part of the set.
+4. Point **`nbfc`'s GPU sensor** at the EC temperature instead of NVML.
+
+**Not verified:** that the four together actually let the dGPU suspend (and drop
+to a few watts). That needs a re-login with (1) applied and a re-measure of the
+battery draw. It is the single highest-value autonomy experiment left: at ~20 W
+with ~11 W of it asleep-able, the upside is on the order of **2× battery life**.
 
 ## The two tradeoffs the config assumes
 
@@ -157,8 +182,11 @@ because the fix adds state that must be cleared on boot/shutdown.
 - **Silence / cool (AC):** consistent. 28 W cap + no frequency cap (so light work
   still boosts — see [`efficiency.md`](efficiency.md)) + a silence-first fan
   curve + a 1800 MHz dGPU ceiling.
-- **Autonomy (battery):** the levers are all pointed the right way (15 W, 2.4 GHz,
-  EPP `power`, dGPU 400 MHz, memory 405 MHz, WiFi power-save on).
+- **Autonomy (battery):** every *policy* lever is pointed the right way (15 W,
+  2.4 GHz, EPP `power`, dGPU 0–400 MHz, memory 405 MHz, WiFi power-save on) —
+  but the largest single draw is **not** one of them: the dGPU stays awake at
+  ~10–12 W of the ~20 W total and no profile lever touches that. See "The dGPU
+  cannot sleep" above; it is the highest-value autonomy item left.
 - **PERF:** raises every CPU limit and unlocks both GPU clock families, with the
   `-lgc 500,…` floor kept because deep P8 sleep is the real cause of app-launch
   micro-freezes — not the CPU clock.
