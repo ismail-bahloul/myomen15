@@ -349,6 +349,19 @@ body against a `size_signed` field meant for the compressed one, for this
 specific PSP entry type — but that is not confirmed, and it is a `psptool`
 question, not a question about this machine's firmware.
 
+> **Resolved (added later), and the guess was half wrong.** The decompression
+> is exact — `sha256(decompressed body)` equals each file's own header
+> checksum — and the `veri-failed` was neither a missing key nor a mis-slice:
+> it is a one-line `psptool` bug. A compressed entry's RSA signature is over
+> `header + *stored (compressed)* body`; `get_signed_bytes()` signs
+> `header + *decompressed* body` instead, which only differs for compressed
+> entries. With `get_decrypted_decompressed_body()` changed to
+> `get_decrypted_body()` in that one method, every entry verifies:
+> `verified(96A0)` for both SMU images, `verified(4F75)` for PMU. The SMU
+> firmware (`SMU_OFFCHIP_FW`, 256 KiB, version `0x00404A00`) is extracted in
+> the clear; the Curve Optimizer gate is a policy *inside* it. Full account,
+> extraction and hashes: [`psp-firmware.md`](psp-firmware.md).
+
 `0x0–~0x1e0000` remains completely unaccounted for: no `$PSP`/`$BHD`/`$BL2`/
 `$PL2`/`_FVH` magic anywhere in it. Still genuinely opaque, still a
 hypothesis-free dead end.

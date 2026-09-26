@@ -1,0 +1,84 @@
+What the decompressed SMU / PMU plaintext actually looks like.
+Everything here was measured on 088D1.bin with the bodies dumped by
+psp-firmware.py. The .bin files themselves are gitignored (the repo's *.bin
+rule); these hashes are how a reader confirms they have the same bytes.
+
+================================================================================
+1. The plaintext, by hash
+================================================================================
+
+The sha256 below is both the hash of the dumped plaintext and the checksum
+stored in the PSP file header -- they are equal for every entry, which is the
+proof the decompression is exact. Version is the header's own file version.
+
+  SMU_OFFCHIP_FW             0x40000 (256 KiB)  ver 0.40.4A.0
+    fb1687f6b41e8ede78e0a543f8bf5df58ba67b4136e1adc9a2034a6a976d9ce0
+  SMU_OFF_CHIP_FW_2          0x40000 (256 KiB)  ver 0.40.4A.0
+    32339071d2b2b897cad42db79d93c2dd1f954f890f4ba8737567afcb17f6e158
+  PMU_CODE  inst1            0x8020  (32 KiB)   ver 0.0.10.1
+    e4c15162836c82e105927c1d575deb89f6788149016768971e0b93e119a862a2
+  PMU_DATA  inst1            0x4020  (16 KiB)   ver 0.0.10.1
+    70a58cacc89710afe62b859e0e8a56bf3a66381c854325084e4c9117c4f1cf65
+  PMU_CODE  inst4            0x8020  (32 KiB)   ver 0.0.10.1
+    f996468a1a3f7e40bbb7cefe9651a82cf06f87e2d5d9f79527d8f6fba085d5ce
+  PMU_DATA  inst4            0x4020  (16 KiB)   ver 0.0.10.1
+    f15de9eb69fa6da3dce8a04678ccad830ef43ef14e53d0f8b993d625c7e2f739
+
+The two copies in $BHD (dir 2) and $BL2 (dir 3) are byte-identical, as the
+directory report already implied -- same hashes, two A/B halves of the flash.
+
+================================================================================
+2. The SMU image's own header
+================================================================================
+
+  SMU_OFFCHIP_FW  (first dwords, little-endian)
+    0x00  00404a00  00404a00 00000000 00000000 00000000 0003ff00 ...
+    0x70  ... 00000008 ...
+
+  0x00404A00 is the SMU version the mailbox already reports on this machine
+  (`smu-raw.md`: GetSmuVersion -> 0x00404A00 = 64.74.0). SMU_OFF_CHIP_FW_2 has
+  the identical 0x00-0x18, differing only at 0x7c (0x08 vs 0x12). So both images
+  carry the same version header; they are not the same bytes past it.
+
+  Byte entropy of SMU_OFFCHIP_FW in 4 KiB blocks (per byte, /8):
+    3.45 6.92 7.07 5.03 0.00 0.00 3.36 3.40 0.48 1.39 0.18 0.52 0.05 3.05 4.05
+    3.66 1.30 2.90 2.60 1.96 1.84 1.65 3.99 5.49 4.43 0.00 0.44 0.00 1.24 6.96
+    6.98 7.05 7.25 7.23 ... (blocks 29-63 all ~6.9-7.3)
+
+  So: a small header, two high-entropy blocks early, a long structured-data
+  middle (0x6000-0x1C000 -- e.g. 0x12000 is a run of small ascending integers
+  like 0x1c 0x1e 0x15, the shape of a table, not code), then a large
+  homogeneous ~7.0 region from 0x1D000 to the end. Entropy ~7.0 is code or
+  packed data; it is *not* ciphertext (~7.99) and not another compressed
+  container -- no zlib/gzip/lzma/zstd/lz4/bzip2 magic appears anywhere in either
+  SMU image.
+
+================================================================================
+3. Architecture: no standard instruction set matches (measured, not assumed)
+================================================================================
+
+Disassembling the ~7.0 regions with every architecture Capstone models (ARM,
+Thumb, ARM64, MIPS, PPC, RISC-V, x86, SPARC, SuperH, M68K, TriCore, ...) leaves
+them undecoded. The best coverage any architecture reaches on the code-like
+4 KiB windows averages ~1%, and the only 100% hits are on the all-zero padding
+at 0x4000 -- a false positive.
+
+The test that makes this meaningful is a control: the same image's own
+PSP_FW_BOOT_LOADER and PSP_FW_TRUSTED_OS are ARM (Cortex-A5) and light up
+unmistakably. Counting the Thumb-2 `push.w` prologue byte pattern (2d e9), with
+a byte-shuffled random baseline of the same length:
+
+  file                     observed   random-expected   ratio
+  psp_bl   (ARM control)        149            1.02     146x
+  psp_tos  (ARM control)        124            1.57      79x
+  SMU_OFFCHIP_FW                  1            4.00     0.2x
+  SMU_OFF_CHIP_FW_2               0            4.00     0.0x
+  PMU_CODE                        0            0.50     0.0x
+  PMU_DATA                        0            0.25     0.0x
+
+No ARM64 (`stdp`/`stp x29,x30`), no x86-64 prologue, no MIPS `addiu sp,sp,-N`
+anywhere either. The conclusion the data supports: the SMU/PMU images carry no
+signature of any instruction set Capstone models. Either the SMU core is a
+proprietary ISA (capstone cannot be expected to know it), or the image is not a
+flat instruction stream. **Which of those it is has not been determined here** --
+this is a negative result, stated as one.

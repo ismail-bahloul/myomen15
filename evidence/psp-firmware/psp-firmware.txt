@@ -1,0 +1,109 @@
+psp-firmware.py -- run against 088D1.bin (the 16 MiB flash image / BIOS release
+F.30). Stock psptool, no patch applied; the one-line fix is monkey-patched in
+memory so the difference between the two signed-message layouts is visible.
+
+  python3 psp-firmware.py /home/iswad/DATA/bios_extract/work/smmre/088D1.bin --out /tmp/pspwork/dumps
+
+================================================================================
+
+ROM: /home/iswad/DATA/bios_extract/work/smmre/088D1.bin  (16777216 bytes)
+
+dir=1 entry=4  SMU_OFFCHIP_FW~0x8  sub=0 inst=0
+  addr 0xcb5600  entry_size 0x210d0  magic b'$PS1'  version 0.40.4A.0
+  size_signed 0x40000  size_uncompressed 0x40000  zlib_size 0x20ecd  load_addr 0x0
+  compressed=True encrypted=False  stored=0x20ed0  plaintext=0x40000
+  sha256(plaintext) == header checksum : True
+  RSA-PSS vs key 96A0:  header+plaintext -> False   header+stored -> True
+  wrote /tmp/pspwork/dumps/SMU_OFFCHIP_FW.bin
+
+dir=1 entry=8  SMU_OFF_CHIP_FW_2~0x12  sub=0 inst=0
+  addr 0xcf6d00  entry_size 0x11c00  magic b'$PS1'  version 0.40.4A.0
+  size_signed 0x40000  size_uncompressed 0x40000  zlib_size 0x119f2  load_addr 0x0
+  compressed=True encrypted=False  stored=0x11a00  plaintext=0x40000
+  sha256(plaintext) == header checksum : True
+  RSA-PSS vs key 96A0:  header+plaintext -> False   header+stored -> True
+  wrote /tmp/pspwork/dumps/SMU_OFF_CHIP_FW_2.bin
+
+dir=2 entry=5  PMU_CODE~0x64  sub=0 inst=1
+  addr 0xc70000  entry_size 0x4890  magic b'\x05\x00\x00\x00'  version 0.0.10.1
+  size_signed 0x8020  size_uncompressed 0x8020  zlib_size 0x4684  load_addr 0x100
+  compressed=True encrypted=False  stored=0x4690  plaintext=0x8020
+  sha256(plaintext) == header checksum : True
+  RSA-PSS vs key 4F75:  header+plaintext -> False   header+stored -> True
+  wrote /tmp/pspwork/dumps/PMU_CODE_sub0_ins1_d2.bin
+
+dir=2 entry=6  PMU_DATA~0x65  sub=0 inst=1
+  addr 0xc74900  entry_size 0x360  magic b'\x05\x00\x00\x00'  version 0.0.10.1
+  size_signed 0x4020  size_uncompressed 0x4020  zlib_size 0x15b  load_addr 0x100
+  compressed=True encrypted=False  stored=0x160  plaintext=0x4020
+  sha256(plaintext) == header checksum : True
+  RSA-PSS vs key 4F75:  header+plaintext -> False   header+stored -> True
+  wrote /tmp/pspwork/dumps/PMU_DATA_sub0_ins1_d2.bin
+
+dir=2 entry=7  PMU_CODE~0x64  sub=0 inst=4
+  addr 0xc74d00  entry_size 0x4ae0  magic b'\x05\x00\x00\x00'  version 0.0.10.1
+  size_signed 0x8020  size_uncompressed 0x8020  zlib_size 0x48d5  load_addr 0x100
+  compressed=True encrypted=False  stored=0x48e0  plaintext=0x8020
+  sha256(plaintext) == header checksum : True
+  RSA-PSS vs key 4F75:  header+plaintext -> False   header+stored -> True
+  wrote /tmp/pspwork/dumps/PMU_CODE_sub0_ins4_d2.bin
+
+dir=2 entry=8  PMU_DATA~0x65  sub=0 inst=4
+  addr 0xc79800  entry_size 0x340  magic b'\x05\x00\x00\x00'  version 0.0.10.1
+  size_signed 0x4020  size_uncompressed 0x4020  zlib_size 0x133  load_addr 0x100
+  compressed=True encrypted=False  stored=0x140  plaintext=0x4020
+  sha256(plaintext) == header checksum : True
+  RSA-PSS vs key 4F75:  header+plaintext -> False   header+stored -> True
+  wrote /tmp/pspwork/dumps/PMU_DATA_sub0_ins4_d2.bin
+
+dir=3 entry=6  PMU_CODE~0x64  sub=0 inst=1
+  addr 0xed1000  entry_size 0x4890  magic b'\x05\x00\x00\x00'  version 0.0.10.1
+  size_signed 0x8020  size_uncompressed 0x8020  zlib_size 0x4684  load_addr 0x100
+  compressed=True encrypted=False  stored=0x4690  plaintext=0x8020
+  sha256(plaintext) == header checksum : True
+  RSA-PSS vs key 4F75:  header+plaintext -> False   header+stored -> True
+  wrote /tmp/pspwork/dumps/PMU_CODE_sub0_ins1_d3.bin
+
+dir=3 entry=7  PMU_DATA~0x65  sub=0 inst=1
+  addr 0xed5900  entry_size 0x360  magic b'\x05\x00\x00\x00'  version 0.0.10.1
+  size_signed 0x4020  size_uncompressed 0x4020  zlib_size 0x15b  load_addr 0x100
+  compressed=True encrypted=False  stored=0x160  plaintext=0x4020
+  sha256(plaintext) == header checksum : True
+  RSA-PSS vs key 4F75:  header+plaintext -> False   header+stored -> True
+  wrote /tmp/pspwork/dumps/PMU_DATA_sub0_ins1_d3.bin
+
+dir=3 entry=8  PMU_CODE~0x64  sub=0 inst=4
+  addr 0xed5d00  entry_size 0x4ae0  magic b'\x05\x00\x00\x00'  version 0.0.10.1
+  size_signed 0x8020  size_uncompressed 0x8020  zlib_size 0x48d5  load_addr 0x100
+  compressed=True encrypted=False  stored=0x48e0  plaintext=0x8020
+  sha256(plaintext) == header checksum : True
+  RSA-PSS vs key 4F75:  header+plaintext -> False   header+stored -> True
+  wrote /tmp/pspwork/dumps/PMU_CODE_sub0_ins4_d3.bin
+
+dir=3 entry=9  PMU_DATA~0x65  sub=0 inst=4
+  addr 0xeda800  entry_size 0x340  magic b'\x05\x00\x00\x00'  version 0.0.10.1
+  size_signed 0x4020  size_uncompressed 0x4020  zlib_size 0x133  load_addr 0x100
+  compressed=True encrypted=False  stored=0x140  plaintext=0x4020
+  sha256(plaintext) == header checksum : True
+  RSA-PSS vs key 4F75:  header+plaintext -> False   header+stored -> True
+  wrote /tmp/pspwork/dumps/PMU_DATA_sub0_ins4_d3.bin
+
+10 entries extracted.
+
+================================================================================
+
+The same finding, seen from psptool's own `-E` listing, with the one-line fix
+applied to the installed header_file.py in the venv and then reverted:
+
+  # stock psptool
+  |     4 | 0xcb5600 | 0x210d0 | SMU_OFFCHIP_FW~0x8  | compressed, veri-failed(96A0), sha256_ok |
+  |     5 | 0xc70000 |  0x4890 | PMU_CODE~0x64       | compressed, veri-failed(4F75), sha256_ok |
+  ...
+
+  # header_file.py: get_signed_bytes(): get_decrypted_decompressed_body() -> get_decrypted_body()
+  |     4 | 0xcb5600 | 0x210d0 | SMU_OFFCHIP_FW~0x8  | compressed, verified(96A0), sha256_ok |
+  |     5 | 0xc70000 |  0x4890 | PMU_CODE~0x64       | compressed, verified(4F75), sha256_ok |
+  ...
+
+Every previously "veri-failed" compressed entry becomes "verified" with the
+correct signed-message layout. Nothing else in the image changes.
