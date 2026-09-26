@@ -138,3 +138,55 @@ every CO write is refused with 0xFF.
 The one thing still not established: which single config bit at
 `*(0x320fe00+0x264)`/0x72e0 is the "OC enabled" fuse, and whether any path
 other than the guard-blocked enable-oc message can set it. Nothing here writes.
+
+================================================================================
+5. Who sets the gate flags, and can the host reach it
+================================================================================
+
+(Added in a second pass, with both images concatenated at their true bases --
+FW1 0x0, FW2 0x40000 -- so cross-image references resolve. Ghidra 12.1.4.)
+
+The CO handlers succeed only when a runtime state holds, composed of
+`global.d0` (0x73b0), `global.byte[2]` (0x72e2), `global.byte[0x68]` (0x7348),
+`global.byte[0x6a]` (0x734a) and `*(0x9b14)`. Searching every reference to those
+addresses:
+
+  writers of global.byte[2]      : FUN_0001ce2c (0x1ce2c)   -- no caller (init)
+  writers of global.byte[0x68]   : FUN_0001eef0 (0x1eef0)   -- called only by 0x1ce2c
+  writers of global.byte[0x6a]   : FUN_0001e1f8 (0x1e1f8)   -- queue 7, msg 0x0f, UNGUARDED
+                                   FUN_0005987c (0x5987c)
+  writers of global.byte[0x69]   : FUN_0001ee90 (0x1ee90)   -- queue 0/1/2/3/4, all GUARDED
+  writers of global.d0 (0x73b0)  : none found (13 references, all loads)
+
+Two things fall out:
+
+  * The two functions that establish byte[2] and byte[0x68] -- the primary gate
+    bits -- are SMU init code (`FUN_0001ce2c` writes byte[2], then calls
+    `FUN_0001eef0` which writes byte[0x68]; it also programs registers at
+    0x115a600 and queries message ids 0x3262/0x2240/0x2242/0x3195 on an internal
+    channel). Neither has a host-facing caller: they run at SMU bring-up.
+
+  * On the MP1 queue (4) the only message that touches any of these bytes is
+    message 0x12 -> FUN_0001ee90, and its entry config is 0x000a1006 -- guard
+    byte 0x10 -- so queue_dispatch rejects it with 0xFD before it runs. It also
+    sets byte[0x69], which none of the CO checks read.
+
+The unguarded writer of byte[0x6a] (FUN_0001e1f8) is message 0x0f on queue 7,
+bound 0x1f. Queue 7 is not the MP1 mailbox: its same-numbered handlers are
+different subsystems (its "0x55" at 0x42260 just reads a float and returns
+success unconditionally; queue 5/6's "0x55" at 0x41c08 parses two 16-bit fields
+and stores scaled floats). Only queue 4's 0x54/0x55/0x64 are the Curve Optimizer
+-- the ±30 clamp and the per-core offset table -- which is also what pins MP1 to
+queue 4.
+
+So: the CO gate is a state the SMU establishes for itself at boot, and the host
+has no unguarded message that changes it. That is the concrete answer to "can
+software unlock Curve Optimizer here": no, not through the mailbox.
+
+One honesty note: `global.d0` (0x73b0) has no resolved writer in either image,
+yet the live SMU returns 0xFF (Failed), which per the handler code means d0 is
+non-zero at run time (or byte[2] is zero -- also sufficient to fail). Since the
+image value is zero, some runtime init must fill part of that struct through a
+computed pointer that static reference-tracking does not attribute. That does not
+change the conclusion -- no host message reaches it -- but it is stated rather
+than papered over.

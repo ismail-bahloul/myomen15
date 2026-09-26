@@ -214,8 +214,22 @@ The closed loop: enabling OC is guard-rejected, so the enable state stays off,
 so every CO write returns 0xFF. That is exactly `firmware-limits.md`'s "the OC/CO
 gate is HP's, not AMD's" — now decoded to the instructions that implement it.
 
-**Still open (stated, not guessed):** which single config bit is the "OC enabled"
-state, and whether any unguarded path can set it. Nothing here writes to the SMU.
+**Who sets that state, and can the host reach it** (second pass, both images
+concatenated at their real bases so cross-image references resolve): the bits the
+CO handlers read (`byte[2]`, `byte[0x68]`) are written by **SMU init code**
+(`FUN_0001ce2c` / `FUN_0001eef0`, no host-facing caller); the one such message
+that is on the **MP1 queue** (msg `0x12`) is **guard-rejected** (cfg `0x000a1006`,
+guard byte `0x10`); and the only **unguarded** writer (`byte[0x6a]`) sits on
+**queue 7, not MP1**. Queue 4 is pinned as MP1 precisely because only its
+`0x54`/`0x55`/`0x64` are the real Curve Optimizer (the other queues' same-numbered
+handlers are unrelated). So the gate is a state the SMU establishes for itself at
+boot, and the host has **no unguarded message that changes it**.
+
+One honesty note: `global.d0` (`0x73b0`) has no resolved writer in either image,
+yet the live SMU returns 0xFF; since the image value is zero, some runtime init
+must fill that struct through a computed pointer that static reference-tracking
+does not attribute. It does not change the conclusion, but it is stated rather
+than papered over.
 
 ## What this does and does not change
 
@@ -231,8 +245,11 @@ state, and whether any unguarded path can set it. Nothing here writes to the SMU
 - **It corrects two things.** `firmware-limits.md`'s "psptool mis-slices" guess
   (replaced by the exact layout bug), and any reading of `veri-failed` as
   "this machine's firmware is not properly signed" — it is signed, and verifies.
-- **It states one limit honestly.** Which single register bit is the OC-enabled
-  state, and whether any unguarded message can set it, is not established.
+- **It states the software limit as a result, not a guess.** No mailbox message
+  the host can send flips the CO gate: the flag writers are SMU-init code or
+  guard-rejected, and the one unguarded writer is on a queue that is not MP1.
+  Curve Optimizer is not reachable through the mailbox on this machine — now
+  shown, not assumed.
 
 ## Reproducing
 
