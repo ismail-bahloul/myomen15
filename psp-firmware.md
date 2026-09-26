@@ -170,37 +170,69 @@ their table entries are non-null and their handlers run and then refuse — the
 refusal is a branch inside a handler this image contains.
 
 Several handler tables were found by structure (arrays of 8-byte entries whose
-pointer column is an Xtensa prologue, `36 4x 00` / `36 6x 00`) — `@0x13b90`
-(48 entries, default handler `0x2bd88`), `@0x7ff0` (64 entries), `@0x6f94`,
-`@0x70c4`, `@0x6b6c`, with per-entry config dwords like `0x00000006` /
-`0x00000201`. Full disassembly and the table list:
-[`evidence/psp-firmware/queue-dispatch.txt`](evidence/psp-firmware/queue-dispatch.txt).
+pointer column is an Xtensa prologue, `36 4x 00` / `36 6x 00`). Full
+first-pass list: [`evidence/psp-firmware/queue-dispatch.txt`](evidence/psp-firmware/queue-dispatch.txt).
 
-**What is not yet pinned down.** Which of those is the MP1 queue, and the exact
-handler for id `0x55`. The dispatch's queue index is set up in RAM at boot, and
-the handler arrays visible in the image top out around 18–64 entries, so the
-id→handler array for the MP1 queue (which must reach `0x55`) is either built in
-RAM or indexed differently from the 8-byte model above. That resolution wants a
-real Xtensa disassembler with a RAM map — Ghidra 11.1+ ships Xtensa — not
-`rasm2` by hand.
+## Resolved with Ghidra: the MP1 queue, and the CO handler itself
+
+`rasm2` resolves neither `l32r` literals nor call targets correctly, which is why
+the tables could not be followed by hand. Ghidra 12.1.4 (which has Xtensa) does,
+and with it the whole gate falls out. [`evidence/psp-firmware/curve-optimizer-handler.txt`](evidence/psp-firmware/curve-optimizer-handler.txt)
+is the full account; the short version:
+
+**Two images, loaded contiguously.** Every dispatch-table pointer below `0x40000`
+is a prologue in `SMU_OFFCHIP_FW`; every one at `0x40000+` is a prologue in
+`SMU_OFF_CHIP_FW_2` (`-0x40000`). So the two SMU images are loaded at `0x0` and
+`0x40000`, and the Curve Optimizer code is in the second one.
+
+**Queue 4 is the MP1 queue.** Its handler table is at `0x6624` (bound `0x66`),
+and its entries are exactly the message ids the live mailbox already uses:
+`0x02` GetSmuVersion, `0x06` GetPmTableVersion, `0x14` SetStapmLimit, `0x2f`
+enable-oc, `0x54` set-coper, `0x55` set-coall, `0x64` set-cogfx.
+
+**The refusal has two mechanisms, and they produce the two codes the repo
+measured** (`smu-raw.md`):
+
+- **0xFD — the guard.** In `queue_dispatch`, config byte 5 of a handler entry is
+  a mask tested against the message id. `enable-oc` (`0x2f`, mask `0x10`) and
+  `pbo-scalar` (`0x49`) carry a mask and are rejected with **0xFD before their
+  handler runs**. The OS is not allowed to *ask* to enable OC. This is "the gate
+  is HP's" — now a mask and an address.
+- **0xFF — the config check.** The CO handlers are unguarded, so they run — and
+  they are **real implementations, not stubs**: they parse `(core << 20) |
+  (int16)offset` (the encoding this repo documented from ryzenadj #296/#302),
+  **clamp the offset to ±30** (Zen 3's CO range), and write it per core
+  (set-coper: one core; set-coall: **all 8**) into a table at
+  `*(0xa0e8) + core*0x340 + 0x334`. They return **0xFF by default**, cleared to
+  success only if a runtime configuration state holds (`global.d0`,
+  `*(0x320fe00+0x264) == 0x80000000`, and flags at `0x72e0+2/+0x68/+0x6a` with
+  `*(0x9b14)`). Those globals are **zero in the image** — they are RAM, filled at
+  boot — so on this machine the chain fails and every CO write is refused with
+  0xFF.
+
+The closed loop: enabling OC is guard-rejected, so the enable state stays off,
+so every CO write returns 0xFF. That is exactly `firmware-limits.md`'s "the OC/CO
+gate is HP's, not AMD's" — now decoded to the instructions that implement it.
+
+**Still open (stated, not guessed):** which single config bit is the "OC enabled"
+state, and whether any unguarded path can set it. Nothing here writes to the SMU.
 
 ## What this does and does not change
 
 - **It reopens nothing by itself.** The Curve Optimizer gate is still the SMU
   refusing a recognised command (`smu-raw.md`), and the flash is still
   signature-verified end to end. Reading the SMU firmware does not unlock it.
-- **It closes the ISA question and moves the CO question one level in.** The
-  core is Xtensa and the dispatcher's structure (id → per-queue handler table,
-  8-byte entries, guard byte, 0xFE/0xFD/0xFC) is now known from this image. The
-  remaining step is narrower and concrete: resolve the MP1 queue's handler table
-  and read entry `0x55`.
+- **It answers the CO question down to the instructions.** The core is Xtensa,
+  the MP1 queue and its handler table are located, and the gate is decoded:
+  the handlers are real (±30 clamp, per-core table) and refuse with 0xFF because
+  a runtime "OC enabled" state is off — a state the unguarded enable path cannot
+  reach, because `enable-oc` is guard-rejected with 0xFD. Both status codes the
+  repo measured now have their producing instruction.
 - **It corrects two things.** `firmware-limits.md`'s "psptool mis-slices" guess
   (replaced by the exact layout bug), and any reading of `veri-failed` as
   "this machine's firmware is not properly signed" — it is signed, and verifies.
-- **It states two limits honestly.** Capstone cannot disassemble the image
-  because it does not model Xtensa (a tool limit, now worked around with rasm2);
-  and the specific CO handler is not yet extracted (a work limit, stated as
-  such).
+- **It states one limit honestly.** Which single register bit is the OC-enabled
+  state, and whether any unguarded message can set it, is not established.
 
 ## Reproducing
 
@@ -218,15 +250,21 @@ psptool -E 088D1.bin | grep -E 'SMU|PMU'
 
 # the ISA and the dispatcher: rasm2 (radare2) speaks Xtensa, capstone does not
 rasm2 -a xtensa -b 32 -d "$(xxd -s 0x1e0 -l 0x18 -p SMU_OFFCHIP_FW.bin)"
+
+# the CO handler needs a disassembler that resolves Xtensa l32r/call targets:
+#   Ghidra 12.1.4 (Xtensa:LE:32:default), import each image as a raw binary at
+#   base 0x0 (FW1) / 0x40000 (FW2), then read table 0x6624 entry 0x55 -> FW2 0x1090
 ```
 
 Captured output: [`evidence/psp-firmware/psp-firmware.txt`](evidence/psp-firmware/psp-firmware.txt)
 (extraction + both RSA layouts), [`evidence/psp-firmware/fw-analysis.txt`](evidence/psp-firmware/fw-analysis.txt)
 (hashes, structure, the architecture probe),
 [`evidence/psp-firmware/xtensa-isa.txt`](evidence/psp-firmware/xtensa-isa.txt)
-(the ISA identification and its corroboration), and
+(the ISA identification and its corroboration),
 [`evidence/psp-firmware/queue-dispatch.txt`](evidence/psp-firmware/queue-dispatch.txt)
-(`queue_dispatch` and the handler tables).
+(`queue_dispatch` and the handler tables), and
+[`evidence/psp-firmware/curve-optimizer-handler.txt`](evidence/psp-firmware/curve-optimizer-handler.txt)
+(the MP1 queue, the two gates, and the decoded CO handler).
 
 ## Related
 

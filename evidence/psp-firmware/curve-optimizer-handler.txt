@@ -1,0 +1,140 @@
+The Curve Optimizer gate, at the instruction level.
+Everything below was decoded with Ghidra 12.1.4 (which has Xtensa), from the two
+plaintext SMU images dumped by psp-firmware.py.
+
+================================================================================
+0. Memory map, established from the code itself
+================================================================================
+
+The dispatch tables contain pointers that fall into two disjoint ranges. Every
+pointer below 0x40000 is an Xtensa function prologue in SMU_OFFCHIP_FW; every
+pointer at or above 0x40000 is a prologue in SMU_OFF_CHIP_FW_2 (at offset -0x40000).
+So the two images are loaded contiguously:
+
+  SMU_OFFCHIP_FW    -> 0x000000
+  SMU_OFF_CHIP_FW_2 -> 0x040000
+
+The Curve Optimizer handlers live in the second image.
+
+================================================================================
+1. The message queues
+================================================================================
+
+queue_dispatch (SMU_OFFCHIP_FW 0xff8) indexes:
+
+  per-queue handler-table pointer array : 0x726c (in-image; 4-byte entries, by queue id)
+  per-queue message-count bound array   : 0x72a8 (16-bit entries; id < bound => valid)
+  handler entry layout                  : 8 bytes: pointer at +0, config at +4
+                                          (config byte 5 is the guard mask)
+
+14 queues are populated. By their bounds:
+
+  queue 0  bound 0x42   queue 4  bound 0x66   queue 8  bound 0x04
+  queue 1  bound 0x05   queue 5  bound 0xc7   queue 9  bound 0x03
+  queue 2  bound 0x08   queue 6  bound 0xc7   queue 10 bound 0x0f
+  queue 3  bound 0x09   queue 7  bound 0x1f   queue 11..13 bounds 0x04..0x19
+
+**Queue 4 is the MP1 queue** (bound 0x66, i.e. ids 0x00..0x65), identified by
+its content: its table at 0x6624 maps exactly the message ids this repo already
+knows from the live mailbox --
+
+  0x02 -> 0x1d264  GetSmuVersion
+  0x06 -> 0x1ed3c  GetPmTableVersion
+  0x14 -> 0x6bd0   SetStapmLimit
+  0x2f -> 0x1dac   enable-oc        cfg=0x001e1006  (guarded)
+  0x30 -> 0x1ea0   disable-oc       cfg=0x00000006
+  0x49 -> 0x2bf8   pbo-scalar       cfg=0x001d1006  (guarded)
+  0x53 -> 0x6ecc   skin-temp-limit
+  0x54 -> 0x1000   set-coper        cfg=0x00000006
+  0x55 -> 0x1090   set-coall        cfg=0x00000006
+  0x56,0x57 -> 0x6398,0x6464
+  0x5b -> 0x7d0    get-sustained-power-and-thm-limit
+  0x64 -> 0x115c   set-cogfx        cfg=0x00000006
+  0x65 -> 0x11d4
+
+================================================================================
+2. The two gates, and which code produces which status
+================================================================================
+
+Gate A -- the guard, in queue_dispatch itself (SMU_OFFCHIP_FW 0x1097):
+
+  0x1060  l8ui  a5,a3,0x5       ; a5 = config byte 5 = guard mask
+  0x1097  ball  a10,a5,<reject> ; test the message id against the mask
+  0x109c  movi  a11,0xfd        ; 0xFD = guard reject
+  0x109f  call8 <respond>
+
+So a message whose config carries a non-zero guard mask is rejected with 0xFD
+before its handler runs. enable-oc (0x2f, mask 0x10) and pbo-scalar (0x49, mask
+0x10) are in this class. **This is why `ryzenadj --enable-oc` fails: the OS is
+not allowed to ask.** That is the repo's "HP's gate, not AMD's" -- now a mask.
+
+Gate B -- the config check inside the CO handlers (below). The handlers run (they
+are unguarded) and then return 0xFF unless a runtime configuration state holds.
+
+================================================================================
+3. set-coall (0x55), the handler, in full
+================================================================================
+
+FW2 0x1090 (handlers for 0x54 at 0x1000 and 0x64 at 0x115c are the same shape):
+
+  0x1090 entry a1,0x20
+  0x1093 mov.n a10,a2
+  0x1095 call8 <parse>          ; a10 = (core << 20) | (int16)offset   (see below)
+  0x109b sext  a4,a10,15        ; a4 = offset, sign-extended from bit 15
+  0x109e l32i  a8,a11,0xd0      ; a8 = global[0x72e0].d0
+  0x10b5 ... checks ...
+  0x10b8 movi  a3,0xff          ; default result = 0xFF (Failed)
+  0x10bb beqz.n a10,<fail>      ; if global.byte[2] == 0 -> 0xFF
+  0x10c3 bnez.n a12,<fail>      ; if *(0x9a78+0x9c) != 0 -> 0xFF
+  0x10c5 bnez.n a13,<ok>        ; global.byte[0x6a] != 0 -> ok
+  0x10ca bnei  a14,0x1,<fail>   ; else global.byte[0x68] must == 1
+  0x10cf movi.n a3,0x1          ; -> success
+  0x10d1 min   a4,a4,0x1e       ; clamp offset <= +30
+  0x10d9 max   a4,a4,-0x1e      ; clamp offset >= -30
+  0x10e7 bnei  a3,0x1,<respond> ; if not success, respond without applying
+  0x10ed call8 <lock>
+  0x10f8 movi.n a12,0x8         ; 8 cores
+  0x10fa loopgtz a12, ...
+  0x10fd mul16s a13,a9,0x340    ; core * 0x340
+  0x1107 s32i  a4,a13,0x334     ; store the offset into this core's slot
+  0x1114 call8 <respond(a3)>
+
+So the handler is a **complete, working Curve Optimizer**:
+  * the argument is `(core << 20) | (int16)offset`, the exact encoding this repo
+    documented from ryzenadj issues #296/#302;
+  * the offset is clamped to **[ -30, +30 ]** (Zen3's CO range);
+  * set-coper (0x54) writes one core (core index taken from bits 20-27, rejected
+    if >= 8); set-coall (0x55) writes the same offset to **all 8 cores**;
+  * the value lands in a per-core table at `*(0xa0e8) + core*0x340 + 0x334`.
+
+And it **refuses by default**: result 0xFF, cleared to 1 only if a configuration
+chain passes -- `global.d0 == 0`, or `*(0x320fe00 + 0x264) == 0x80000000`, or a
+combination of flags in the SMU global struct at 0x72e0 (`byte[2]`,
+`byte[0x68]`, `byte[0x6a]`) with `*(0x9b14)`. On this machine those evaluate to
+failure, so 0xFF -- which is exactly what both operating systems measured.
+
+The globals are **zero in the image** (they are RAM, filled at run time), so the
+gate is not a compile-time constant: it is a runtime state the SMU reaches after
+boot, set by the enable/disable-OC path -- which Gate A blocks. That is the
+closed loop: enabling OC is guard-rejected, so the enable state stays off, so
+every CO write is refused with 0xFF.
+
+================================================================================
+4. What the repo can now state
+================================================================================
+
+* The CO family (0x54/0x55/0x64) is **implemented, not stubbed** -- real clamps,
+  a real per-core voltage-offset table, exactly Zen3's ±30 range.
+* The refusal has **two distinct mechanisms**, and they produce the two distinct
+  status codes the repo measured:
+    - 0xFD (guard reject) for enable-oc / disable-oc / pbo-scalar -- blocked in
+      `queue_dispatch` by the config guard mask, before the handler runs;
+    - 0xFF (Failed) for set-coper / set-coall / set-cogfx -- handler runs, sees
+      the OC/CO enable state off, and refuses.
+* That is consistent with every earlier observation: `--enable-oc` fails, CO
+  fails on both OSes, the BIOS has no CO menu, and the sysfs response node even
+  masked the code (0xFF read back as 0x01).
+
+The one thing still not established: which single config bit at
+`*(0x320fe00+0x264)`/0x72e0 is the "OC enabled" fuse, and whether any path
+other than the guard-blocked enable-oc message can set it. Nothing here writes.
