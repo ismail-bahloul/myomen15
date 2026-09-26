@@ -1,0 +1,80 @@
+`queue_dispatch`, located by hand in SMU_OFFCHIP_FW (Xtensa).
+Disassembled with rasm2 (radare2's Xtensa plugin), instruction addresses = file
+offsets. Code around the function, from 0xf80:
+
+  0xf80  364100   entry a1, 32
+  0xf83  0c0a     movi.n a10, 0
+  0xf85  250700   call8 <helper>          ; thunk: sets index 0, calls helper
+  0xf88  1df0     retw.n
+  ...    (a run of these small thunks: a10 = 0, 8, 2, 9, 12, 13, ...)
+
+  0xff8  366100   entry a1, 48            ; <-- the dispatcher starts here
+  0xffb  ad02     mov.n a10, a2
+  0xffd  651500   call8 <init>
+  0x1011 822bef   l32i a8, a11, 0x3bc
+  0x1014 921d90   l16ui a9, a13, 0x120
+  0x101a 77181c   beq a8, a7, <0x10d4>
+  0x1026 a0e074   extui a14, a10, 0, 8    ; message id = low 8 bits of a10
+  0x102c 808811   slli a8, a8, 8
+  0x102f 80ee20   or a14, a14, a8
+  0x103a d09290   addx2 a9, a2, a13
+  0x103d 92197e   l16ui a9, a9, 252       ; per-queue message-count bound
+  0x1043 973a09   bltu a10, a9, <0x1050>  ; id < bound -> look up handler
+  0x1046 ad02     mov.n a10, a2
+  0x1048 b2a0fe   movi a11, 254           ; 0xFE = no/invalid handler
+  0x104b 651800   call8 <respond>
+  0x104e 1df0     retw.n
+
+  0x1050 6032a0   addx4 a3, a2, a6        ; a6 = base of per-queue pointer array
+  0x1053 32237f   l32i a3, a3, 0x1fc      ; handler-table ptr for queue a2
+  0x1058 303ab0   addx8 a3, a10, a3       ; entry = table + msg_id * 8
+  0x105b d803     l32i.n a13, a3, 0       ; <-- handler FUNCTION POINTER
+  0x1060 520305   l8ui a5, a3, 5          ; <-- config/guard byte at entry+5
+  0x1063 cc8d     bnez.n a13, <0x1050+...>; null pointer -> 0xFE
+  0x1067 b2a0fe   movi a11, 254
+  0x106a 651600   call8 <respond>
+
+  0x1097 574a09   ball a10, a5, <...>     ; guard bit test on config byte
+  0x109c b2a0fd   movi a11, 253           ; 0xFD = guard reject
+  0x109f 251300   call8 <respond>
+
+  0x10b0 8803     l32i.n a8, a3, 0
+  0x10b2 ad02     mov.n a10, a2
+  0x10b4 e00800   callx8 a8               ; <-- CALL THE HANDLER
+
+  0x1115 b2a0fc   movi a11, 252           ; 0xFC = busy
+  0x1118 650b00   call8 <respond>
+
+This is a direct hand-décodage of the exact structure the bc250 RE notes
+describe, and it reproduces the status codes this repo already measured from
+the live SMU (`smu-raw.md`): 0xFE = unknown command, 0xFD = rejected-prereq,
+0xFC = rejected-busy. The dispatch is: message id (low 8 bits) -> per-queue
+handler table entry (8 bytes: 4-byte pointer at +0, config/guard at +5) ->
+guard test -> callx8 the handler.
+
+Why this matters for the Curve Optimizer question: the CO messages 0x55 /
+0x54 / 0x64 returning 0xFF (Failed) rather than 0xFE (UnknownCmd) means their
+table entries are non-null and the handlers run and then refuse. The table
+entry is where "recognised and refused" lives.
+
+Handler tables found by structure (arrays of 8-byte entries whose pointer column
+is an Xtensa function prologue, `36 4x 00` / `36 6x 00`):
+
+  @0x7ff0   64 entries, all pointing to a single default handler 0x2780
+  @0x13b90  48 entries, default 0x2bd88, distinct handlers at ids
+            0x00,0x02,0x06,0x08,0x09,0x0a,0x0b,0x0c,0x0d,0x0e,0x0f,0x18,...
+  @0x6f94   18 entries, config dword 0x00000006/0x00000106
+  @0x70c4   14 entries
+  @0x9884   18 entries -- pointers into the thunk block near 0xf50 (0xf50, 0xf5c,
+            0xf68, 0xf74, 0xf80, 0xf98, 0xfb0), i.e. a vector/thunk table, not a
+            message table
+  @0x6b6c   9 entries, config 0x00000201
+
+What was NOT pinned down: which of these is the MP1 message queue, and the
+handler for id 0x55. The map from a live SMU mailbox to a queue index (the
+dispatcher's `a2`) is set up in RAM at boot from the image, and the tables that
+appear in the image top out around 18-64 entries -- so the id->handler array
+for the MP1 queue (which must reach at least 0x55) is either built in RAM at
+run time or indexed differently from the 8-byte model above. Resolving it is the
+next step, and it wants a real Xtensa disassembler with a RAM map (Ghidra 11.1+
+ships Xtensa), not rasm2 by hand.

@@ -1,0 +1,75 @@
+The SMU core's instruction set: Xtensa.
+Measured on SMU_OFFCHIP_FW (the plaintext dumped by psp-firmware.py).
+
+================================================================================
+1. It disassembles as Xtensa, and only as Xtensa
+================================================================================
+
+Every other architecture Capstone and radare2 model left the code regions
+undecoded (see fw-analysis.txt, section 3). Xtensa does not. rasm2 (radare2's
+Xtensa plugin) decodes the code regions cleanly, and the decoded instructions
+are *self-evidently* Xtensa because they include Xtensa-specific control
+registers and instructions:
+
+  # 0x1e0 -- TLB / cache bring-up, the shape of early boot code
+  0x1e0  movi.n a2, 0
+  0x1e2  wsr.itlbcfg a2        <- write Xtensa ITLB config register
+  0x1e6  isync                 <- instruction-fetch sync (Xtensa)
+  0x1e8  l32r a2, <literal>
+  0x1eb  wsr.dtlbcfg a2        <- write Xtensa DTLB config register
+  0x1f0  dsync                 <- load/store sync (Xtensa)
+
+  # 0x1c0 -- interrupt-disable + loop
+  0x1c4  addi a3, a3, 64
+  0x1c7  bltu a3, a2, <loop>
+  0x1cc  l32r a2, <literal>
+  0x1cf  movi.n a3, 0
+  0x1d1  dii a3, 0             <- disable interrupt (Xtensa DII)
+
+`wsr.itlbcfg` / `wsr.dtlbcfg` / `isync` / `dsync` / `dii` are Xtensa. No other
+ISA has them; their presence in a coherent stream is decisive, not statistical.
+
+================================================================================
+2. The control that makes the negative result in fw-analysis.txt meaningful
+================================================================================
+
+Same image, same tool, the ARM blobs vs the SMU image. The Thumb-2 `push.w`
+prologue (2d e9) versus a byte-shuffled random baseline of equal length:
+
+  file                     observed   random-expected   ratio
+  psp_bl   (ARM Cortex-A5)      149            1.02     146x
+  psp_tos  (ARM Cortex-A5)      124            1.57      79x
+  SMU_OFFCHIP_FW                  1            4.00     0.2x
+
+So the tool is not blind: it lights up exactly on this image's known ARM code,
+and finds nothing standard in the SMU image. Ruled out (all measured): ARM,
+Thumb, ARM64, MIPS, PPC, RISC-V, x86, SuperH, M68K, TriCore, Xtensa is what fits.
+
+================================================================================
+3. Independent corroboration, from two sources that are not this repo
+================================================================================
+
+  * AMD's own firmware repository (github.com/amd/firmware_binaries) ships the
+    Cezanne SMU firmware directly: cezanne/PSP/TypeId0x08_SmuFirmware_CZN.csbin.
+    It is a PSP `$PS1` entry, compressed=1, encrypted=0, size_signed=0x40000,
+    size_uncompressed=0x40000 -- the same header shape as the entry this repo
+    extracted, and it decompresses to a 0x40000 body whose first dwords are
+    `00404800 00404800` (version 64.72.0, twice). This machine's HP F.30 ships
+    a newer version, 64.74.0 (`00404A00 00404A00`), but the format is identical.
+    That validates the extraction and the header reading against an official
+    artifact, not just against psptool.
+
+  * The "bc250-collective/amd_smu_reverse_engineering" project describes the SMU
+    of a related AMD SoC as an Xtensa core ("It boots an Xtensa core",
+    `smu_xtensa_start`, `waiti`), and describes the message dispatch as a
+    per-queue table of handlers. Section 4 below finds that same dispatch
+    structure in THIS image, by hand, which is the stronger of the two results.
+
+================================================================================
+4. The function map (a reusable signature)
+================================================================================
+
+Xtensa function prologues are `entry aN, imm` = bytes `36 4x 00` / `36 6x 00`.
+Scanning SMU_OFFCHIP_FW for `36 [40-7f] 00` finds 1232 candidate function
+entries -- the basis for locating handlers by their call targets (section 5,
+in queue-dispatch.txt).

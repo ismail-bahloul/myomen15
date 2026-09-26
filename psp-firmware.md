@@ -89,7 +89,7 @@ Entropy ~7.0 is code or packed data. It is **not** ciphertext (that would be
 ~7.99) and not a nested container: no zlib/gzip/lzma/zstd/lz4/bzip2 magic
 appears anywhere in either SMU image.
 
-## The architecture, measured: no standard ISA (a negative result)
+## The architecture: no *Capstone* ISA — because the core is Xtensa
 
 Disassembling the ~7.0 regions with every architecture Capstone models (ARM,
 Thumb, ARM64, MIPS, PPC, RISC-V, x86, SuperH, M68K, ...) leaves them undecoded;
@@ -112,27 +112,95 @@ PMU_DATA                     0            0.25     0.0x
 ```
 
 No ARM64, x86-64 or MIPS prologue signature either. So the SMU/PMU images carry
-**no signature of any instruction set Capstone knows** — either the core is a
-proprietary ISA (which Capstone cannot be expected to model), or the image is
-not a flat instruction stream. Which of the two is not established here, and is
-stated as the open question it is.
+**no signature of any instruction set Capstone knows** — which is exactly true,
+and the reason is now known: the core is **Xtensa**, which Capstone does not
+model. The evidence is below, and it is not statistical.
+
+## The core is Xtensa
+
+radare2's Xtensa plugin decodes the same regions cleanly, and the decoded
+instructions are self-evidently Xtensa by their operands — the Xtensa-only
+control-register and synchronisation instructions, in a coherent stream at the
+boot region:
+
+```
+0x1e0  movi.n a2, 0       0x1e6  isync              ; Xtensa instruction-fetch sync
+0x1e2  wsr.itlbcfg a2     0x1e8  l32r a2, <literal>
+0x1eb  wsr.dtlbcfg a2     0x1f0  dsync              ; Xtensa load/store sync
+0x1d1  dii a3, 0          0x1c7  bltu a3, a2, <loop> ; Xtensa disable-interrupt
+```
+
+`wsr.itlbcfg` / `wsr.dtlbcfg` / `isync` / `dsync` / `dii` have no equivalent in
+any other ISA; their presence is decisive, not a fit statistic.
+
+Two independent sources agree it is Xtensa, and neither is this repo:
+
+- AMD's own firmware repository (`github.com/amd/firmware_binaries`) ships the
+  Cezanne SMU firmware directly (`cezanne/PSP/TypeId0x08_SmuFirmware_CZN.csbin`).
+  It is a `$PS1` entry, `compressed=1 encrypted=0 size_signed=0x40000`, and it
+  decompresses to a 0x40000 body beginning `00404800 00404800` (version 64.72.0,
+  twice) — the identical header shape to the 64.74.0 this machine's F.30 ships.
+  That validates the extraction against an official artifact, not just psptool.
+- The `bc250-collective/amd_smu_reverse_engineering` project describes the SMU of
+  a related SoC as booting an Xtensa core. What matters more is that section
+  below **re-derives the same dispatch structure by hand from this image**.
+
+## `queue_dispatch`, located by hand
+
+With Xtensa decoding, the message dispatcher falls out around `0xff8`. It is
+recognisable by the status codes this repo already measured from the live SMU:
+
+```
+0x1026  extui a14, a10, 0, 8     ; message id = low 8 bits
+0x103d  l16ui a9, a9, 252        ; per-queue message-count bound
+0x1043  bltu a10, a9, <lookup>   ; id < bound -> has a handler
+0x1048  movi a11, 254            ; 0xFE  (unknown command)
+0x1058  addx8 a3, a10, a3        ; entry = handler_table + id * 8
+0x105b  l32i.n a13, a3, 0        ; <- handler FUNCTION POINTER
+0x1060  l8ui a5, a3, 5           ; <- config/guard byte at entry+5
+0x10b4  callx8 a8                ; <- call the handler
+0x109c  movi a11, 253            ; 0xFD  (guard reject)
+0x1115  movi a11, 252            ; 0xFC  (busy)
+```
+
+0xFE / 0xFD / 0xFC are the same three codes `smu-raw.md` observed the live SMU
+emit. So the Curve Optimizer question has a precise home now: the CO messages
+`0x55` / `0x54` / `0x64` returning **0xFF (Failed), not 0xFE (UnknownCmd)** means
+their table entries are non-null and their handlers run and then refuse — the
+refusal is a branch inside a handler this image contains.
+
+Several handler tables were found by structure (arrays of 8-byte entries whose
+pointer column is an Xtensa prologue, `36 4x 00` / `36 6x 00`) — `@0x13b90`
+(48 entries, default handler `0x2bd88`), `@0x7ff0` (64 entries), `@0x6f94`,
+`@0x70c4`, `@0x6b6c`, with per-entry config dwords like `0x00000006` /
+`0x00000201`. Full disassembly and the table list:
+[`evidence/psp-firmware/queue-dispatch.txt`](evidence/psp-firmware/queue-dispatch.txt).
+
+**What is not yet pinned down.** Which of those is the MP1 queue, and the exact
+handler for id `0x55`. The dispatch's queue index is set up in RAM at boot, and
+the handler arrays visible in the image top out around 18–64 entries, so the
+id→handler array for the MP1 queue (which must reach `0x55`) is either built in
+RAM or indexed differently from the 8-byte model above. That resolution wants a
+real Xtensa disassembler with a RAM map — Ghidra 11.1+ ships Xtensa — not
+`rasm2` by hand.
 
 ## What this does and does not change
 
 - **It reopens nothing by itself.** The Curve Optimizer gate is still the SMU
   refusing a recognised command (`smu-raw.md`), and the flash is still
   signature-verified end to end. Reading the SMU firmware does not unlock it.
-- **It moves the CO question to a new front.** The gate is a policy *inside*
-  this firmware. Until now the firmware was assumed unreadable; it is not. The
-  next step is disassembly of the handler that answers `0x55` / `0x54` /
-  `0x64` — which needs the ISA, which is the open question above. That is where
-  the work now is, and it is real work, not a formality.
+- **It closes the ISA question and moves the CO question one level in.** The
+  core is Xtensa and the dispatcher's structure (id → per-queue handler table,
+  8-byte entries, guard byte, 0xFE/0xFD/0xFC) is now known from this image. The
+  remaining step is narrower and concrete: resolve the MP1 queue's handler table
+  and read entry `0x55`.
 - **It corrects two things.** `firmware-limits.md`'s "psptool mis-slices" guess
   (replaced by the exact layout bug), and any reading of `veri-failed` as
   "this machine's firmware is not properly signed" — it is signed, and verifies.
-- **It states a limit honestly.** Being able to read the image is not being able
-  to interpret it. On the ISA, the measurement is negative, and this page says
-  so rather than guessing.
+- **It states two limits honestly.** Capstone cannot disassemble the image
+  because it does not model Xtensa (a tool limit, now worked around with rasm2);
+  and the specific CO handler is not yet extracted (a work limit, stated as
+  such).
 
 ## Reproducing
 
@@ -147,18 +215,24 @@ python3 evidence/psp-firmware/psp-firmware.py \
 #   in psptool/header_file.py, change get_decrypted_decompressed_body() to
 #   get_decrypted_body() in get_signed_bytes(); re-run
 psptool -E 088D1.bin | grep -E 'SMU|PMU'
+
+# the ISA and the dispatcher: rasm2 (radare2) speaks Xtensa, capstone does not
+rasm2 -a xtensa -b 32 -d "$(xxd -s 0x1e0 -l 0x18 -p SMU_OFFCHIP_FW.bin)"
 ```
 
 Captured output: [`evidence/psp-firmware/psp-firmware.txt`](evidence/psp-firmware/psp-firmware.txt)
-(extraction + both RSA layouts), and
-[`evidence/psp-firmware/fw-analysis.txt`](evidence/psp-firmware/fw-analysis.txt)
-(hashes, structure, the architecture probe).
+(extraction + both RSA layouts), [`evidence/psp-firmware/fw-analysis.txt`](evidence/psp-firmware/fw-analysis.txt)
+(hashes, structure, the architecture probe),
+[`evidence/psp-firmware/xtensa-isa.txt`](evidence/psp-firmware/xtensa-isa.txt)
+(the ISA identification and its corroboration), and
+[`evidence/psp-firmware/queue-dispatch.txt`](evidence/psp-firmware/queue-dispatch.txt)
+(`queue_dispatch` and the handler tables).
 
 ## Related
 
 - [`firmware-limits.md`](firmware-limits.md) — the PSP directory, Sure Start,
   and the "three of four encrypted regions" section this page corrects.
 - [`smu-raw.md`](smu-raw.md) — the live SMU the extracted firmware's version
-  matches, and the CO gate this firmware implements.
+  matches, and the CO gate (0xFF, not 0xFE) this firmware's dispatcher implements.
 - [`msr-and-smm.md`](msr-and-smm.md) — the same pattern, one layer down: a
   tool-side mistake (`EIO`) read as a hardware block.
