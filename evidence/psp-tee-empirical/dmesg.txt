@@ -1,0 +1,30 @@
+[ 3307.407357] amdtee: unsupported client login method
+[ 3315.103175] tee tee0: Direct firmware load for /amdtee/6fd93b77-3fb8-524d-b12dc529b13d8543.bin failed with error -2
+[ 3315.103186] amdtee: failed to load firmware /amdtee/6fd93b77-3fb8-524d-b12dc529b13d8543.bin
+[ 3315.103191] amdtee: failed to copy TA binary
+[ 3381.918505] tee tee0: Direct firmware load for /amdtee/11111111-2222-3333-4444555555555555.bin failed with error -2
+[ 3381.918517] amdtee: failed to load firmware /amdtee/11111111-2222-3333-4444555555555555.bin
+[ 3381.918522] amdtee: failed to copy TA binary
+[ 3381.981626] tee tee0: Direct firmware load for /amdtee/d9b39bf2-66bd-4154-afb88acc2b2b60d6.bin failed with error -2
+[ 3381.981637] amdtee: failed to load firmware /amdtee/d9b39bf2-66bd-4154-afb88acc2b2b60d6.bin
+[ 3381.981642] amdtee: failed to copy TA binary
+[ 3411.580460] amdtee:handle_load_ta:448: load TA: TA handle = 0x0, RO = 0x0, ret = 0x33
+[ 3432.707914] tee tee0: Direct firmware load for /amdtee/773bd96f-b83f-4d52-b12dc529b13d8543.bin failed with error -2
+[ 3432.707923] amdtee: failed to load firmware /amdtee/773bd96f-b83f-4d52-b12dc529b13d8543.bin
+[ 3432.707926] amdtee: failed to copy TA binary
+[ 3441.393781] amdtee:handle_load_ta:448: load TA: TA handle = 0x0, RO = 0x0, ret = 0x33
+[ 3441.529520] amdtee:handle_load_ta:448: load TA: TA handle = 0x0, RO = 0x0, ret = 0x34
+[ 3441.660755] amdtee:handle_load_ta:448: load TA: TA handle = 0x0, RO = 0x0, ret = 0x34
+[ 3454.793558] amdtee:handle_load_ta:448: load TA: TA handle = 0x0, RO = 0x0, ret = 0x33
+[ 3454.918418] amdtee:handle_load_ta:448: load TA: TA handle = 0x0, RO = 0x0, ret = 0x34
+[ 3454.981047] amdtee:handle_load_ta:448: load TA: TA handle = 0x0, RO = 0x0, ret = 0x34
+[ 3455.106178] amdtee:handle_load_ta:448: load TA: TA handle = 0x0, RO = 0x0, ret = 0x34
+[ 3455.228574] amdtee:handle_load_ta:448: load TA: TA handle = 0x0, RO = 0x0, ret = 0x34
+[ 3455.355965] amdtee:handle_load_ta:448: load TA: TA handle = 0x0, RO = 0x0, ret = 0x34
+[ 3479.875732] amdtee:handle_load_ta:448: load TA: TA handle = 0x0, RO = 0x0, ret = 0x33
+[ 3488.621102] amdtee:handle_load_ta:448: load TA: TA handle = 0x0, RO = 0x0, ret = 0x33
+[ 3488.667287] amdtee:handle_load_ta:448: load TA: TA handle = 0x0, RO = 0x0, ret = 0x34
+[ 3488.710444] amdtee:handle_load_ta:448: load TA: TA handle = 0x0, RO = 0x0, ret = 0x34
+[ 3488.758221] amdtee:handle_load_ta:448: load TA: TA handle = 0x0, RO = 0x0, ret = 0x34
+[ 3488.803181] amdtee:handle_load_ta:448: load TA: TA handle = 0x0, RO = 0x0, ret = 0x34
+[ 3488.847876] amdtee:handle_load_ta:448: load TA: TA handle = 0x0, RO = 0x0, ret = 0x34

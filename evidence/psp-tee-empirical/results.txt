@@ -1,0 +1,12 @@
+TA blob: 773bd96f-b83f-4d52-b12dc529b13d8543  (12864 bytes decompressed)
+layout : header [0x000..0x100]  signed body [0x100..0x3140]  signature [0x3140..0x3240]
+
+variant                    PSP ret
+pristine                   ret=0x33
+prefix byte@0x00           ret=0x34
+header byte@0x40           ret=0x34
+body byte@0x1000           ret=0x34
+body byte@0x3000           ret=0x34
+signature byte@0x3200      ret=0x34
+
+restored original: 02db88091de538da518bfd8afd61cf67
