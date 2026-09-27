@@ -7,10 +7,10 @@ a Trusted Application. This page follows that thread into the two modules that a
 resident at runtime — `PSP_FW_TRUSTED_OS` and `DRIVER_ENTRIES` — and reports what
 is there, including where the audit stops.
 
-This is a first pass: the modules are mapped, the verifier is located, and the
-result is that the runtime **reuses the same standard crypto and header format as
-boot, with explicit bounds**. The host-facing ingress function is the open item,
-stated as such rather than guessed.
+This is a first pass: the modules are mapped, the verifier is located, the
+host-facing ingress is followed from the driver entry down to the RSA check, and
+the result is that the runtime **reuses the same standard crypto and header format
+as boot, with explicit bounds — ingress included**.
 
 ## The two runtime modules, mapped
 
@@ -114,37 +114,107 @@ and it recurses into up to four sub-entries with a bound check on each.
 `$PS1`, `software_interrupt(0x79)` (an SVC into the TOS), then parse via
 `FUN_0001a7c4`.
 
+## The host-facing ingress, located
+
+The reason this matters: the runtime verifier is reachable **from the host**, and
+the path is now read end to end. Following the call graph upward (the `BL`s are
+PC-relative and survive relocation, so the call graph is trustworthy even where
+the data references are not), the loaders bottom out in a single entry:
+
+```
+FUN_000077e0  driver entry  (a ROOT — nothing calls it; the TOS/scheduler does)
+   *param_1 == 0x1000 or >= DAT_00007848  ->  FUN_0000dbe0  (command dispatcher)
+   *param_1 <  0x1000                     ->  FUN_00018b3c  (crypto services)
+```
+
+```c
+// FUN_000077e0(cmd, ctx)   -- copies the 0x7c-byte request, dispatches on cmd[0]
+uVar3 = *param_1;
+FUN_00001698(local_98, param_1, 0x7c);         // request struct is 0x7c bytes
+local_98[0] = uVar3;
+if (uVar3 < 0x1000) iVar2 = FUN_00018b3c();   // crypto
+else                iVar2 = FUN_0000dbe0(local_98, param_2);   // services
+```
+
+`FUN_0000dbe0` (0xca2 bytes) is the **host command dispatcher**: a large switch on
+`*param_1` over AMD service ids. The ones that matter here route straight into the
+load-and-verify routines:
+
+| command | handler | what it does |
+|---|---|---|
+| `0x3130` | `FUN_000106dc` | load an image from host (addr,size) and verify |
+| `0x312d` | `FUN_0001a3b4` | adjacent to the `$PS1` directory loader |
+| `0x313e` | `FUN_00010388` | |
+| `0x3140` / `0x3141` | `FUN_00010138` / `FUN_00010170` | |
+| `0x1000`,`0x1002`,`0x6001–3`,`0x8004–a` | … | other services |
+
+And the load command takes **host pointers**, then hands the image to the entry
+verifier:
+
+```c
+// FUN_000106dc (host command 0x3130)
+if (0xff < param_1[2]) {                                   // size > 0xff
+    FUN_00011604(&local_98, 1);                            // validate the host region
+    FUN_00007730(*param_1, param_1[1], param_1[2], ..., &local_78, ...);  // read it
+    local_7c = *(uint *)(local_78 + 0x54);                 // zlib size from header+0x54
+    if (local_7c < param_1[2] - 0x100) {
+        FUN_00007730(param_1[3], param_1[4], uVar5, ...);  // second region (key/sig)
+        software_interrupt(0x79);                          // into the TOS
+        iVar4 = FUN_0000f7a0(&local_74, 0, local_50);      // <-- verify the entry
+        FUN_0000f11c(local_78 + 0x100, local_7c, local_80, uVar5, &local_54);  // decompress
+        if (*(int *)(iVar3 + 0x50) != local_54) iVar4 = err;  // size_uncompressed check
+    }
+}
+```
+
+So a host-supplied image goes: **command `0x3130` → `FUN_000106dc` → `FUN_0000f7a0`
+→ `FUN_000138fc` → the PKCS#1 verifier**. The same format, the same gate — now
+provably fed by the host.
+
+**And it is bounded.** The `(address, size)` pairs a command carries are validated
+before use, twice over:
+
+- **`FUN_00011604`** requires the address and size to be **page-aligned**
+  (`(addr & 0xffff) == 0`, `(size & 0xffff) == 0`), rejects any address with high
+  bits set (`addr & 0xffff0000`), caps the size against `DAT_00011840`, rejects
+  overflow on the computed end, checks a **16-byte integrity tag** (`local_44` xor
+  a stored value — the loop `bVar6 |= buf[i] ^ stored[i]; ... i < 0x10`), and gates
+  on a chip id (`param_1[4] ∈ {0x65, 0x66}`).
+- **`FUN_00007730`** checks the `[addr, addr+size)` range against page boundaries
+  (`uVar3 - param_1 < end > start`), and on failure **traps into the TOS**
+  (`software_interrupt(0x6b/0x8b)`) rather than proceeding.
+
 ## What this shows, and where it stops
 
-Shown:
+Shown (and this is now end to end):
 
 - The runtime TEE has its **own PKCS#1 v1.5 verifier** (`FUN_00013570`) and a
   crypto dispatcher (`FUN_00017e10`) — the **same algorithm, the same bounds**, and
   the same `$PS1` header fields as the boot-time verifier.
 - The runtime loaders have **explicit size caps** (`0xa000` for a module,
-  `0x7fff` per entry), digest and key sizes taken from a small fixed set, and a
-  length check before every copy we read.
-- `DRIVER_ENTRIES` is the module that carries the **GP TEE API** (`gpd.tee.*`) and
-  the AMD-TEE driver entry, i.e. the side that faces the host.
+  `0x7fff` per entry), digest and key sizes from a small fixed set, and a length
+  check before every copy we read.
+- **The host ingress is located and bounded**: `FUN_000077e0` → `FUN_0000dbe0` →
+  the load commands → `FUN_0000f7a0` → RSA, with the `(address, size)` pairs
+  validated by `FUN_00011604` and `FUN_00007730` before any parse.
 
 Where it stops (recorded, not guessed):
 
 - The relocation wall is still up: the `gpd.tee.*` property strings have no xrefs,
-  so the property table and the API dispatch cannot be followed by data reference.
-  The handholds are the resolved strings and the code graph, not the data table.
-- **The host-facing ingress is not yet pinned.** The TOS has no RSA of its own and
-  the loaders/verifier above are in `DRIVER_ENTRIES`, so the host TA is verified by
-  this machinery — but which SVC / driver entry receives the host blob (and hands
-  it to `FUN_0000f7a0`) is the next step. That is the function whose parse a host
-  could actually reach, and it is named as the target, not faked as resolved.
-- The entry-hash primitive (`FUN_0000a150`) and the non-RSA dispatcher ops (ECC)
-  are located but not decoded.
+  so the property table and the API dispatch table cannot be followed by data
+  reference. The command→handler map above is read from the **switch in
+  `FUN_0000dbe0`** (PC-relative), which is why it resolves at all.
+- The **full command id → handler enumeration** is not exhaustive here — only the
+  load/verify ids are named; the other ~50 ids map to services that are located but
+  not characterised.
+- The entry-hash primitive (`FUN_0000a150`), the decompressor (`FUN_0000f11c`),
+  and the non-RSA dispatcher ops (ECC) are located but not decoded.
 
-The honest summary: nothing here weakens the
-[`psp-boot-verifier.md`](psp-boot-verifier.md) conclusion — the runtime reuses the
-same standard, bounded crypto — and the one place a host bug could still live (the
-ingress path in `DRIVER_ENTRIES`) is now a **specific, named target** rather than a
-direction.
+The honest summary: the runtime **reuses the same standard, bounded crypto**, and
+the one place a host bug could have lived — the ingress path in `DRIVER_ENTRIES` —
+has been **walked from the entry to the RSA check and found bounded**. Nothing here
+weakens the [`psp-boot-verifier.md`](psp-boot-verifier.md) conclusion; it extends
+it to the path where the OS hands the PSP a blob.
 
 ## Reproducing
 
@@ -155,7 +225,9 @@ analyzeHeadless <proj> PSPBL -import …/d00_e15_DRIVER_ENTRIES~0x28_0.11.0.85 \
 analyzeHeadless <proj> PSPBL -import …/d00_e02_PSP_FW_TRUSTED_OS~0x2_0.11.0.85 \
     -processor ARM:LE:32:v7 -loader BinaryLoader -loader-baseAddr 0x0
 analyzeHeadless <proj> PSPBL -process '…DRIVER_ENTRIES…' -noanalysis \
-    -scriptPath evidence/psp-boot-verifier/ghidra -postScript Dec16.java
+    -scriptPath evidence/psp-boot-verifier/ghidra -postScript Dec20.java
+# Dec12-16 = verifier + loaders; Dec17-18 = call graph + the entry/dispatcher;
+# Dec19-20 = the host load commands and the (address,size) validators
 ```
 
 - Census and string xrefs: [`evidence/psp-tee-runtime/map-DRIVER_ENTRIES.txt`](evidence/psp-tee-runtime/map-DRIVER_ENTRIES.txt),
