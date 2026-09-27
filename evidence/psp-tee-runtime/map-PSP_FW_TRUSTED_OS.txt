@@ -1,0 +1,20 @@
+# PSP_FW_TRUSTED_OS (0x2, 0.11.0.85) -- function census and key string xrefs
+# Imported into Ghidra as ARM:LE:32:v7, base 0, auto-analysed. 111 functions.
+lang = ARM:LE:32:v7
+block ram 0x0 size=0x19370 X=true
+functions = 111
+$PS1                               @0x10   refs=1
+      from 0x0  in -  (EXTERNAL)
+$PS1                               @0x16120   refs=0
+$PS1                               @0x173a0   refs=0
+$PS1                               @0x17538   refs=0
+gpd.ta.appID                       @0x14840   refs=1
+      from 0x1481c  in FUN_0001480c  (PARAM)
+gpd.ta.heapSize                    @0x147b8   refs=1
+      from 0x14784  in FUN_00014748  (PARAM)
+amd.ta.SecHeapSize                 @0x147a4   refs=1
+      from 0x1475c  in FUN_00014748  (PARAM)
+amd.dr.driverID                    @0x146ec   refs=1
+      from 0x146d0  in FUN_000146c4  (PARAM)
+NOT FOUND: AMD-TEE Global Platform API
+NOT FOUND: gpd.tee.deviceID
