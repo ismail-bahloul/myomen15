@@ -223,6 +223,37 @@ which entries get validated and brought up. `FUN_000048c4`'s cases `0/3/4/5` loa
 [`psp-firmware.md`](psp-firmware.md) reversed. The firmware-verification chain is,
 concretely, the chain that gates the SMU/MP1 image this repo has been reading.
 
+## The dispatcher's other commands: all bounded
+
+The command handler has one verifier branch, but ~57 handlers in total. The same
+sweep used on the runtime TEE ([`psp-tee-runtime.md`](psp-tee-runtime.md)) was run
+here: for every function `FUN_000073e8` calls, does it reach a boot-family
+validator (`FUN_0000738c` range, `FUN_0000148c` region, `FUN_0000dea0` bounded
+copy, `FUN_0000b8ac` verify, `FUN_0000e108` spiRead)? Full table:
+[`evidence/psp-boot-verifier/command-audit.txt`](evidence/psp-boot-verifier/command-audit.txt).
+
+Seven handlers reach the verifier chain (`FUN_0000aa48`, `FUN_000048c4`,
+`FUN_000083b0`, `FUN_00008300`, `FUN_00007332`, `FUN_00006dd4`, `FUN_00009400`).
+The other 50 are services — and the ones that take **host addresses** were read to
+check they bound them (`Dec22.java`):
+
+| command | handler | bound |
+|---|---|---|
+| `0x50` (map SMN) | `FUN_0000eadc` | **blacklist** of ranges (`0x3c00000`, `0x3f00000`, `0x3f40000`, `[DAT, 0x3000000)`), plus overflow |
+| `0x51` (unmap) | `FUN_0000eccc` | page count capped at `0x20`, carry-checked |
+| `0x59` | `FUN_0000dca0` | strict equality (`param_2 ∈ {1,2}`, `param_3 ∈ {1..7}`) |
+| `0x4e` | `FUN_0000caec` | chip id, index `≤ 0x14` |
+| `0x35` (read reg) | `FUN_0000d544/d514/d52c` | address **masked to 20 bits into a fixed `0x2F00000` aperture**, gated by the `0x50` blacklist |
+| `0x30` | `FUN_00001070` | table count `< 0x100` |
+
+So the SMN/register commands — the only ones carrying an address from the caller —
+are each confined to a fixed aperture or a checked range. **No unbounded
+host-address command was found here either.**
+
+The reachability caveat is the same as for the runtime TEE, and worth repeating:
+the interface is the **PSP mailbox**, and no Linux driver exposes these service ids
+to userspace. The caller is pre-boot / SMM-level (AGESA, or a DXE/SMM module).
+
 ## The wrapped/encrypted path, `FUN_00003a20`
 
 When `header+0x78 & 1` is set, `FUN_0000b8ac` takes a different branch,
