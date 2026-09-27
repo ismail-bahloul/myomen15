@@ -72,3 +72,39 @@ hand them over either.
     (the repo's own warning) and may be locked, or (b) an earlier phase -- UEFI,
     before the OS -- where the firmware may still permit host flash access.
   * Nothing here writes anything; every line above is a read.
+
+================================================================================
+4. Can the OS turn the host bit back on?  Tried: no.
+================================================================================
+
+This is the one place this repo performs a *write* rather than a read. Recorded
+here because the result is the point.
+
+Attempt: set bit 23 (SpiHostAccessRomEn) with a single-bit read-modify-write of
+the SPI controller dword at 0xFEC10000 (a register write, not a flash write).
+
+  before: 0x4F481005   (SpiAccessMacRomEn=1, SpiHostAccessRomEn=0)
+  wrote:  0x4FC81005   (bits 22 and 23 set)
+  after:  0x4F081005   (SpiAccessMacRomEn=0, SpiHostAccessRomEn=0)
+
+Both bits came back 0: writing a 1 to a set bit *cleared* it. Writing the
+original value back (0x4F481005) did not restore bit 22 either -- it stayed 0.
+
+So the register behaves **write-1-to-clear** for these access-enable bits: the
+OS can only ever *disable* flash access, never enable it. (The bytes only moved
+where a 1 was written, and writing 0 left them alone.)
+
+Consequences:
+
+  * Host SPI flash access cannot be re-enabled from the running OS. It is set by
+    the firmware/PSP at boot and is one-way from software's side. The A1 route
+    to a full flash dump is closed.
+  * Side effect, stated plainly: the attempt cleared SpiAccessMacRomEn (bit 22).
+    Software cannot put it back; it is a boot-time initialised bit, so a **reboot
+    restores it**. The machine was checked right after (fans 720/701 RPM, temps
+    31-47 C, load normal) and showed no ill effect.
+  * Note the timing: the machine had booted 9 minutes earlier, which is why the
+    register read 0x4F481005 before the write -- that is the firmware's own
+    post-boot value.
+
+Remaining route to the real flash: an earlier phase (UEFI), or the EC. Not the OS.
