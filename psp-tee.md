@@ -75,6 +75,13 @@ shared base emerges), so a flat disassembly cannot resolve its data references.
 That needs Ghidra plus the module's relocation data — the same wall `DEBUG_UNLOCK`
 hit. The map is solid; the code is not faked.
 
+> **Correction (later).** The wall was not relocation. The two labels left
+> un-mapped here (`load_validate_bios_l2_directory`, `HVB validation`) were
+> referenced by Thumb `ADR` all along — PC-relative, which relocation does not
+> touch. Ghidra had simply not disassembled ~48% of the mixed ARM/Thumb module.
+> They are resolved to `FUN_00001554`/`FUN_00002538` in
+> [`psp-boot-verifier.md`](psp-boot-verifier.md).
+
 ## `DEBUG_UNLOCK` — the secure-debug path, named
 
 It is a standalone ARM module (a real boot stub at `0x100`: `ldr sp` → `blx`

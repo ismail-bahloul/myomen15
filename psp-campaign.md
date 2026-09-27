@@ -98,9 +98,10 @@ a different experiment, with a real cost and brick risk on a single machine, and
   refused `0x33` for a platform reason), so it demonstrates "tampering changes the
   verdict", not "good is accepted".
 - A few items are **recorded and not resolved**: the CCP primitive behind the
-  keyed-hash selector `9`; the two relocator-hidden labels
-  (`load_validate_bios_l2_directory`, `HVB validation`) in the boot loader; the
-  non-RSA (ECC) dispatcher ops.
+  keyed-hash selector `9`; the non-RSA (ECC) dispatcher ops. (The two boot-loader
+  labels — `load_validate_bios_l2_directory`, `HVB validation` — **were** on this
+  list; they are now resolved, and the earlier "relocated" explanation was
+  corrected to a disassembly gap — see [`psp-boot-verifier.md`](psp-boot-verifier.md).)
 - "Exhausted" means *by this method*. It is not a proof that no bug exists — it is
   a claim that the paths checked are bounded, and the paths not yet read are
   enumerated.

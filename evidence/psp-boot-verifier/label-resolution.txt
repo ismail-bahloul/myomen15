@@ -1,0 +1,56 @@
+Resolving the two "orphaned" labels in PSP_FW_BOOT_LOADER
+=========================================================
+
+Prior claim (corrected here): `load_validate_bios_l2_directory` and
+`Detected 2nd level entry for HVB validation` were said to have "no xref because
+the module is relocated". That is WRONG. They are referenced, by Thumb ADR
+(PC-relative, which relocation does not touch). Ghidra simply never disassembled
+the functions that contain those ADRs: ~48% of the module is left undefined.
+
+Why the flat import misses them
+-------------------------------
+The module is a mixed ARM/Thumb image (an ARM vector at 0x100, Thumb functions
+after). Imported flat as ARM:LE:32:v7 and auto-analysed, only ~36% of its bytes
+become instructions:
+
+  block 0x0..0x108bf  code=24290  data=922  undefined=32373
+
+Ghidra resolves the ADRs it *did* disassemble (CryptoModExp @0x2af8,
+PSPDirectorySearch @0x5434) and misses the rest.
+
+A raw-byte Thumb scan finds every ADR that builds a string address
+(encoding 10100 Rd imm8 -> target = align(PC,4) + imm8*4):
+
+  thumb ADR 0x15f0 -> 0x18dc  "Bootloader C entry start..."
+  thumb ADR 0x168e -> 0x1900  "load_bios_l1_directory failed..."
+  thumb ADR 0x1726 -> 0x19c8  "load_validate_bios_l2_directory failed..."   <-- label 1
+  thumb ADR 0x256e -> 0x25a8  "Detected 2nd level entry for HVB validation"  <-- label 2
+  thumb ADR 0x2a3e -> 0x2af8  "CryptoModExp..."   (already resolved by Ghidra)
+  thumb ADR 0x53b8 -> 0x5434  "PSPDirectorySearch..." (already resolved)
+
+The enclosing functions
+-----------------------
+Only one `push` prologue lies in 0x1554..0x1760, at 0x1554:
+
+  push prologues in 0x1554..0x1760: [0x1554]
+  push prologues in 0x2400..0x2580: [0x245c, 0x2538]
+
+so
+
+  * FUN_00001554  (0x1554, push {r4-r7,lr}) references the whole boot chain:
+      Bootloader C entry (0x15f0), load_bios_l1_directory (0x168e),
+      load_validate_bios_l2_directory (0x1726). It is the boot-stage driver that
+      calls each stage and logs the failure.
+  * FUN_00002538 references "Detected 2nd level entry for HVB validation" (0x256e).
+
+The pattern at each site is `adr r0, <msg> ; bl <log>`:
+
+  0x1726  a0a8   ADR r0 -> 0x19c8
+  0x1728  f008   BL  (log)
+
+  0x256e  a00e   ADR r0 -> 0x25a8
+  0x2570  f007   BL  (log)
+
+So the two labels name steps in FUN_00001554 / FUN_00002538, and the "relocated,
+unreachable" story is replaced by "the disassembly is incomplete" -- the same
+correction DEBUG_UNLOCK needs.

@@ -1,11 +1,14 @@
 # The PSP firmware verifier, decoded
 
 [`psp-tee.md`](psp-tee.md) named the secure-boot chain from `PSP_FW_BOOT_LOADER`'s
-own strings but stopped at the code: the module is **relocated at load**, so no
-string is an absolute literal and a flat disassembly cannot resolve it. That was
-the honest wall. This session got past it with Ghidra and the module's own
-control flow, and the result is not a string list any more — it is the
+own strings but stopped at the code. This session got past it with Ghidra and the
+module's own control flow, and the result is not a string list any more — it is the
 **verification logic itself**, function by function, down to the RSA modexp.
+
+(The reason the earlier page stopped was first written up as *relocation*. It was
+partly that, but the deeper cause — found and corrected in [*The two labels,
+resolved*](#the-two-labels-resolved--and-a-correction) below — is that a flat
+ARM/Thumb import leaves ~half the module undisassembled.)
 
 The short version: firmware is checked with **RSA-2048 / SHA-256, PKCS#1 v1.5,
 over the *stored* (compressed) body**, with the key material sourced from
@@ -329,6 +332,42 @@ and no Linux driver exposes arbitrary service IDs to the OS. The actor who can
 issue command `0x2d` is pre-boot or SMM-level (AGESA / a DXE or SMM module), not
 an unprivileged userspace process.
 
+## The two labels, resolved — and a correction
+
+An earlier note in this page said `load_validate_bios_l2_directory` and
+`Detected 2nd level entry for HVB validation` had "no xref because the module is
+relocated". **That was wrong.** They are referenced, by Thumb `ADR` — which is
+PC-relative, so relocation never touches it. The real cause is that Ghidra's flat
+ARM/Thumb import **never disassembled ~48% of the module** (the ARM vector at
+`0x100` plus Thumb functions; only ~36% of the bytes become instructions), and the
+referring functions are in that remainder.
+
+A raw-byte Thumb scan (`ADR` = `10100 Rd imm8`, target = `align(PC,4) + imm8*4`)
+finds the reference sites:
+
+| ADR | string | enclosing function |
+|---|---|---|
+| `0x15f0` | `Bootloader C entry start...` | `FUN_00001554` |
+| `0x168e` | `load_bios_l1_directory failed...` | `FUN_00001554` |
+| **`0x1726`** | **`load_validate_bios_l2_directory failed...`** | **`FUN_00001554`** |
+| **`0x256e`** | **`Detected 2nd level entry for HVB validation...`** | **`FUN_00002538`** |
+| `0x2a3e` | `CryptoModExp...` (already resolved) | `FUN_000029f8` |
+| `0x53b8` | `PSPDirectorySearch...` (already resolved) | `FUN_0000539c` |
+
+Each site is the same shape — `adr r0, <msg> ; bl <log>`:
+
+```
+0x1726  a0a8   ADR r0 -> 0x19c8     ; "load_validate_bios_l2_directory failed..."
+0x1728  f008..  BL  <log>
+```
+
+So `FUN_00001554` (a single `push {r4-r7,lr}` at `0x1554`) is the **boot-stage
+driver**: it drives `load_bios_l1_directory` -> `load_psp_l2_directory` ->
+`set_spirom_aperture_ex` -> `load_validate_bios_l2_directory` and logs the failure
+of each. `FUN_00002538` is the function that logs the HVB 2nd-level detection.
+Both labels now map to code. Detail:
+[`evidence/psp-boot-verifier/label-resolution.txt`](evidence/psp-boot-verifier/label-resolution.txt).
+
 ## What this settles, and what it does not
 
 Settled, at instruction level:
@@ -346,11 +385,11 @@ Not settled (recorded, not guessed):
 - The exact CCP operation behind selector `9` in `FUN_00002b2c` is not resolved;
   it is a keyed hash with key #0 over a 16/24/32-byte digest, but the primitive
   name is not pinned.
-- After **load-time relocation** the loader's strings have no absolute references,
-  so a few names (`load_validate_bios_l2_directory`, `HVB validation`) still have
-  no xref. The chain above is followed from `FUN_0000b8ac`/`FUN_000029f8`/
-  `FUN_00003234`, which *do* resolve; the string-to-code mapping for those two
-  remaining labels is the next session.
+- ~~Relocation hides two names~~ — **resolved and corrected**: the boot loader's
+  two remaining labels (`load_validate_bios_l2_directory`, `HVB validation`) map to
+  `FUN_00001554` and `FUN_00002538`. The earlier "relocated, no xref" note was a
+  **disassembly gap** (Ghidra left ~48% of the mixed ARM/Thumb module undisassembled),
+  not relocation. See *The two labels, resolved* above.
 
 For the project's standing question — *can the firmware be modified?* — this is the
 answer from the code: **not through the verifier.** The verifier *is* reachable with
