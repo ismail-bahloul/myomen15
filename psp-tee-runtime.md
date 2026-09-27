@@ -257,6 +257,47 @@ handler, and found bounded both ways**. Nothing here weakens the
 path where the OS hands the PSP a blob — and the audit of that path is now closed,
 not just sampled.
 
+## The TOS kernel: mapped, and its limit stated
+
+`PSP_FW_TRUSTED_OS` is the third and last runtime module — the TEE kernel that
+receives host commands and hosts TAs. It is imported (111 functions), and its shape
+is legible even where the code is not:
+
+- **44 of the 111 functions are roots** (no caller), and almost all are **syscall
+  wrappers**: 45 functions contain a single `svc 0xf2`. So `0xf2` is the TOS's own
+  system call — the entry the driver (`DRIVER_ENTRIES`) and the TAs call into — and
+  the stubs `FUN_000123da`…`FUN_000135e4` are the service surface.
+- **One large root is the TA loader**: `FUN_00016748` (0x870) queries a TA's
+  manifest properties and sets the instance up. The property path is
+  `FUN_000126e8(ctx, "gpd.ta.appID" | …)` → build a request (`0x1009`, type `2`)
+  → `svc 0xf2` → read the result from `&DAT_00007280 + offset`.
+- The property getters **clamp and convert**. `FUN_00014748` returns
+  `ceil(heapSize / 4096)` pages, and clamps `amd.ta.SecHeapSize` to **`0x100`
+  pages**; `FUN_000147c8` returns `ceil(stackSize / 4096)`; `FUN_000146c4` and
+  `FUN_000146fc` read `amd.dr.driverID` and `gpd.ta.instanceKeepAlive`.
+
+```c
+// FUN_00014748(ctx, which) -- which=0 heapSize, which=1 SecHeapSize
+if (which == 0) {
+    iVar2 = FUN_000126e8(ctx, "gpd.ta.heapSize", ...);
+    if (iVar2 == 0) uVar3 = (*(int *)(&DAT_00007280 + *piVar1) + 0xfff) >> 0xc;   // pages
+} else {
+    iVar2 = FUN_000126e8(ctx, "amd.ta.SecHeapSize", ...);
+    if (iVar2 == 0) { uVar3 = (size + 0xfff) >> 0xc; if (0x100 < uVar3) uVar3 = 0x100; }
+}
+```
+
+**Where this stops, honestly.** The TOS is the least readable of the three
+modules. Ghidra drops a long list of *"Removing unreachable block"* warnings inside
+`FUN_00016748` — the module's indirect control flow defeats the linear decompiler
+in the one function that matters. Reading the TA loader end to end needs the TOS's
+relocation and syscall semantics, which the stored image alone does not carry. What
+is established is bounded: the manifest values that reach an allocation are clamped
+to page counts with a `0x100` ceiling. The rest is a **target, not a finding**.
+
+The `$PS1` byte sequences at `0x16120`, `0x173a0`, `0x17538` are **not in any
+function** — they are data (embedded blobs), so the TA-header parsing is not there.
+
 ## Reproducing
 
 ```bash
@@ -270,10 +311,12 @@ analyzeHeadless <proj> PSPBL -process '…DRIVER_ENTRIES…' -noanalysis \
 # Dec12-16 = verifier + loaders; Dec17-18 = call graph + the entry/dispatcher;
 # Dec19-21 = the host load commands, the (address,size) validators, and the
 #   candidates; Audit.java = handler reachability; Svcs.java = the SVC map
+# Dec22 = boot-command bounds; Dec23-24 + Tos.java = the TOS loader and getters
 ```
 
 - Census and string xrefs: [`evidence/psp-tee-runtime/map-DRIVER_ENTRIES.txt`](evidence/psp-tee-runtime/map-DRIVER_ENTRIES.txt),
   [`evidence/psp-tee-runtime/map-PSP_FW_TRUSTED_OS.txt`](evidence/psp-tee-runtime/map-PSP_FW_TRUSTED_OS.txt).
+- TOS recon and its TA loader / property getters: [`evidence/psp-tee-runtime/tos-recon.txt`](evidence/psp-tee-runtime/tos-recon.txt).
 - Handler reachability sweep: [`evidence/psp-tee-runtime/handler-audit.txt`](evidence/psp-tee-runtime/handler-audit.txt).
 - SVC (TOS call) map: [`evidence/psp-tee-runtime/svc-map.txt`](evidence/psp-tee-runtime/svc-map.txt).
 - Decompiled runtime verifier and loaders: [`evidence/psp-tee-runtime/decompiled.txt`](evidence/psp-tee-runtime/decompiled.txt).
