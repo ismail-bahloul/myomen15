@@ -1,0 +1,74 @@
+SPI flash access from the OS: denied by the FCH/PSP.
+Measured on the CachyOS machine (kernel 7.2.6-1-cachyos), 2026-09-27, read-only.
+Phase A of "get the real flash layout" -- and the answer is that the OS cannot
+read the flash at all on this machine.
+
+================================================================================
+1. flashrom cannot see the chip
+================================================================================
+
+  $ sudo flashrom -p internal -V
+  flashrom v1.8.0 (git:v1.8.0) on Linux 7.2.6-1-cachyos (x86_64)
+  No DMI table found.
+  Found chipset "AMD FP4" with PCI ID 1022:790e.
+  (0x4f481005) SpiArbEnable=1, IllegalAccess=0, SpiAccessMacRomEn=1,
+                SpiHostAccessRomEn=0, ArbWaitCount=7, SpiBusy=0
+  ERROR: State of SpiAccessMacRomEn or SpiHostAccessRomEn prohibits full access.
+  PROBLEMS, continuing anyway
+  ...
+  No EEPROM/flash device found.
+
+Forcing past the laptop guard does not help:
+
+  $ sudo flashrom -p internal:laptop=this_is_not_a_laptop
+  ...
+  No EEPROM/flash device found.
+
+The bit names and positions are flashrom's own (sb600spi.c):
+  bit 22 = SpiAccessMacRomEn, bit 23 = SpiHostAccessRomEn, and flashrom refuses
+  unless BOTH are 1.
+
+The register is the FCH SPI controller's first MMIO dword:
+
+  $ sudo python3 evidence/memdump.py 0xFEC10000 0x10
+  fec10000  05 10 48 4f ...            -> 0x4F481005
+  bit22 (SpiAccessMacRomEn)   = 1     -> PSP/MAC may access the ROM
+  bit23 (SpiHostAccessRomEn)  = 0     -> the x86 host may NOT
+
+So the SPI controller MMIO is host-visible (this repo already reads it), but it
+is configured to refuse the host access to the ROM. That is why the host can
+never read -- let alone write -- the flash through this path.
+
+================================================================================
+2. What the host CAN still map (and why it is not enough)
+================================================================================
+
+Reading /dev/mem across the top of the 4 GiB space (read-only):
+
+  0xFF000000  ff ff ff ...            (no decode)
+  0xFFE00000  ff ff ff ...            (no decode)
+  0xFFF00000  e0 39 55 0c eb a1 33 c0 5f 5e 8b e5 5d c3 55 8b ec ...   <- real x86
+  0xFFFF0000  ff ff ff ...            (no decode, above the window)
+  0x000E0000  <high entropy>          (legacy ROM area)
+  0x000F0000  63 75 72 69 74 79 00 00 ... 52 53 44 20 50 54 52 20 90 48 50 51 4f 45 4d
+              ("...curity", "RSD PTR ", "HPQOEM")
+
+So the host gets only the legacy F-segment (0xE0000 / 0xF0000) and the **last
+1 MiB** of the BIOS region (0xFFF00000 upward). Neither is the flash: it is the
+BIOS region, which this repo already has in full, twice, from the update payload
+(088D1.bin). The descriptor, any EC firmware region, and everything below the
+BIOS are simply not in the host's address space, and the SPI controller will not
+hand them over either.
+
+================================================================================
+3. What this means for the project
+================================================================================
+
+  * "Read the real flash" is not available to the OS on this machine. This
+    refines `access-surface.md`'s SPI row: the controller MMIO is indeed
+    host-visible, but the ROM *access* bit is off, so the flash contents are not.
+  * The only two ways left to move `SpiHostAccessRomEn` back to 1 are (a) a write
+    to that MMIO register from the OS, which touches a bus shared with the EC
+    (the repo's own warning) and may be locked, or (b) an earlier phase -- UEFI,
+    before the OS -- where the firmware may still permit host flash access.
+  * Nothing here writes anything; every line above is a read.
