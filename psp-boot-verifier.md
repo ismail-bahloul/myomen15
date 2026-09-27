@@ -226,13 +226,77 @@ concretely, the chain that gates the SMU/MP1 image this repo has been reading.
 ## The wrapped/encrypted path, `FUN_00003a20`
 
 When `header+0x78 & 1` is set, `FUN_0000b8ac` takes a different branch,
-`FUN_00003a20`, which reads a **wrapped key blob** from SPI (a length between the
-key-aperture bound and `0x841`), verifies *that* blob with `FUN_0000ef6c`, derives a
-key (`FUN_0000aea0`, `FUN_0000d7d4`), then verifies the image against the derived
-key. This is the confidential-image path: the signature is checked with a key that
-itself arrived signed. It is a second, longer chain with more parser surface — and
-it is entered by a header flag, i.e. by attacker-influenced data **before** the
-signature is checked.
+`FUN_00003a20`, which reads a **wrapped key blob** from SPI, verifies *that* blob
+with `FUN_0000ef6c`, then verifies the image against the derived key:
+
+```c
+// FUN_00003a20(header, region, body)
+uVar3 = *(u32 *)(*DAT_00003af8 + 0x44c) >> 3;      // device key size in bytes
+if (*(int *)(header + 0x6c) == 0) return 0x18;
+uVar4 = (*(int *)(header + 0x6c) - *(int *)(header + 0x14)) - 0x100;   // wrapped blob size
+if (uVar3 < uVar4 && uVar4 < 0x841) {              // bounded
+    FUN_0000e108(DAT_00003afc, *(int *)(header+0x14) + region + 0x100, uVar4, 0x840, 0);
+    iVar5 = DAT_00003afc + uVar3;
+    FUN_0000aea0(*DAT_00003af8 + 0x410, &local_38);          // key descriptor
+    FUN_0000d7d4(iVar5 + 0x240, uVar3);                       // byte-reverse (in place)
+    FUN_0000ef6c(0, 0, iVar5, uVar4 - uVar3, &local_38, iVar5 + 0x240);   // verify wrapped blob
+    FUN_0000aea0(iVar5, &local_38);
+    FUN_00002b2c(DAT_00003afc, DAT_00003b00, uVar3);
+    FUN_0000ef6c(header, 0x100, body, *(u32 *)(header+0x14), &local_38, DAT_00003b00);  // verify image
+}
+```
+
+So this is the confidential-image path: the image signature is checked with a key
+that **itself arrived signed**, unwrapped from a blob the loader reads beside the
+entry. `FUN_0000aea0` fills the RSA key descriptor from a key structure
+(`field+0x3c` = key size in **bits**: `0x800` → 2048, `0x1000` → 4096; the key
+pointer is `+0x140` or `+0x240`), and `FUN_0000d7d4` is a plain in-place
+**byte-reverse** (endianness), not a key derivation.
+
+## Who can reach the verifier — and whether the parse is bounded
+
+This is the question that decides whether any of the above is a *reachable*
+surface, so it was audited rather than assumed.
+
+The in-DRAM path `FUN_000083b0` (mode 2) is reached from the dispatcher's
+**command `0x2d`** (and `0x32`) when the message's sub-type byte is not one of
+`0x60`/`0x63`/`0x68`:
+
+```c
+case 0x2d:  uVar8 = <attr word from *param_2>;
+            local_40 = param_2[1];  puVar13 = (u32 *)param_2[2];
+            FUN_0000738c(puVar13, 4, ...) && FUN_0000738c(local_40, *puVar13);
+            ... FUN_000083b0(uVar8, local_3c, local_40, puVar13);
+```
+
+So a **caller supplies a blob and its size** to the firmware verifier. But the
+buffer is not a raw host pointer:
+
+- **`FUN_0000148c`** walks the PSP's own **region table** (`entry+0x10` masked
+  against an attribute word) and returns `(address, size)` for the matching
+  region — the caller passes a **handle**, and the PSP resolves it. It does not
+  accept an arbitrary pointer.
+- **`FUN_0000738c`** then checks the `(address, size)` pair is inside one of two
+  allowed windows, and **`FUN_0000dea0`** is a **bounded copy** (`< cursor`,
+  carry-checked, `<= bound`).
+- Inside the wrapped parser the length is `uVar4 < 0x841` into a fixed `0x840`
+  buffer, the key sizes are the device's (`0x100`/`0x200`, so
+  `2·uVar3 + 0x240 ≤ 0x840`), and the 16-byte MAC path (`FUN_000011c8`, reached
+  from `FUN_00007fdc` at `header+0x80`) accepts only `param_3 ∈ {0x10, 0x18,
+  0x20}`.
+
+**No memory-safety violation was found in this pass.** The host (or a pre-boot
+component) can shape the image *contents*, and thereby steer which branch runs
+(the `header+0x78` wrapped flag, the `header+0x18` sub-structure flag, the sizes),
+but every length that reaches a buffer is either resolved from the PSP's region
+table or bounded by a constant. The design is careful; the surface is logic, not
+memory corruption. It is worth stating plainly because it is the honest outcome of
+the audit, not the one hoped for.
+
+One practical limit on reachability: the command interface is the **PSP mailbox**,
+and no Linux driver exposes arbitrary service IDs to the OS. The actor who can
+issue command `0x2d` is pre-boot or SMM-level (AGESA / a DXE or SMM module), not
+an unprivileged userspace process.
 
 ## What this settles, and what it does not
 
@@ -249,7 +313,8 @@ Settled, at instruction level:
 Not settled (recorded, not guessed):
 
 - The exact CCP operation behind selector `9` in `FUN_00002b2c` is not resolved;
-  it is a keyed hash with key #0, but the primitive name is not pinned.
+  it is a keyed hash with key #0 over a 16/24/32-byte digest, but the primitive
+  name is not pinned.
 - After **load-time relocation** the loader's strings have no absolute references,
   so a few names (`load_validate_bios_l2_directory`, `HVB validation`) still have
   no xref. The chain above is followed from `FUN_0000b8ac`/`FUN_000029f8`/
@@ -257,13 +322,20 @@ Not settled (recorded, not guessed):
   remaining labels is the next session.
 
 For the project's standing question — *can the firmware be modified?* — this is the
-answer from the code: **not through the verifier.** The only software route left is
-a **bug in the parsers that run before the check** (the wrapped-image reader, the
-header/`GetPspFwHeader` path, the in-DRAM blob reader) or the secure-debug unlock
-(named in [`psp-tee.md`](psp-tee.md); no token is provisioned here). Everything
-else is the hardware route: fault injection (glitch/EMFI) on the PSP's SPI read or
-on the modexp comparison, which is failure *of* this code, not a flaw *in* it.
-That is a different experiment, and it is not claimed here.
+answer from the code: **not through the verifier.** The verifier *is* reachable with
+caller-shaped image bytes (command `0x2d`/`0x32` → mode 2 → `FUN_0000b8ac`), but the
+parse was audited and is **bounded** (the region table resolves buffers, lengths are
+constant-bounded, the wrapped buffer is a fixed `0x840`); no memory-safety violation
+was found. So the remaining software routes are a **logic** bug in the parsers that
+run before the check (the wrapped-image flag, the `header+0x18` sub-structure, the
+`GetPspFwHeader` path), or the secure-debug unlock (named in
+[`psp-tee.md`](psp-tee.md); no token is provisioned here). Note too that the command
+interface is the PSP mailbox, which no Linux driver exposes to userspace — the actor
+who can issue `0x2d` is pre-boot / SMM-level, not an unprivileged process.
+
+Everything else is the hardware route: fault injection (glitch/EMFI) on the PSP's
+SPI read or on the modexp comparison, which is failure *of* this code, not a flaw
+*in* it. That is a different experiment, and it is not claimed here.
 
 ## Reproducing
 
@@ -279,6 +351,8 @@ analyzeHeadless <proj> PSPBL -import /tmp/pspmods/d00_e00_PSP_FW_BOOT_LOADER~0x1
 # 3. run the decompilation scripts (addresses are module-relative)
 analyzeHeadless <proj> PSPBL -process '…PSP_FW_BOOT_LOADER…' -noanalysis \
     -scriptPath evidence/psp-boot-verifier/ghidra -postScript Dec8.java
+# Dec10 = the generic verifier and the wrapped-path callees; Dec11 = the reachability
+# audit (region table + range validator + bounded copy)
 ```
 
 Decompiled chain: [`evidence/psp-boot-verifier/decompiled.txt`](evidence/psp-boot-verifier/decompiled.txt).
