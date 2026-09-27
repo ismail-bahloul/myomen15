@@ -184,6 +184,42 @@ before use, twice over:
   (`uVar3 - param_1 < end > start`), and on failure **traps into the TOS**
   (`software_interrupt(0x6b/0x8b)`) rather than proceeding.
 
+## Auditing the other ~180 handlers
+
+The load commands are one set of ids among many, so the natural next question is
+whether any *other* host command reaches the verifier — or, worse, touches host
+memory **without** the validator. That was checked mechanically rather than by
+reading 180 functions:
+
+- **Reachability.** For every function called from `FUN_0000dbe0` (181 of them),
+  follow the callees four levels and ask whether they reach a host-buffer
+  validator (`FUN_00011604`, `FUN_00007730`, `FUN_0000c4bc`) or the entry verifier
+  (`FUN_0000f7a0`). Full table:
+  [`evidence/psp-tee-runtime/handler-audit.txt`](evidence/psp-tee-runtime/handler-audit.txt).
+- **SVC map.** Every `svc` immediate, per number and per function, to see which
+  functions use the host-mapping calls:
+  [`evidence/psp-tee-runtime/svc-map.txt`](evidence/psp-tee-runtime/svc-map.txt).
+
+Result:
+
+- **Eight handlers map host memory and verify it** — `FUN_000106dc`,
+  `FUN_000119a0`, `FUN_00016c80`, `FUN_0001aa5c`, `FUN_00010888`, `FUN_0000fda0`,
+  `FUN_00010b50`, `FUN_0000f4c8` — all reaching `FUN_00007730` (map) and/or
+  `FUN_00011604` (validate), then `FUN_0000f7a0` / `FUN_000138fc`.
+- **The host-map helpers are twins, and both check.** `FUN_00007730` (SVC
+  `0x6b`/`0x8b`) and `FUN_000075a0` (SVC `0x6b`/`0x6d`) have the identical shape:
+  page-range check, then **trap into the TOS** on a bad range, then map. No mapping
+  helper exists without the check.
+- **The SVC-sharing candidates are not host parsers.** `FUN_000159c8`,
+  `FUN_00015bf0`, `FUN_00015eac`, `FUN_00015fac` (which share SVC `0x5e`/`0xa7`
+  with the validator) index a **bounded table** — `param_2 < 0x40`, 16/32-byte
+  compare, key/session services. `FUN_00014a5c` (the slot allocator) walks **8
+  slots** (`uVar6 < 8`) with range checks. None takes a free host pointer.
+
+So the sweep found **no host command that processes host memory without a range
+check**. The host-facing surface of the runtime TEE is the eight load/verify
+handlers above — which are the ones already walked to the RSA check.
+
 ## What this shows, and where it stops
 
 Shown (and this is now end to end):
@@ -197,6 +233,9 @@ Shown (and this is now end to end):
 - **The host ingress is located and bounded**: `FUN_000077e0` → `FUN_0000dbe0` →
   the load commands → `FUN_0000f7a0` → RSA, with the `(address, size)` pairs
   validated by `FUN_00011604` and `FUN_00007730` before any parse.
+- **A sweep of the other 180 handlers found no unvalidated host path**: the only
+  eight that map host memory all verify it, the mapping helpers all trap on a bad
+  range, and the look-alike candidates are bounded-index key/session services.
 
 Where it stops (recorded, not guessed):
 
@@ -212,9 +251,11 @@ Where it stops (recorded, not guessed):
 
 The honest summary: the runtime **reuses the same standard, bounded crypto**, and
 the one place a host bug could have lived — the ingress path in `DRIVER_ENTRIES` —
-has been **walked from the entry to the RSA check and found bounded**. Nothing here
-weakens the [`psp-boot-verifier.md`](psp-boot-verifier.md) conclusion; it extends
-it to the path where the OS hands the PSP a blob.
+has been **walked from the entry to the RSA check, then swept across every other
+handler, and found bounded both ways**. Nothing here weakens the
+[`psp-boot-verifier.md`](psp-boot-verifier.md) conclusion; it extends it to the
+path where the OS hands the PSP a blob — and the audit of that path is now closed,
+not just sampled.
 
 ## Reproducing
 
@@ -227,11 +268,14 @@ analyzeHeadless <proj> PSPBL -import …/d00_e02_PSP_FW_TRUSTED_OS~0x2_0.11.0.85
 analyzeHeadless <proj> PSPBL -process '…DRIVER_ENTRIES…' -noanalysis \
     -scriptPath evidence/psp-boot-verifier/ghidra -postScript Dec20.java
 # Dec12-16 = verifier + loaders; Dec17-18 = call graph + the entry/dispatcher;
-# Dec19-20 = the host load commands and the (address,size) validators
+# Dec19-21 = the host load commands, the (address,size) validators, and the
+#   candidates; Audit.java = handler reachability; Svcs.java = the SVC map
 ```
 
 - Census and string xrefs: [`evidence/psp-tee-runtime/map-DRIVER_ENTRIES.txt`](evidence/psp-tee-runtime/map-DRIVER_ENTRIES.txt),
   [`evidence/psp-tee-runtime/map-PSP_FW_TRUSTED_OS.txt`](evidence/psp-tee-runtime/map-PSP_FW_TRUSTED_OS.txt).
+- Handler reachability sweep: [`evidence/psp-tee-runtime/handler-audit.txt`](evidence/psp-tee-runtime/handler-audit.txt).
+- SVC (TOS call) map: [`evidence/psp-tee-runtime/svc-map.txt`](evidence/psp-tee-runtime/svc-map.txt).
 - Decompiled runtime verifier and loaders: [`evidence/psp-tee-runtime/decompiled.txt`](evidence/psp-tee-runtime/decompiled.txt).
 - Scripts: `Dec12–Dec16.java`, `MapAll.java`, `Str2.java` in
   [`evidence/psp-boot-verifier/ghidra/`](evidence/psp-boot-verifier/ghidra/).
