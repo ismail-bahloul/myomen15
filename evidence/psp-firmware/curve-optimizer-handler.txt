@@ -190,3 +190,38 @@ image value is zero, some runtime init must fill part of that struct through a
 computed pointer that static reference-tracking does not attribute. That does not
 change the conclusion -- no host message reaches it -- but it is stated rather
 than papered over.
+
+================================================================================
+6. What byte[2] actually is (the last loose end)
+================================================================================
+
+FUN_0001ce2c sets byte[2] from the return of a helper (0x1e8bc):
+
+  0x1ce2f  l32r a10, <0x3262>
+  0x1ce34  call8 0x1e8bc          ; helper(id)
+  0x1ce3c  movnez a10,a11,a10     ; a10 = (result != 0)
+  0x1ce3f  s8i a10, a4, 2         ; global.byte[2] = that bit
+
+and the helper is a bitmap read, not a message dispatch:
+
+  0x1e8bc entry a1,32
+  0x1e8c4 srli a10,a2,3           ; index = id / 8
+  0x1e8c9 and  a10,a10,-4
+  0x1e8cc add.n a7,a10,a7         ; word address into config table A
+  0x1e8d4 l32i.n a7,a7,0
+  0x1e8d6 add.n a6,a10,a6         ; word address into config table B
+  0x1e8db l32i.n a6,a6,0
+  0x1e8e6 sub  a5,a9,a5           ; bit = id % 8
+  ...     (extract that bit, OR into the result)
+
+So byte[2] is **one configuration bit (index 0x3262)** read at SMU boot from an
+internal table -- not something any mailbox message writes. FUN_0001ce2c reads
+several such bits (0x3262, 0x2240, 0x2242, 0x3195) and scatters them into the
+global struct. That is the concrete meaning of "the gate is set for itself at
+boot": it is a **platform configuration bit**, and on this machine it resolves to
+the state that makes every CO write fail.
+
+Conclusion stands, now down to the bit: Curve Optimizer is not reachable through
+the mailbox on this machine because its enable state is a boot configuration bit
+plus a set of messages the host cannot send (guard-rejected or on another queue).
+The only remaining untried lever is outside software.
