@@ -6,6 +6,10 @@ ends are not explored again. Everything here was measured on this machine.
 The point-in-time investigation record is in `record/` in this repository; this
 file is the distilled, current conclusion.
 
+The firmware-*signature* side — whether the PSP's verification can be defeated, i.e.
+whether the firmware can be modified — is its own campaign, summarised with its
+verdict in [`psp-campaign.md`](psp-campaign.md).
+
 ## The setup is readable — the flash chip is not fully opaque
 
 An earlier conclusion in this repo was that the firmware is a black box: the
