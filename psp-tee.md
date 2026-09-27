@@ -56,7 +56,7 @@ would start.
 this machine — and `SEC_DBG_PUBLIC_KEY` (`key_usage = unknown_key_usage(3)`) has
 nothing paired with it in the image.
 
-## The OS can reach the TEE — the driver is right there
+## The OS can reach the TEE — and does
 
 ```
 $ lspci -nn | grep -i encryption
@@ -67,28 +67,60 @@ ccp 0000:07:00.2: ccp: unable to access the device: you might be running a broke
 ccp 0000:07:00.2: tee enabled
 ccp 0000:07:00.2: psp enabled
 
-$ modinfo amdtee   ->  .../drivers/tee/amdtee/amdtee.ko.zst   (installed)
-$ lsmod | grep amdtee    -> not loaded
-$ ls /dev/tee*           -> does not exist
+$ sudo modprobe amdtee        # rc=0
+$ lsmod | grep amdtee ; ls -l /dev/tee0
+amdtee 32768 0
+crw------- 1 root root 510, 0 ... /dev/tee0
+$ cat /sys/class/tee/tee0/implementation_id
+2                            # TEE_IMPL_ID_AMD = 2
 ```
 
-The AMD-TEE driver is installed but unbound. Loading it would create `/dev/tee0`
-and let the OS open sessions to the TAs — the world `DRIVER_ENTRIES` lives in.
-There is also an ACPI node for it (dmesg shows `\TAAD.RTWT` / `\TAAD._GRT`). This
-is the **one OS-reachable door into the PSP**, and it is closed today only
-because nobody loaded the driver.
+So it is not theoretical: loading the driver binds, `ccp` takes a dependency, and
+the OS ends up with an **AMD-TEE** handle. (Fully reversible: `rmmod amdtee`
+removes `/dev/tee0`.) There is also an ACPI node for the TEE world (dmesg shows
+`\TAAD.RTWT` / `\TAAD._GRT`).
+
+## The TAs are firmware files the OS hands to the PSP
+
+The driver's own strings (`copy_ta_binary`, "failed to load firmware %s") and the
+firmware directory say what happens next:
+
+```
+$ ls /lib/firmware/amdtee/
+773bd96f-b83f-4d52-b12dc529b13d8543.bin.zst   -> amd_pmf_v3.bin.zst
+f29bb3d9-bd66-5441-afb88acc2b2b60d6.bin.zst   -> amd_pmf_v3_1.bin.zst
+```
+
+The file *name* is the TA UUID (the driver formats
+`%08x-%04x-%04x-%02x%02x%02x%02x%02x%02x%02x%02x.bin`), and the *content* is a
+**PSP module** — the very same `$PS1` header and trailing signature as every
+module in the PSP directory:
+
+```
+$ zstdcat /lib/firmware/amdtee/773bd96f-….bin.zst | xxd | head -2
+00000000: 00 00 00 00 ...                (16 bytes)
+00000010: 24 50 53 31  40 30 00 00       "$PS1", size_signed = 0x3040
+… and it ends in ~0x200 bytes of high-entropy signature
+$ strings -> "AMD PMF Application", gpd.ta.appID, gpd.ta.stackSize, gpd.ta.heapSize, …
+```
+
+So the flow is: **the OS supplies a code blob, the PSP loads it.** The only thing
+between an attacker-controlled file and code in the PSP is the **signature check
+on that blob** — the same verifier as everything else, now fed bytes the host
+chose. That is a sharper surface than `DEBUG_UNLOCK`: a parser of attacker-shaped
+input that must get the signature check right *before* it executes anything.
 
 ## What this changes for the project
 
-- **The PSP is no longer a black box.** Its modules are named, their ISA is ARM,
-  and the debug-unlock flow is readable. That is the starting point for the one
-  purely-software route to changing firmware: a bug reachable from the host.
-- **Two candidate surfaces are now concrete.** The AMD-TEE (`amdtee` →
-  `/dev/tee0`) is reachable today; and `DEBUG_UNLOCK` is a small module that
-  parses attacker-shaped input and already worried about an overflow.
-- **It is still a map.** Nothing here is a vulnerability, and nothing here
-  writes. The next step is to open one of the two surfaces and read what it
-  validates — the same method used on the SMU.
+- **The PSP is reachable, for real.** The OS has a TEE handle, and the TEE
+exchange with the PSP is a **module-loading path**: the host writes a file, the
+PSP validates and runs it. That is the software route toward code in the PSP.
+- **`DEBUG_UNLOCK` was tried and needs reloc-aware tooling.** The module is
+relocated at load (no absolute string references, unresolved outside calls), so a
+linear disassembly is not trustworthy; it wants Ghidra plus the relocation info
+— a session of its own, noted rather than faked.
+- **It is still a map.** No vulnerability is claimed. What is new is that the
+host→PSP door is identified, opened, and shown to be a *verifier*.
 
 ## Reproducing
 
