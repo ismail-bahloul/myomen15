@@ -1,0 +1,123 @@
+PSP module map, first pass: it is a GlobalPlatform TEE on an ARM Cortex-A5.
+Measured 2026-09-27 on 088D1.bin. Modules extracted with
+`psptool -X -d 1 -o DIR` (the PL2 directory; raw stored form, header included).
+
+================================================================================
+1. What each module is
+================================================================================
+
+  name                            size      ent   ARM?   what it is
+  PSP_FW_BOOT_LOADER              67776     6.80  ARM    the PSP BL (0.11.0.85)
+  PSP_FW_TRUSTED_OS              103280     4.47  ARM    the TEE OS (0.11.0.85)
+  PSP_BOOT_TIME_TRUSTLETS        131328     6.62  ARM    TAs loaded at boot
+  DRIVER_ENTRIES                 124784     6.74  ARM    the AMD-TEE interface
+  DRTM_TA                         24832     4.57  ARM    a DRTM Trusted App
+  DEBUG_UNLOCK                     8448     6.87  ARM    the secure-debug unlock module
+  SEC_GASKET                      11904     4.51  ARM?   a service gasket
+  TOS_SECURITY_POLICY              7056     4.53  data   policy blob (no strings)
+  TOKEN_UNLOCK                     4096     0.00  --     4096 zero bytes
+  SEC_DBG_PUBLIC_KEY               1088     6.57  --     the secure-debug signing key
+  WRAPPED_IKEK                       16      --   --     wrapped key material
+  SMU_OFFCHIP_FW / _2 / MP2_FW /*  ...       7.0-8.0 ...  compressed/other cores
+
+The "ARM?" column is Capstone's ARM-mode coverage at 0x100 over the code window;
+the low percentages on the third-party blobs (SMU, MP2) are because those are
+still the compressed stored form (`psptool -X` without `-u`). The clearly-ARM
+modules -- BL, TOS, TRUSTLETS, DRIVER_ENTRIES, DRTM_TA, DEBUG_UNLOCK -- decode as
+ARM (not Thumb).
+
+The strings make the shape plain. DRIVER_ENTRIES carries GlobalPlatform TEE
+properties:
+
+  gpd.tee.deviceID / gpd.tee.apiversion / gpd.tee.description
+  AMD-TEE Global Platform API
+  gpd.tee.trustedos.implementation.version / .binaryversion / .manufacturer
+  gpd.tee.trustedStorage.antiRollback.protectionLevel
+  gpd.tee.cryptography.ecc
+
+and DRTM_TA carries DRTM ones ("AMD DRTM Driver", amd.dr.driverID, gpd.ta.appID,
+amd.ta.fwtype, amd.fw.SecPatchLevel). So the PSP is a **GlobalPlatform TEE**: a
+TOS plus Trusted Applications, and the fTPM/User-TA interface lives in this
+world.
+
+================================================================================
+2. DEBUG_UNLOCK: the module that unlocks debug, in as many words
+================================================================================
+
+It is a standalone ARM module (a real boot stub at 0x100):
+
+  0x100  ldr  sp, [pc, #0x20]
+  0x104  ldr  r2, [pc, #0x20]
+  0x108  blx  r2
+  0x10c  mov  sp, r0
+  0x110  ldr  lr, [pc, #0x18]
+  0x114  ldr  r2, [pc, #0x18]
+  0x118  blx  r2
+  0x11c  b    0x11c
+
+and its own strings name the whole unlock flow:
+
+  DBG_UNLOCK_MODULE::FAIL - Svc_GetDebugUnlockInfo Status =
+  DBG_UNLOCK_MODULE::Received UnlockMode =
+  DBG_UNLOCK_MODULE::FAIL - UnlockNegotiation with HdtError =
+  DBG_UNLOCK_MODULE::FAIL - SecureUnlock with HdtError =
+  DBG_UNLOCK_MODULE::Securely UNLOCKED
+  DBG_UNLOCK_MODULE::FAIL - Failed to Lock ASIC
+  DBG_UNLOCK::FAIL - Stack Buffer Overflow
+
+Two things stand out. First, the flow is named end to end -- a service
+(`Svc_GetDebugUnlockInfo`), a negotiation, then a secure unlock -- so this is the
+AMD "secure debug" path made legible. Second, **AMD's own code checks for a
+stack buffer overflow here**. A hand-written overflow guard means the developers
+considered this input attacker-influenced; it is exactly where a bug hunt would
+start.
+
+================================================================================
+3. What is reachable, and what is not
+================================================================================
+
+  * TOKEN_UNLOCK is 4096 zero bytes: **no secure-debug token is provisioned** on
+    this machine. Whatever key the token would be signed with
+    (SEC_DBG_PUBLIC_KEY, key_usage `unknown_key_usage(3)`) has nothing paired
+    with it in the image.
+  * The OS-facing surface is the AMD-TEE (DRIVER_ENTRIES). Linux has an `amdtee`
+    driver for exactly this; if it binds here, the OS can invoke TAs, and that is
+    the one place a running OS talks to the PSP. That is the software path worth
+    mapping next.
+  * Everything else in the PSP talks to the host only through the PSP mailbox /
+    SMN, not through anything this repo has opened yet.
+
+This is a map, not a finding: no bug is claimed here. What it does is put a name
+and an address on the surface, and say which part of it the OS can actually
+reach.
+
+================================================================================
+4. Is the TEE reachable from the OS?  The driver is right there.
+================================================================================
+
+  $ lspci -nn | grep -i encryption
+  07:00.2 Encryption controller: AMD Raven/Raven2/FireFlight/Renoir/Cezanne
+           Platform Security Processor [1022:15df]
+
+  $ dmesg | grep -i ccp
+  ccp 0000:07:00.2: ccp: unable to access the device: you might be running a broken BIOS.
+  ccp 0000:07:00.2: tee enabled
+  ccp 0000:07:00.2: psp enabled
+
+  $ modinfo amdtee
+  filename: /lib/modules/7.2.6-1-cachyos/kernel/drivers/tee/amdtee/amdtee.ko.zst
+  description: AMD-TEE driver
+
+  $ lsmod | grep -i amdtee        -> (not loaded)
+  $ ls /dev/tee*                  -> (does not exist)
+
+So the CPU PSP is present and the kernel's AMD-TEE driver is installed but not
+bound. Loading it (`modprobe amdtee`) would create `/dev/tee0`, i.e. hand the OS
+a handle to the PSP TEE and let it open sessions to the TAs -- which is where
+DRIVER_ENTRIES lives. There is also an ACPI device for the TEE world: dmesg shows
+`\TAAD.RTWT` / `\TAAD._GRT` being evaluated (and failing, AE_NOT_EXIST).
+
+That is the one OS-reachable door into the PSP's TA world, and it is currently
+closed only because nobody loaded the driver. It is not claimed here that opening
+it yields anything exploitable -- only that it is the surface, and that the
+surface is reachable without any hardware.
