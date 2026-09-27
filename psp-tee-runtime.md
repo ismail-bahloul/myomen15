@@ -236,6 +236,10 @@ Shown (and this is now end to end):
 - **A sweep of the other 180 handlers found no unvalidated host path**: the only
   eight that map host memory all verify it, the mapping helpers all trap on a bad
   range, and the look-alike candidates are bounded-index key/session services.
+- **The TOS TA loader is bounded too** (and readable, after a correction):
+  `FUN_00016748` caps the input at 1 MiB, keys on the header type (`"TA"`/`"DR"`),
+  requires `driverID ∈ {2,3,4}`, and bounds the memory plan (`< 0x401` pages per
+  region, total below the aperture).
 
 Where it stops (recorded, not guessed):
 
@@ -252,12 +256,13 @@ Where it stops (recorded, not guessed):
 The honest summary: the runtime **reuses the same standard, bounded crypto**, and
 the one place a host bug could have lived — the ingress path in `DRIVER_ENTRIES` —
 has been **walked from the entry to the RSA check, then swept across every other
-handler, and found bounded both ways**. Nothing here weakens the
-[`psp-boot-verifier.md`](psp-boot-verifier.md) conclusion; it extends it to the
-path where the OS hands the PSP a blob — and the audit of that path is now closed,
+handler, and found bounded both ways**. The TOS's own loader, once read rather than
+assumed, is bounded as well. Nothing here weakens the
+[`psp-boot-verifier.md`](psp-boot-verifier.md) conclusion; it extends it to the path
+where the OS hands the PSP a blob — and the audit of that path is now closed,
 not just sampled.
 
-## The TOS kernel: mapped, and its limit stated
+## The TOS kernel: the TA loader, read and bounded
 
 `PSP_FW_TRUSTED_OS` is the third and last runtime module — the TEE kernel that
 receives host commands and hosts TAs. It is imported (111 functions), and its shape
@@ -287,13 +292,36 @@ if (which == 0) {
 }
 ```
 
-**Where this stops, honestly.** The TOS is the least readable of the three
-modules. Ghidra drops a long list of *"Removing unreachable block"* warnings inside
-`FUN_00016748` — the module's indirect control flow defeats the linear decompiler
-in the one function that matters. Reading the TA loader end to end needs the TOS's
-relocation and syscall semantics, which the stored image alone does not carry. What
-is established is bounded: the manifest values that reach an allocation are clamped
-to page counts with a `0x100` ceiling. The rest is a **target, not a finding**.
+**A correction.** The first pass here claimed the loader *"defeats the
+decompiler"* — Ghidra drops a long list of *"Removing unreachable block"* warnings
+inside `FUN_00016748`. Reading the **disassembly** instead
+([`evidence/psp-tee-runtime/tos-loader-disasm.txt`](evidence/psp-tee-runtime/tos-loader-disasm.txt))
+shows those blocks are **dead code** — e.g. a `bne` followed by an unconditional
+`b` that both skip the following `svc` — not indirect control flow. There is no jump
+table; the code is ordinary Thumb. The loader is therefore **readable**, and it was
+read.
+
+**The TA loader is bounded, in layers.** `FUN_00016748(size, …, buf)`:
+
+- input size `param_3 ≤ 0x100000` (1 MiB), else error 5;
+- the header carries a **type magic at `+0x14`**: `0x4154` = `"TA"` or `0x5244` =
+  `"DR"` (driver) — the two object kinds;
+- a `"DR"` object's `amd.dr.driverID` must be `2`, `3` or `4`, else error 6;
+- heap / stack / secure-heap sizes come from the manifest, are converted to pages,
+  and `SecHeapSize` is clamped to `0x100` pages;
+- the memory plan is bounded by a combined check:
+
+```c
+uVar6 = *(int *)(hdr + 8)  - *(int *)(hdr + 4);          // a region size
+uVar3 = align(*(int *)(hdr + 0xc)) - *(int *)(hdr + 8);  // another
+if ((((uVar6 | uVar3) >> 0xc | heap_pages | stack_pages | secheap_pages) < 0x401)
+    && (total <= (isTA ? 0x400000 : 0x100000) - 0x20000)) { ... instantiate ... }
+```
+
+so **every** region's page count must be `< 0x401` and the **total footprint** is
+capped below the aperture (`0x400000` for a TA, `0x100000` for a driver). The
+instance is placed in a **slot from a bounded table** (index `local_10c`, checked
+`!= 0xff`), and a failure tears the slot down (`FUN_000184d4(slot, 2)`).
 
 The `$PS1` byte sequences at `0x16120`, `0x173a0`, `0x17538` are **not in any
 function** — they are data (embedded blobs), so the TA-header parsing is not there.
@@ -312,11 +340,13 @@ analyzeHeadless <proj> PSPBL -process '…DRIVER_ENTRIES…' -noanalysis \
 # Dec19-21 = the host load commands, the (address,size) validators, and the
 #   candidates; Audit.java = handler reachability; Svcs.java = the SVC map
 # Dec22 = boot-command bounds; Dec23-24 + Tos.java = the TOS loader and getters
+# Disasm.java = the TA loader's linear disassembly (the correction that it is readable)
 ```
 
 - Census and string xrefs: [`evidence/psp-tee-runtime/map-DRIVER_ENTRIES.txt`](evidence/psp-tee-runtime/map-DRIVER_ENTRIES.txt),
   [`evidence/psp-tee-runtime/map-PSP_FW_TRUSTED_OS.txt`](evidence/psp-tee-runtime/map-PSP_FW_TRUSTED_OS.txt).
-- TOS recon and its TA loader / property getters: [`evidence/psp-tee-runtime/tos-recon.txt`](evidence/psp-tee-runtime/tos-recon.txt).
+- TOS recon and its TA loader / property getters: [`evidence/psp-tee-runtime/tos-recon.txt`](evidence/psp-tee-runtime/tos-recon.txt),
+  and the loader's disassembly [`evidence/psp-tee-runtime/tos-loader-disasm.txt`](evidence/psp-tee-runtime/tos-loader-disasm.txt).
 - Handler reachability sweep: [`evidence/psp-tee-runtime/handler-audit.txt`](evidence/psp-tee-runtime/handler-audit.txt).
 - SVC (TOS call) map: [`evidence/psp-tee-runtime/svc-map.txt`](evidence/psp-tee-runtime/svc-map.txt).
 - Decompiled runtime verifier and loaders: [`evidence/psp-tee-runtime/decompiled.txt`](evidence/psp-tee-runtime/decompiled.txt).
