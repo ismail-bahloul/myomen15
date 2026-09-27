@@ -31,6 +31,50 @@ The GlobalPlatform nature is in the strings. `DRIVER_ENTRIES` carries
 `amd.fw.SecPatchLevel`. So the PSP is a TOS plus TAs — the same world the fTPM
 lives in.
 
+## The boot verifier is named, in plain text
+
+The module whose job is to decide what firmware may run is `PSP_FW_BOOT_LOADER`,
+and it says so itself. Its own strings are the secure-boot chain, in order:
+
+```
+Bootloader C entry start...
+GetPspFwHeader() start...EntryType=0x%X
+PSPDirectorySearch()::Enter-EntryType =0x%04X
+load_bios_l1_directory failed Status = 0x%x
+load_psp_l2_directory failed Status = 0x%x
+set_spirom_aperture_ex failed Status = 0x%x
+load_validate_bios_l2_directory failed Status = 0x%x
+Detected 2nd level entry for HVB validation on BIOS signature
+ReadAndCopyRTMSignature::Signature Not Found
+Loading SMU FW to SRAM Start... / Loading MP2 FW start...
+RpmcDeriveRootKey: CryptoSHAOTP 256 returned %X
+Soc is secured ! / Soc is nonsecured !
+system cannot recover from this point, brick it
+```
+
+So the chain parses the PSP directories, loads the BIOS L1 / PSP L2 directories,
+and then **"loads and validates the BIOS L2 directory" with HVB (Hardware
+Validated Boot) signature validation** — the exact gate behind "you cannot
+modify the firmware on this machine", named and placed. `ReadAndCopyRTMSignature`
+handles the reset-image signature; `CryptoModExp` is RSA modexp;
+`DeriveKeyUsingPRF` + `CcpHmacSha256` is the key derivation; RPMC keys and the
+monotonic counter are the replay protection.
+
+The generic RSA primitive (PKCS#1 v1.5 DER headers + SHA-1/256/384 OIDs) lives in
+`PSP_BOOT_TIME_TRUSTLETS` and `DRIVER_ENTRIES`, next to the HMAC keys —
+`DRIVER_ENTRIES` ties them to this repo's own objects: *"HMAC Signature Key for
+Wrapped iKEK saved in SPI-ROM"*, *"for signing APOB data"*, *"for PSP Data saved
+in DRAM"*.
+
+Full string map: [`evidence/psp-boot-verifier.txt`](evidence/psp-boot-verifier.txt).
+
+**Reaching the verifier's code is the next session.** Both attempts to jump from
+those strings to the instructions failed, and for a reason worth stating: the
+module is **relocated** at load (its strings are never absolute literals, and no
+shared base emerges), so a flat disassembly cannot resolve its data references.
+That needs Ghidra plus the module's relocation data — the same wall `DEBUG_UNLOCK`
+hit. The map is solid; the code is not faked.
+
 ## `DEBUG_UNLOCK` — the secure-debug path, named
 
 It is a standalone ARM module (a real boot stub at `0x100`: `ldr sp` → `blx`

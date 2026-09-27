@@ -1,0 +1,104 @@
+The PSP boot verifier, by name.
+Strings pulled from the PL2 modules extracted by psptool (088D1.bin, 2026-09-27).
+This is the code that decides whether firmware is allowed to run, and it says so
+in plain text.
+
+================================================================================
+1. PSP_FW_BOOT_LOADER -- the secure-boot chain, named
+================================================================================
+
+The boot loader (0.11.0.85, 67776 bytes, ARM) carries the whole chain as its own
+log/error strings. Selected, in boot order:
+
+  Bootloader C entry start...
+  GetPspFwHeader() start...EntryType=0x%X
+  PSPDirectorySearch()::Enter-EntryType =0x%04X
+  load_bios_l1_directory failed Status = 0x%x
+  load_psp_l2_directory failed Status = 0x%x
+  set_spirom_aperture_ex failed Status = 0x%x
+  load_validate_bios_l2_directory failed Status = 0x%x
+  Detected 2nd level entry for HVB validation on BIOS signature
+  PrepareBiosToDram::spiBiosRead copy header FAIL
+  PrepareBiosToDram::spiBiosRead copy Image FAIL
+  ReadAndCopyRTMSignature::Signature Not Found
+  ReadAndCopyRTMSignature::Copying of ResetImage Signature FAIL
+  Loading SMU FW to SRAM Start...
+  Loading MP2 FW start...
+  Load_Run_AgesaBL() start... / AgesaBL0 start to run... / AgesaBL Execution Completed
+  FW type:0x%02X version:0x%08X
+
+  crypto / keys:
+  CryptoModExp Invalid Parameter exiting...
+  BL crypto CCP error:0x%x
+  CCP error: 0x%x, status:0x%x
+  DeriveKey, invalid args / DeriveKey, AesEcbEncrypt failed
+  DeriveKeyUsingPRF, invalid args / bad alignment / CcpHmacSha256 failed
+  DeriveHmacKey, DeriveKey failed
+  RpmcDeriveRootKey: CryptoSHAOTP 256 returned %X
+  RpmcDeriveRootKey: DeriveKeyUsingPRF returned %X
+  RPMC signature validation failed
+  RPMC Root Key programming error %X / RPMC HMAC Key initialization error %X
+  Monotonic counter retrieval error %X
+
+  security state:
+  Soc is secured ! / Soc is nonsecured !
+  QE bit failed to enable, Get ManufactoryID failed.
+  S5_SECURE_STAT(0xFED803C0) = 0x%X
+  system cannot recover from this point, brick it
+  %s: boot_mode[0x%X]
+
+So the boot loader: parses the PSP directories (`PSPDirectorySearch`,
+`GetPspFwHeader`), loads the BIOS L1 / PSP L2 directories, sets the SPI aperture,
+then **loads and validates the BIOS L2 directory ("HVB validation on BIOS
+signature")**, reads the reset-image signature (`ReadAndCopyRTMSignature`), brings
+SMU / MP2 / AGESA up, and programs the RPMC root/HMAC keys and monotonic counter
+(the replay protection).
+
+`HVB` = Hardware Validated Boot: the BIOS signature check the whole "you cannot
+modify the firmware" story rests on, named and located in `PSP_FW_BOOT_LOADER`.
+`CryptoModExp` is RSA modexp; `DeriveKeyUsingPRF` + `CcpHmacSha256` is the key
+derivation.
+
+================================================================================
+2. Where the RSA verification itself lives
+================================================================================
+
+Searching every extracted module for the PKCS#1 v1.5 header and the SHA OIDs
+(`30 31 30 0d 06 09 60 86 48 01 65 03 04 02 01` for SHA-256, etc.):
+
+  PSP_BOOT_TIME_TRUSTLETS  -- hits on SHA-1 / SHA-256 / SHA-384 OIDs + PKCS1v15
+  DRIVER_ENTRIES           -- hits on SHA-1 / SHA-256 / SHA-384 OIDs + PKCS1v15
+
+and `PSP_BOOT_TIME_TRUSTLETS` carries `Amd_Sha1Final`, `Amd_Sha256Final`. So the
+generic RSA-verify primitive (DER OIDs + PKCS#1 v1.5) sits in these two modules,
+while the boot-time use of it is in the boot loader above.
+
+`DRIVER_ENTRIES` (the AMD-TEE module) is the other half -- its strings tie keys
+to exactly the objects this repo has been looking at:
+
+  HMAC Signature Key for signing APOB data
+  HMAC Signature Key for PSP Data saved in DRAM
+  HMAC Signature Key for Wrapped iKEK saved in SPI-ROM
+
+================================================================================
+3. A first structural probe at the code (and its honest limit)
+================================================================================
+
+Both ways to reach the verifier's *code* from here failed, and it is worth
+recording why rather than guessing:
+
+  * the string offsets are never referenced as absolute literals anywhere in
+    PSP_FW_BOOT_LOADER, and
+  * searching for a shared load base by matching the low 12 bits of every
+    candidate literal did not converge on one (a single spurious base came out
+    with a handful of votes, not a real one).
+
+That is the signature of a **relocated module**: the loader fixes the pointers up
+at load time (module-relative values plus a base register, or a relocation
+table), so a flat static disassembly cannot resolve its data references. Reading
+the verifier's logic therefore needs a reloc-aware session (Ghidra plus the
+module's relocation data), the same requirement `DEBUG_UNLOCK` ran into.
+
+What is solid here does not depend on that: the chain is named, the verifier is
+in a known module, and the two places that implement RSA verification are known.
+That is the map; the code is the next session.
