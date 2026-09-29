@@ -1,0 +1,1224 @@
+
+===== Setup (63 varstores, 608 questions) =====
+  vid=0x0001 size=  322 name='Setup' ec87d643-eba4-4bb5-a1e5-3f3e36b20da9
+  vid=0x0002 size=    2 name='PlatformLang' 8be4df61-93ca-11d2-aa0d-00e098032b8c
+  vid=0x0003 size=    2 name='PlatformLangCodes' 8be4df61-93ca-11d2-aa0d-00e098032b8c
+  vid=0x0004 size=    1 name='SystemAccess' e770bb69-bcb4-4d04-9e97-23ff9456feac
+  vid=0x0005 size=    2 name='AMICallback' 9cf0f18e-7c7d-49de-b5aa-bbbad6b21007
+  vid=0x0006 size=   65 name='AMITSESetup' c811fa38-42c8-4579-a9bb-60e94eddfb34
+  vid=0x0007 size=    2 name='BootManager' b4909cf3-7b93-4751-9bd8-5ba8220b9bb2
+  vid=0x0008 size=    2 name='Timeout' 8be4df61-93ca-11d2-aa0d-00e098032b8c
+  vid=0x0009 size=    2 name='BootOrder' 8be4df61-93ca-11d2-aa0d-00e098032b8c
+  vid=0x000a size=  284 name='AddBootOption' 19d96d3f-6a6a-47d2-b195-7b2432da3be2
+  vid=0x000b size=    2 name='DelBootOption' f6c73719-f34c-479c-b32f-277fcbbcfe4f
+  vid=0x000c size=    2 name='LegacyDev' a56074db-65fe-45f7-bd21-2d2bdd8e9652
+  vid=0x000d size=    2 name='LegacyGroup' a56074db-65fe-45f7-bd21-2d2bdd8e9652
+  vid=0x000e size=    2 name='LegacyDevOrder' a56074db-65fe-45f7-bd21-2d2bdd8e9652
+  vid=0x000f size=    2 name='BootNowCount' 052e6eb0-f240-42c5-8309-45874545c6b4
+  vid=0x0010 size=    2 name='Shell' c57ad6b7-0515-40a8-9d21-551652854e37
+  vid=0x0012 size=    1 name='AmiAmdSbSuppressIfSetupData' b66b8637-96c0-4615-b8bd-d98efd5d3b17
+  vid=0x0013 size=    1 name='AmiSbXhciSwitchSuppressIfSetupData' c0f8bda9-52c8-40dd-92fc-6efffef9524a
+  vid=0x0014 size=    7 name='SetupCpuFeatures' ec87d643-eba4-4bb5-a1e5-3f3e36b20da9
+  vid=0x0016 size=    2 name='DriverManager' c0b4fb05-15e5-4588-9fe9-b3d39c067715
+  vid=0x0017 size=    2 name='DriverOrder' 8be4df61-93ca-11d2-aa0d-00e098032b8c
+  vid=0x0018 size=    2 name='AmiGopPolicySetupData' c143929c-bf5d-423b-999b-0f2dd2b61ff7
+  vid=0x0019 size=    2 name='UsbMassDevNum' ec87d643-eba4-4bb5-a1e5-3f3e36b20da9
+  vid=0x001a size=   32 name='UsbMassDevValid' ec87d643-eba4-4bb5-a1e5-3f3e36b20da9
+  vid=0x001b size=    4 name='UsbControllerNum' ec87d643-eba4-4bb5-a1e5-3f3e36b20da9
+  vid=0x001c size=   49 name='UsbSupport' ec87d643-eba4-4bb5-a1e5-3f3e36b20da9
+  vid=0x001d size=    8 name='NetworkStackVar' d1405d16-7afc-4695-bb12-41459d3695a2
+  vid=0x001e size=    7 name='SecureBootSetup' 7b59104a-c00d-4158-87ff-f04d6396a915
+  vid=0x001f size=    6 name='SecureVarPresent' 7b59104a-c00d-4158-87ff-f04d6396a915
+  vid=0x0020 size=    1 name='VendorKeys' 8be4df61-93ca-11d2-aa0d-00e098032b8c
+  vid=0x0021 size=    1 name='SetupMode' 8be4df61-93ca-11d2-aa0d-00e098032b8c
+  vid=0x0022 size=    1 name='SecureBoot' 8be4df61-93ca-11d2-aa0d-00e098032b8c
+  vid=0x0023 size=    1 name='AuditMode' 8be4df61-93ca-11d2-aa0d-00e098032b8c
+  vid=0x0024 size=    1 name='DeployedMode' 8be4df61-93ca-11d2-aa0d-00e098032b8c
+  vid=0x0025 size=    8 name='OEMDeviceStatus' 0ee72c08-8185-427a-a58a-855b78b7ba0b
+  vid=0x0026 size=    1 name='HideFccId' 0ee72c08-8185-427a-a58a-855b78b7ba0b
+  vid=0x0027 size=    1 name='NewSystemFamily' 0ee72c08-8185-427a-a58a-855b78b7ba0b
+  vid=0x0028 size=    1 name='HideBornOnDate' 0ee72c08-8185-427a-a58a-855b78b7ba0b
+  vid=0x0029 size=    1 name='HideGOPRevision' 0ee72c08-8185-427a-a58a-855b78b7ba0b
+  vid=0x002a size=    1 name='GOPCount' 0ee72c08-8185-427a-a58a-855b78b7ba0b
+  vid=0x002b size=    1 name='HideVBIOSRevision' 0ee72c08-8185-427a-a58a-855b78b7ba0b
+  vid=0x002c size=    1 name='InternalDisallowTpmFlag' 70fff0ff-a543-45b9-8be3-1bdb90412080
+  vid=0x002d size=    1 name='ResetSecurityFlag' 0ee72c08-8185-427a-a58a-855b78b7ba0b
+  vid=0x002e size=    1 name='PlatformKey' 0ee72c08-8185-427a-a58a-855b78b7ba0b
+  vid=0x002f size=    1 name='PendingAction' 0ee72c08-8185-427a-a58a-855b78b7ba0b
+  vid=0x0030 size=    1 name='WindowsToGo' 0ee72c08-8185-427a-a58a-855b78b7ba0b
+  vid=0x0031 size=    1 name='MPMUnlock' 0ee72c08-8185-427a-a58a-855b78b7ba0b
+  vid=0x0032 size=    2 name='FixedBootNum' 0ee72c08-8185-427a-a58a-855b78b7ba0b
+  vid=0x0033 size=    2 name='UefiFixedBootNum' 0ee72c08-8185-427a-a58a-855b78b7ba0b
+  vid=0x0034 size=    1 name='HideCdromBootOption' 0ee72c08-8185-427a-a58a-855b78b7ba0b
+  vid=0x0035 size=    1 name='HideFanAlwaysOn' 0ee72c08-8185-427a-a58a-855b78b7ba0b
+  vid=0x0036 size=    1 name='MSFTDebugPolicy' 0ee72c08-8185-427a-a58a-855b78b7ba0b
+  vid=0x0037 size=    1 name='HpDynamicPageCount' 0ee72c08-8185-427a-a58a-855b78b7ba0b
+  vid=0x0038 size=    1 name='TpmStateFlag' 0ee72c08-8185-427a-a58a-855b78b7ba0b
+  vid=0x0039 size=    1 name='HpShowSpareKeyItem' 0ee72c08-8185-427a-a58a-855b78b7ba0b
+  vid=0x003a size=   16 name='HpBootOrder' 0ee72c08-8185-427a-a58a-855b78b7ba0b
+  vid=0x003b size=    2 name='DynamicPageCount' b63bf800-f267-4f55-9217-e97fb3b69846
+  vid=0x003c size=    2 name='DriverHlthEnable' 0885f288-418c-4be1-a6af-8bad61da08fe
+  vid=0x003d size=    2 name='DriverHealthCount' 7459a7d4-6533-4480-bba7-79e25a4443c9
+  vid=0x003e size=    2 name='DrvHealthCtrlCnt' 58279c2d-fb19-466e-b42e-cd437016dc25
+  vid=0xa567 size=    3 name='\x00\x08䍐彉佃䵍乏' f3040015-aca9-21e2-5248-98757ff4881d
+  vid=0xa90d size=    2 name='\x00\x01捔乧浶噥牡' d6430011-ec87-eba4-b54b-a1e53f3e36b2
+  vid=0xdddf size=   74 name='TcgStorageDynamicSetupVar' 2798f49d-f760-480b-8055-916940c27740
+
+  --- options in varstore 'PlatformLang' (24) ---
+    off=   0 op=0x05 qid=    7 | BIOS Information
+    off=   0 op=0x05 qid=  236 | Select the display language for the BIOS.
+    off=   0 op=0x05 qid=  264 | Select the display language for the BIOS.
+    off=   0 op=0x16 qid=  706 | Boot option File Path
+    off=   6 op=0x16 qid=  741 | Boot option File Path
+    off= 742 op=0x16 qid=  741 | Boot option File Path
+    off= 743 op=0x17 qid=  741 | Boot option File Path
+    off= 744 op=0x17 qid=  741 | Boot option File Path
+    off= 746 op=0x17 qid=  745 | Boot option File Path
+    off= 747 op=0x17 qid=  745 | Boot option File Path
+    off= 750 op=0x17 qid=    2 | Boot option File Path
+    off= 751 op=0x17 qid=    2 | Boot option File Path
+    off=1113 op=0x16 qid= 1052 | Boot option File Path
+    off=1113 op=0x16 qid= 1052 | Boot option File Path
+    off=1114 op=0x16 qid= 1053 | Boot option File Path
+    off=1114 op=0x16 qid= 1053 | Boot option File Path
+    off=1115 op=0x16 qid= 1054 | Boot option File Path
+    off=1115 op=0x16 qid= 1054 | Boot option File Path
+    off=1287 op=0x16 qid= 1286 | Boot option File Path
+    off=1287 op=0x16 qid= 1286 | Boot option File Path
+    off=1288 op=0x17 qid= 1286 | Boot option File Path
+    off=1288 op=0x17 qid= 1286 | Boot option File Path
+    off=1289 op=0x17 qid= 1286 | Boot option File Path
+    off=1289 op=0x17 qid= 1286 | Boot option File Path
+
+  --- options in varstore 'Setup' (187) ---
+    off=   0 op=0x05 qid=  208 | Select the keyboard NumLock state
+    off=   1 op=0x05 qid=   30 | TCM State
+    off=   1 op=0x05 qid=   33 | TPM Embedded Security Device
+    off=   2 op=0x05 qid=   31 | Pending operation
+    off=   2 op=0x05 qid=   34 | Pending operation
+    off=   2 op=0x05 qid=   42 | Configuration
+    off=   4 op=0x07 qid=  371 | 
+    off=   6 op=0x05 qid=   27 | Security Device Support
+    off=   6 op=0x05 qid=   29 | Security Device Support
+    off=   6 op=0x05 qid=   32 | Pwd Authentication
+    off=   6 op=0x05 qid=   36 | Security Device Support
+    off=   7 op=0x07 qid=  370 | 
+    off=   8 op=0x07 qid=  369 | 
+    off=   9 op=0x07 qid=  375 | 
+    off=  11 op=0x07 qid=  377 | 
+    off=  13 op=0x07 qid=  376 | 
+    off=  14 op=0x05 qid=   46 | Select the TCG2 Spec Version Support,
+
+TCG_1_2: the Compatible mode for Win8/Win10,
+
+TCG_2: Support new TCG2 protocol and event format for Win10 or later
+    off=  15 op=0x05 qid=   43 | Enable or Disable Platform Hierarchy
+    off=  16 op=0x05 qid=   44 | Enable or Disable Storage Hierarchy
+    off=  17 op=0x05 qid=   45 | Enable or Disable Endorsement Hierarchy
+    off=  18 op=0x05 qid=   48 | Select the Communication Interface to TPM 20 Device.
+    off=  19 op=0x05 qid=   35 | TPM 1.2
+    off=  19 op=0x05 qid=   49 | TPM 1.2
+    off=  21 op=0x07 qid=  368 | 
+    off=  22 op=0x07 qid=  367 | 
+    off=  23 op=0x07 qid=  366 | 
+    off=  24 op=0x07 qid=  365 | 
+    off=  25 op=0x07 qid=  364 | 
+    off=  26 op=0x05 qid=   37 | Enable or Disable SHA-1 PCR Bank
+    off=  27 op=0x05 qid=   38 | Enable or Disable SHA256 PCR Bank
+    off=  28 op=0x05 qid=   39 | Enable or Disable SHA384 PCR Bank
+    off=  29 op=0x05 qid=   40 | Enable or Disable SHA512 PCR Bank
+    off=  30 op=0x05 qid=   41 | Enable or Disable SM3_256 PCR Bank
+    off=  32 op=0x05 qid=   47 | Select to Tell O.S. to support PPI Spec Version 1.2 or 1.3. Note some HCK tests might not support 1.3.
+    off=  33 op=0x05 qid=   28 | Override to allow SID authentication in TCG Storage device
+    off=  33 op=0x05 qid=   50 | Override to allow SID authentication in TCG Storage device
+    off=  35 op=0x05 qid=   51 | To select.0:AMD CPU fTPM. 1:AMD CPU fTPM Disabled.
+    off=  36 op=0x05 qid=   52 | When New CPU is installed, Select "Enabled" to reset fTPM, if you have BitLocker or encryption-enabled system, the system will not boot without a recovery key. Select "Disabled" to keep previous fTPM record and continue system boot, fTPM will NOT be enabled with new CPU unless fTPM is reset (reinitialized), you could swap back to the old CPU to recover TPM related keys and data.
+    off=  37 op=0x06 qid=   53 | Enables or Disables BIOS ACPI Auto Configuration.
+    off=  38 op=0x05 qid=   55 | Select the highest ACPI sleep state the system will enter when the SUSPEND button is pressed.
+    off=  40 op=0x06 qid=   56 | Enables or Disables Lock of Legacy Resources
+    off=  41 op=0x06 qid=   54 | Enables or Disables System ability to Hibernate (OS/S4 Sleep State). This option may not be effective with some operating systems.
+    off=  45 op=0x05 qid=  134 | OnChip SATA Type
+    off=  46 op=0x05 qid=  135 | Native IDE /n RAID /n AHCI /n AHCI /n Legacy IDE /n IDE->AHCI /n HyperFlash
+    off=  47 op=0x05 qid=  136 | RAID Or RAID5
+    off=  59 op=0x05 qid=10021 | Enabled/Disabled XHCI0 Port 0(XHCI/EHCI)
+    off=  60 op=0x05 qid=  137 | Enabled/Disabled XHCI0 Port 1(XHCI/EHCI)
+    off=  61 op=0x05 qid=  138 | Enabled/Disabled XHCI0 Port 2(EHCI)
+    off=  62 op=0x05 qid=  139 | Enabled/Disabled XHCI0 Port 3(EHCI)
+    off=  63 op=0x05 qid=10022 | Enabled/Disabled XHCI1 Port 0(XHCI/EHCI)
+    off=  64 op=0x05 qid=  140 | Enabled/Disabled XHCI1 Port 1(XHCI/EHCI)
+    off=  65 op=0x05 qid=  141 | Enabled/Disabled XHCI1 Port 2(EHCI)
+    off=  66 op=0x05 qid=  142 | Enabled/Disabled XHCI1 Port 3(EHCI)
+    off=  68 op=0x05 qid=  143 | Infrared (IR) Configuration
+    off=  69 op=0x05 qid=  144 | SD Mode Configuration
+    off=  76 op=0x05 qid=  157 | Enable/Disable GPIO ACPI Devices Support, disable it will disable i2C and uart interface device.
+    off=  77 op=0x05 qid=  147 | I2C 0 Enable
+    off=  78 op=0x05 qid=  148 | I2C 1 Enable
+    off=  79 op=0x05 qid=  149 | I2C 2 Enable
+    off=  80 op=0x05 qid=  150 | I2C 3 Enable
+    off=  81 op=0x05 qid=  145 | Uart 0 Enable
+    off=  82 op=0x05 qid=  146 | Uart 1 Enable
+    off=  83 op=0x05 qid=  151 | Enable/Disable AB Internal Clock Gating
+    off=  84 op=0x05 qid=  152 | Enable The Auto Clkrun Functionality
+    off= 112 op=0x05 qid=  158 | Set Sata Max Gen2 Mode
+    off= 113 op=0x05 qid=  159 | SATA Reference Clock Selector And Divider
+    off= 114 op=0x05 qid=  160 | Indicates Whether Host Bus Adapter (HBA) Can Support Auto-Generating Link Requests To The Partial Or Slumber States When There Are No Commands To Process
+    off= 115 op=0x05 qid=  161 | Indicates Whether Host Bus Adapter (HBA) Can Support A Port Multiplier
+    off= 116 op=0x05 qid=  162 | EnableDisable SATA Ports Auto Clock Control
+    off= 117 op=0x05 qid=  163 | Indicates Whether SATA Host Bus Adapter (HBA) Can Support Transitions To The Partial State
+    off= 118 op=0x05 qid=  164 | Indicates Whether SATA Host Bus Adapter (HBA) Can Support Port Multiplier FIS-Based Switching
+    off= 119 op=0x05 qid=  165 | Indicates Whether SATA Host Bus Adapter (HBA) Can Support Command Completion Coalescing
+    off= 120 op=0x05 qid=  166 | Indicates Whether SATA Host Bus Adapter (HBA) Can Support Transitions To The Slumber State
+    off= 121 op=0x05 qid=  167 | SATA Controller Message-Based Interrupts Capability Support
+    off= 122 op=0x05 qid=  168 | Indicates Whether SATA Target Support 8 Devices Function
+    off= 123 op=0x05 qid=  169 | Sata Disable Generic Mode
+    off= 124 op=0x05 qid=  170 | SATA AHCI Enclosure Management
+    off= 125 op=0x05 qid=  171 | Enable/Disable SATA Serial General Purpose Input/Output (SGPIO) 0
+    off= 130 op=0x05 qid=  172 | Mark The Periodic Timer Interrupt
+    off= 135 op=0x05 qid=  173 | Qual IO 1-4-4
+    off= 136 op=0x05 qid=  174 | SPI Burst Write
+    off= 137 op=0x05 qid=  175 | 100MHz
+    off= 140 op=0x05 qid=  176 | I2C 0 D3 Support
+    off= 141 op=0x05 qid=  177 | I2C 1 D3 Support
+    off= 142 op=0x05 qid=  178 | I2C 2 D3 Support
+    off= 143 op=0x05 qid=  179 | I2C 3 D3 Support
+    off= 144 op=0x05 qid=  180 | I2C 4 D3 Support
+    off= 145 op=0x05 qid=  181 | I2C 5 D3 Support
+    off= 146 op=0x05 qid=  182 | UART 0 D3 Support
+    off= 147 op=0x05 qid=  183 | UART 1 D3 Support
+    off= 148 op=0x05 qid=  184 | UART 2 D3 Support
+    off= 149 op=0x05 qid=  185 | UART 3 D3 Support
+    off= 150 op=0x05 qid=  186 | SATA D3 Support
+    off= 151 op=0x05 qid=  187 | EHCI D3 Support
+    off= 152 op=0x05 qid=  188 | XHCI D3 Support
+    off= 153 op=0x05 qid=  189 | SD D3 Support
+    off= 154 op=0x05 qid=  190 | S0I3 flag
+    off= 156 op=0x05 qid=  191 | Enable/Disable CG1_PLL Spread Spectrum
+    off= 157 op=0x05 qid=  192 | HPET Function Switch
+    off= 158 op=0x05 qid=  193 | Expose MSI capability in HPET Capbility register
+    off= 159 op=0x05 qid=  194 | PCIe NativePcieSupport - Debug function.
+    off= 169 op=0x05 qid=  156 | Restore Status On AC Power Loss
+    off= 170 op=0x05 qid=  195 | GPP Serial Debug Bus Enable
+    off= 172 op=0x06 qid=   57 | Run SMART Self Test on all HDDs during POST.
+    off= 173 op=0x05 qid=   58 | Enable/disable the generation of ACPI _PPC, _PSS, and _PCT objects.
+    off= 174 op=0x07 qid=  362 | 
+    off= 175 op=0x05 qid=   59 | Provide to adjust _PPC object.
+    off= 175 op=0x05 qid=   60 | Provide to adjust _PPC object.
+    off= 175 op=0x05 qid=   61 | Provide to adjust _PPC object.
+    off= 175 op=0x05 qid=   62 | Provide to adjust _PPC object.
+    off= 175 op=0x05 qid=   63 | Provide to adjust _PPC object.
+    off= 175 op=0x05 qid=   64 | Provide to adjust _PPC object.
+    off= 175 op=0x05 qid=   65 | Provide to adjust _PPC object.
+    off= 175 op=0x05 qid=   66 | Provide to adjust _PPC object.
+    off= 176 op=0x05 qid=   68 | Enable/disable CPU Virtualization
+    off= 176 op=0x06 qid=  237 | Hardware VT enables a processor feature for running multiple simultaneous Virtual Machines allowing specialized software applications to run in full isolation of each other.
+    off= 176 op=0x05 qid=  265 | Hardware VT enables a processor feature for running multiple simultaneous Virtual Machines allowing specialized software applications to run in full isolation of each other.
+    off= 177 op=0x05 qid=   67 | Enable/disable No-execute page protection Function
+    off= 178 op=0x05 qid=  196 | Sample Code
+    off= 179 op=0x05 qid=  197 | Priority2
+    off= 183 op=0x05 qid=  198 | Priority3
+    off= 187 op=0x05 qid=  199 | Priority4
+    off= 191 op=0x05 qid=  200 | Priority5
+    off= 195 op=0x05 qid=  201 | Priority6
+    off= 199 op=0x05 qid=  202 | For Multi Connector Display Priority
+    off= 203 op=0x07 qid=  203 | Lcd Only, Range 0 - 255
+    off= 210 op=0x05 qid=10044 | Output Interface
+    off= 210 op=0x05 qid=10045 | Output Interface
+    off= 210 op=0x05 qid=10046 | Output Interface
+    off= 210 op=0x05 qid=10047 | Output Interface
+    off= 210 op=0x05 qid=10048 | Output Interface
+    off= 210 op=0x05 qid=10049 | Output Interface
+    off= 210 op=0x05 qid=10050 | Output Interface
+    off= 210 op=0x05 qid=10051 | Output Interface
+    off= 211 op=0x05 qid=   70 | Debug Port Table
+    off= 212 op=0x05 qid=   71 | Debug Port Table 2
+    off= 218 op=0x05 qid=  121 | The Onboard PCIE LAN PXE ROM
+    off= 221 op=0x05 qid=  233 | If the item is set to Hidden, the TPM device is not visible in the operating system.
+    off= 221 op=0x05 qid=  260 | If the item is set to Hidden, the TPM device is not visible in the operating system.
+    off= 222 op=0x05 qid=  261 | If the TPM Device setting is set to Hidden, the BIOS hides this item. If the TPM Device setting changes from Hidden to Available, the BIOS makes this item visible immediately without a restart. The TPM State setting is saved when the TPM Device setting changes to Hidden and is restored when it is changed back to Available. The TPM State setting can change only if you confirm the request prompted by the BIOS during the next startup.
+    off= 223 op=0x05 qid=  262 | Clearing the TPM causes you to lose all created keys associated with the TPM, and data protected by those keys, such as a virtual smart card or a login PIN. Make sure that you have a backup and recovery method for any data that is protected or encrypted by the TPM.
+ 
+TPM can be cleared only when you confirm the request via the Physical Presence check prompted by the BIOS during the next startup. If you select Yes, TPM security setting and content will be cleared.
+ 
+After the BIOS clears the TPM or you reject clearing the TPM during the physical presence check in POST, this setting is reverted to No.
+    off= 223 op=0x05 qid=60003 | Clearing the TPM causes you to lose all created keys associated with the TPM, and data protected by those keys, such as a virtual smart card or a login PIN. Make sure that you have a backup and recovery method for any data that is protected or encrypted by the TPM.
+ 
+TPM can be cleared only when you confirm the request via the Physical Presence check prompted by the BIOS during the next startup. If you select Yes, TPM security setting and content will be cleared.
+ 
+After the BIOS clears the TPM or you reject clearing the TPM during the physical presence check in POST, this setting is reverted to No.
+    off= 224 op=0x06 qid=  232 | Enable or disable HP SpareKey support. Before you use [SpareKey Enroll], please set password and enable support.
+    off= 224 op=0x05 qid=  258 | Enable or disable HP SpareKey support. Before you use [SpareKey Enroll], please set password and enable support.
+    off= 225 op=0x06 qid=  238 | Set the Fan Always On
+    off= 225 op=0x05 qid=  266 | Set the Fan Always On
+    off= 226 op=0x06 qid=  239 | Disabled: Requires pressing fn key + f1 through f12 to activate action keys
+Enabled: Requires pressing only f1 through f12 to activate action keys
+    off= 226 op=0x05 qid=  267 | Disabled: Requires pressing fn key + f1 through f12 to activate action keys
+Enabled: Requires pressing only f1 through f12 to activate action keys
+    off= 227 op=0x05 qid=10573 | Enable/Disable CDROM boot during boot time.
+    off= 227 op=0x06 qid=10596 | Enable/Disable CDROM boot during boot time.
+    off= 228 op=0x05 qid=10574 | Enable/Disable floppy boot during boot time.
+    off= 228 op=0x06 qid=10597 | Enable/Disable floppy boot during boot time.
+    off= 229 op=0x05 qid=10575 | Enable/Disable USB boot.
+    off= 229 op=0x06 qid=10598 | Enable/Disable USB boot.
+    off= 230 op=0x05 qid=10576 | Network Boot allows boot to the Network via F12 or boot order.
+    off= 230 op=0x06 qid=10599 | Network Boot allows boot to the Network via F12 or boot order.
+    off= 231 op=0x05 qid=  248 | Select Network Boot Protocol using IPv4, IPv6 or IPv4+IPV6. When IPV4+IPV6 is selected, BIOS will use IPv4 first.
+    off= 231 op=0x05 qid=  274 | Select Network Boot Protocol using IPv4, IPv6 or IPv4+IPV6. When IPV4+IPV6 is selected, BIOS will use IPv4 first.
+    off= 232 op=0x05 qid=10577 | When Legacy Support is enabled, BIOS will load Compatibility Support Module (CSM) to support Legacy OS such as Windows 7, Windows Vista, Windows XP and DOS.When Legacy Support is disabled, BIOS will boot in UEFI Mode without CSM to support newer OS such as Windows 8.System might be unable to boot into operating system after changing this setting.
+    off= 232 op=0x05 qid=60000 | When Legacy Support is enabled, BIOS will load Compatibility Support Module (CSM) to support Legacy OS such as Windows 7, Windows Vista, Windows XP and DOS.When Legacy Support is disabled, BIOS will boot in UEFI Mode without CSM to support newer OS such as Windows 8.System might be unable to boot into operating system after changing this setting.
+    off= 233 op=0x06 qid=  249 | When Secure Boot is enabled, BIOS performs cryptographic check during bootup, for the integrity of the software image. It prevents unauthorized or maliciously modified software from running.
+    off= 233 op=0x05 qid=  275 | When Secure Boot is enabled, BIOS performs cryptographic check during bootup, for the integrity of the software image. It prevents unauthorized or maliciously modified software from running.
+    off= 234 op=0x07 qid=  286 | 
+    off= 235 op=0x06 qid=  240 | Allow the system to charge the USB device such as mobile phone in S4 (Hibernation) or S5 (off) state.
+    off= 235 op=0x05 qid=  268 | Allow the system to charge the USB device such as mobile phone in S4 (Hibernation) or S5 (off) state.
+    off= 236 op=0x05 qid= 4096 | Enabled
+    off= 238 op=0x05 qid= 8192 | Enabled
+    off= 240 op=0x05 qid=12288 | Enabled
+    off= 242 op=0x05 qid=16384 | Enabled
+    off= 244 op=0x05 qid=20480 | Enabled
+    off= 246 op=0x05 qid=24576 | Enabled
+    off= 276 op=0x05 qid=36864 | Enabled
+    off= 278 op=0x05 qid=40960 | Enabled
+    off= 280 op=0x05 qid=45056 | Enabled
+    off= 282 op=0x05 qid=49152 | Enabled
+    off= 284 op=0x05 qid=53248 | Enabled
+    off= 316 op=0x06 qid=  241 | This item enables or disables the reporting of battery remaining time from the BIOS to the operating system. If disabled, the operating system displays battery life in a percentage only.
+    off= 316 op=0x05 qid=  269 | This item enables or disables the reporting of battery remaining time from the BIOS to the operating system. If disabled, the operating system displays battery life in a percentage only.
+    off= 317 op=0x05 qid=  242 | Battery Care Function (100%): The battery charge stops at 91~100%.
+Battery Care Function (80%): The battery charge stops at 76~80%.
+Battery Care Function (50%): The battery charge stops at 46~50%.
+    off= 317 op=0x05 qid=  270 | Battery Care Function (100%): The battery charge stops at 91~100%.
+Battery Care Function (80%): The battery charge stops at 76~80%.
+Battery Care Function (50%): The battery charge stops at 46~50%.
+    off= 318 op=0x05 qid=  243 | Dynamic battery protection to optimize battery pack longevity.
+    off= 318 op=0x05 qid=  271 | Dynamic battery protection to optimize battery pack longevity.
+    off= 319 op=0x06 qid=  244 | Permits the user to control whether the system should wake from S3 or S4/S5 if a magic packet is received by the NIC.
+    off= 319 op=0x05 qid=  272 | Permits the user to control whether the system should wake from S3 or S4/S5 if a magic packet is received by the NIC.
+    off= 320 op=0x05 qid=10564 | This option can provide RAID0 support when two identical NVMe SSDs are used.
+    off= 320 op=0x05 qid=10591 | This option can provide RAID0 support when two identical NVMe SSDs are used.
+    off= 321 op=0x05 qid=10605 | 
+
+  --- options in varstore 'SetupMode' (7) ---
+    off=   0 op=0x07 qid=  316 | 
+    off=   0 op=0x16 qid=34322 | Boot option File Path
+    off=   0 op=0x16 qid=34322 | Boot option File Path
+    off=   0 op=0x16 qid=34322 | Boot option File Path
+    off=   0 op=0x16 qid=34322 | Boot option File Path
+    off=   0 op=0x16 qid=34322 | Boot option File Path
+    off=   0 op=0x16 qid=34322 | Boot option File Path
+
+  --- options in varstore 'UsbSupport' (42) ---
+    off=   0 op=0x05 qid=   72 | USB Support Parameters
+    off=   1 op=0x05 qid=   73 | Enable or disable legacy USB support
+    off=   2 op=0x05 qid=   76 | This is a workaround for OSes without EHCI hand-off support. The EHCI ownership change should be claimed by EHCI driver.
+    off=   8 op=0x05 qid=   79 | USB mass storage device Start Unit command time-out.
+    off=   9 op=0x05 qid=   78 | The time-out value for Control, Bulk, and Interrupt transfers.
+    off=  10 op=0x05 qid=   82 | N/A
+    off=  11 op=0x05 qid=   83 | N/A
+    off=  12 op=0x05 qid=   84 | N/A
+    off=  13 op=0x05 qid=   85 | N/A
+    off=  14 op=0x05 qid=   86 | N/A
+    off=  15 op=0x05 qid=   87 | N/A
+    off=  16 op=0x05 qid=   88 | N/A
+    off=  17 op=0x05 qid=   89 | N/A
+    off=  18 op=0x05 qid=   90 | N/A
+    off=  19 op=0x05 qid=   91 | N/A
+    off=  20 op=0x05 qid=   92 | N/A
+    off=  21 op=0x05 qid=   93 | N/A
+    off=  22 op=0x05 qid=   94 | N/A
+    off=  23 op=0x05 qid=   95 | N/A
+    off=  24 op=0x05 qid=   96 | N/A
+    off=  25 op=0x05 qid=   97 | N/A
+    off=  26 op=0x05 qid=   98 | N/A
+    off=  27 op=0x05 qid=   99 | N/A
+    off=  28 op=0x05 qid=  100 | N/A
+    off=  29 op=0x05 qid=  101 | N/A
+    off=  30 op=0x05 qid=  102 | N/A
+    off=  31 op=0x05 qid=  103 | N/A
+    off=  32 op=0x05 qid=  104 | N/A
+    off=  33 op=0x05 qid=  105 | N/A
+    off=  34 op=0x05 qid=  106 | N/A
+    off=  35 op=0x05 qid=  107 | N/A
+    off=  36 op=0x05 qid=  108 | N/A
+    off=  37 op=0x05 qid=  109 | N/A
+    off=  38 op=0x05 qid=  110 | N/A
+    off=  39 op=0x05 qid=  111 | N/A
+    off=  40 op=0x05 qid=  112 | N/A
+    off=  41 op=0x05 qid=  113 | Mass Storage Devices:
+    off=  42 op=0x05 qid=   74 | Enable/Disable XHCI Controller Legacy support.
+    off=  43 op=0x05 qid=   75 | This is a workaround for OSes without XHCI hand-off support. The XHCI ownership change should be claimed by XHCI driver.
+    off=  44 op=0x05 qid=   80 | Maximum time the device will take before it properly reports itself to the Host Controller. 'Auto' uses default value: for a Root port it is 100 ms, for a Hub port the delay is taken from Hub descriptor.
+    off=  45 op=0x07 qid=   81 | Delay range is 1..40 seconds, in one second increments
+    off=  47 op=0x05 qid=   77 | Enable/Disable USB Mass Storage Driver Support.
+
+  --- options in varstore 'NetworkStackVar' (7) ---
+    off=   0 op=0x05 qid=  114 | Enable/Disable UEFI Network Stack
+    off=   1 op=0x05 qid=  115 | Enable/Disable IPv4 PXE boot support. If disabled, IPv4 PXE boot support will not be available.
+    off=   2 op=0x05 qid=  117 | Enable/Disable IPv6 PXE boot support. If disabled, IPv6 PXE boot support will not be available.
+    off=   4 op=0x07 qid=  119 | Wait time in seconds to press ESC key to abort the PXE boot. Use either +/- or numeric keys to set the value.
+    off=   5 op=0x07 qid=  120 | Number of times the presence of media will be checked. Use either +/- or numeric keys to set the value.
+    off=   6 op=0x05 qid=  116 | Enable/Disable IPv4 HTTP boot support. If disabled, IPv4 HTTP boot support will not be available.
+    off=   7 op=0x05 qid=  118 | Enable/Disable IPv6 HTTP boot support. If disabled, IPv6 HTTP boot support will not be available.
+
+  --- options in varstore 'AMITSESetup' (7) ---
+    off=   0 op=0x08 qid=  206 | Set User Password
+    off=   0 op=0x08 qid=  231 | Notebook Hard Drive
+    off=   0 op=0x08 qid=  257 | Notebook Hard Drive
+    off=  32 op=0x08 qid=  205 | Administrator Password prevents unauthorized access to the Setup Utilities.
+To disable the audible password prompt (beeping sound), set the POST Hotkey Delay (sec) option to 0. This also disables the audible prompt for Power-On Password.
+    off=  32 op=0x08 qid=  230 | Administrator Password prevents unauthorized access to the Setup Utilities.
+To disable the audible password prompt (beeping sound), set the POST Hotkey Delay (sec) option to 0. This also disables the audible prompt for Power-On Password.
+    off=  32 op=0x08 qid=  256 | Administrator Password prevents unauthorized access to the Setup Utilities.
+To disable the audible password prompt (beeping sound), set the POST Hotkey Delay (sec) option to 0. This also disables the audible prompt for Power-On Password.
+    off=  64 op=0x06 qid=  209 | Enables or disables Quiet Boot option
+
+  --- options in varstore 'SecureBootSetup' (3) ---
+    off=   0 op=0x05 qid=10266 | When Secure Boot is enabled, BIOS performs cryptographic check during bootup, for the integrity of the software image. It prevents unauthorized or maliciously modified software from running.
+    off=   1 op=0x05 qid=10267 | Secure Boot mode options:
+Standard or Custom.
+In Custom mode, Secure Boot Policy variables can be configured by a physically present user without full authentication
+    off=   2 op=0x05 qid=10275 | Install factory default Secure Boot keys after the platform reset and while the System is in Setup mode
+
+  --- options in varstore 'Timeout' (3) ---
+    off=   0 op=0x07 qid=  207 | Number of seconds to wait for setup activation key. 65535(0xFFFF) means indefinite waiting.
+    off=   0 op=0x05 qid=  247 | POST Hotkey Delay (sec) controls the amount of time given to press the function key to enter the Setup Utilities when the system starts.
+To disable the audible password prompt (beeping sound) for both the Administrator Password and Power-On Password, set the POST Hotkey Delay (sec) option to 0.
+    off=   0 op=0x05 qid=  273 | POST Hotkey Delay (sec) controls the amount of time given to press the function key to enter the Setup Utilities when the system starts.
+To disable the audible password prompt (beeping sound) for both the Administrator Password and Power-On Password, set the POST Hotkey Delay (sec) option to 0.
+
+  --- options in varstore 'BootOrder' (1) ---
+    off=   0 op=0x05 qid=  210 | Boot Option #%d
+
+  --- options in varstore 'DriverOrder' (1) ---
+    off=   0 op=0x05 qid=  211 | Sets the system driver order
+
+  --- options in varstore 'LegacyDevOrder' (1) ---
+    off=   0 op=0x05 qid=  213 | Up and Down arrow keys select a device. <F5> and <F6> keys move the device down or up.
+The boot capability will be disabled if the Device is marked with an exclamation mark.
+When Legacy Support is enabled, UEFI boot order and Legacy boot order are both available and UEFI boot order has higher priority than Legacy boot order.
+
+  --- options in varstore 'TpmStateFlag' (1) ---
+    off=   0 op=0x06 qid=60002 | If the TPM Device setting is set to Hidden, the BIOS hides this item. If the TPM Device setting changes from Hidden to Available, the BIOS makes this item visible immediately without a restart. The TPM State setting is saved when the TPM Device setting changes to Hidden and is restored when it is changed back to Available. The TPM State setting can change only if you confirm the request prompted by the BIOS during the next startup.
+
+  --- options in varstore 'HpBootOrder' (1) ---
+    off=   0 op=0x23 qid=  250 | Order system searches drivers for a boot disk
+
+  --- options in varstore 'AMICallback' (1) ---
+    off=   0 op=0x07 qid=  279 | 
+
+  --- options in varstore 'FixedBootNum' (1) ---
+    off=   0 op=0x07 qid=  280 | 
+
+  --- options in varstore 'UefiFixedBootNum' (1) ---
+    off=   0 op=0x07 qid=  281 | 
+
+  --- options in varstore 'WindowsToGo' (1) ---
+    off=   0 op=0x07 qid=  282 | 
+
+  --- options in varstore 'PendingAction' (1) ---
+    off=   0 op=0x07 qid=  283 | 
+
+  --- options in varstore 'PlatformKey' (1) ---
+    off=   0 op=0x07 qid=  284 | 
+
+  --- options in varstore 'MSFTDebugPolicy' (1) ---
+    off=   0 op=0x07 qid=  285 | 
+
+  --- options in varstore 'HideCdromBootOption' (1) ---
+    off=   0 op=0x07 qid=  287 | 
+
+  --- options in varstore 'HideFanAlwaysOn' (1) ---
+    off=   0 op=0x07 qid=  288 | 
+
+  --- options in varstore 'PlatformLangCodes' (1) ---
+    off=   0 op=0x07 qid=  289 | 
+
+  --- options in varstore 'ResetSecurityFlag' (1) ---
+    off=   0 op=0x07 qid=  290 | 
+
+  --- options in varstore 'InternalDisallowTpmFlag' (1) ---
+    off=   0 op=0x07 qid=  291 | 
+
+  --- options in varstore 'HideVBIOSRevision' (1) ---
+    off=   0 op=0x07 qid=  292 | 
+
+  --- options in varstore 'GOPCount' (1) ---
+    off=   0 op=0x07 qid=  293 | 
+
+  --- options in varstore 'HideGOPRevision' (1) ---
+    off=   0 op=0x07 qid=  294 | 
+
+  --- options in varstore 'HideFccId' (1) ---
+    off=   0 op=0x07 qid=  295 | 
+
+  --- options in varstore 'OEMDeviceStatus' (3) ---
+    off=   2 op=0x07 qid=  298 | 
+    off=   3 op=0x07 qid=  296 | 
+    off=   5 op=0x07 qid=  297 | 
+
+  --- options in varstore 'HideBornOnDate' (1) ---
+    off=   0 op=0x07 qid=  299 | 
+
+  --- options in varstore 'NewSystemFamily' (1) ---
+    off=   0 op=0x07 qid=  300 | 
+
+  --- options in varstore 'HpShowSpareKeyItem' (1) ---
+    off=   0 op=0x07 qid=  301 | 
+
+  --- options in varstore 'BootNowCount' (1) ---
+    off=   0 op=0x07 qid=  302 | 
+
+  --- options in varstore 'LegacyGroup' (1) ---
+    off=   0 op=0x07 qid=  303 | 
+
+  --- options in varstore 'LegacyDev' (1) ---
+    off=   0 op=0x07 qid=  304 | 
+
+  --- options in varstore 'DriverManager' (1) ---
+    off=   0 op=0x07 qid=  305 | 
+
+  --- options in varstore 'BootManager' (1) ---
+    off=   0 op=0x07 qid=  306 | 
+
+  --- options in varstore 'SecureVarPresent' (6) ---
+    off=   0 op=0x07 qid=  310 | 
+    off=   1 op=0x07 qid=  309 | 
+    off=   2 op=0x07 qid=  308 | 
+    off=   3 op=0x07 qid=  307 | 
+    off=   4 op=0x07 qid=  311 | 
+    off=   5 op=0x07 qid=  312 | 
+
+  --- options in varstore 'VendorKeys' (1) ---
+    off=   0 op=0x07 qid=  313 | 
+
+  --- options in varstore 'SystemAccess' (1) ---
+    off=   0 op=0x07 qid=  314 | 
+
+  --- options in varstore 'SecureBoot' (1) ---
+    off=   0 op=0x07 qid=  315 | 
+
+  --- options in varstore 'AuditMode' (1) ---
+    off=   0 op=0x07 qid=  317 | 
+
+  --- options in varstore 'DeployedMode' (1) ---
+    off=   0 op=0x07 qid=  318 | 
+
+  --- options in varstore 'AmiAmdSbSuppressIfSetupData' (1) ---
+    off=   0 op=0x07 qid=  320 | 
+
+  --- options in varstore 'AmiSbXhciSwitchSuppressIfSetupData' (1) ---
+    off=   0 op=0x07 qid=  321 | 
+
+  --- options in varstore 'DrvHealthCtrlCnt' (1) ---
+    off=   0 op=0x07 qid=  322 | 
+
+  --- options in varstore 'DriverHealthCount' (1) ---
+    off=   0 op=0x07 qid=  323 | 
+
+  --- options in varstore 'UsbMassDevValid' (32) ---
+    off=   0 op=0x07 qid=  355 | 
+    off=   1 op=0x07 qid=  354 | 
+    off=   2 op=0x07 qid=  353 | 
+    off=   3 op=0x07 qid=  352 | 
+    off=   4 op=0x07 qid=  351 | 
+    off=   5 op=0x07 qid=  350 | 
+    off=   6 op=0x07 qid=  349 | 
+    off=   7 op=0x07 qid=  348 | 
+    off=   8 op=0x07 qid=  347 | 
+    off=   9 op=0x07 qid=  346 | 
+    off=  10 op=0x07 qid=  345 | 
+    off=  11 op=0x07 qid=  344 | 
+    off=  12 op=0x07 qid=  343 | 
+    off=  13 op=0x07 qid=  342 | 
+    off=  14 op=0x07 qid=  341 | 
+    off=  15 op=0x07 qid=  340 | 
+    off=  16 op=0x07 qid=  339 | 
+    off=  17 op=0x07 qid=  338 | 
+    off=  18 op=0x07 qid=  337 | 
+    off=  19 op=0x07 qid=  336 | 
+    off=  20 op=0x07 qid=  335 | 
+    off=  21 op=0x07 qid=  334 | 
+    off=  22 op=0x07 qid=  333 | 
+    off=  23 op=0x07 qid=  332 | 
+    off=  24 op=0x07 qid=  331 | 
+    off=  25 op=0x07 qid=  330 | 
+    off=  26 op=0x07 qid=  329 | 
+    off=  27 op=0x07 qid=  328 | 
+    off=  28 op=0x07 qid=  327 | 
+    off=  29 op=0x07 qid=  326 | 
+    off=  30 op=0x07 qid=  325 | 
+    off=  31 op=0x07 qid=  324 | 
+
+  --- options in varstore 'UsbMassDevNum' (1) ---
+    off=   0 op=0x07 qid=  356 | 
+
+  --- options in varstore 'UsbControllerNum' (4) ---
+    off=   0 op=0x07 qid=  360 | 
+    off=   1 op=0x07 qid=  359 | 
+    off=   2 op=0x07 qid=  358 | 
+    off=   3 op=0x07 qid=  357 | 
+
+  --- options in varstore 'AmiGopPolicySetupData' (2) ---
+    off=   0 op=0x07 qid=  374 | 
+    off=   1 op=0x07 qid=  361 | 
+
+  --- options in varstore 'DriverHlthEnable' (1) ---
+    off=   0 op=0x07 qid=  372 | 
+
+  --- options in varstore 'DynamicPageCount' (1) ---
+    off=   0 op=0x07 qid=  373 | 
+
+===== CbsSetupDxeRN (1 varstores, 535 questions) =====
+  vid=0x5000 size= 1448 name='AmdSetup' 3a997502-647a-4c82-998e-52ef9486a247
+
+  --- options in varstore 'AmdSetup' (273) ---
+    off=  32 op=0x07 qid=    7 | No help string
+    off=  33 op=0x05 qid=   11 | From a workaround for GCC/C000005 issue for XV Core on CZ A0, setting MSRC001_1029 Decode Configuration (DE_CFG) bit 14 [DecfgNoRdrctForReturns] to 1
+    off=  34 op=0x05 qid=   12 | Enable/disable PFEH, cloak individual banks, and mask deferred error interrupts from each bank.
+    off=  35 op=0x05 qid=   13 | Disable CPB
+    off=  36 op=0x05 qid=   14 | Controls IO based C-state generation and DF C-states.
+There is another DF Cstate option which will be synchronized with this option if DF Cstate option is auto.
+    off=  37 op=0x05 qid=28682 | No help string
+    off=  38 op=0x05 qid=28683 | Enables or disables the Opcache
+    off=  39 op=0x05 qid=   15 | This fields specifies the maximum valid ASID, which affects the maximum system physical address space. 16TB of physical address space is available for systems that support 253 ASIDs, while 8TB of physical address space is available for systems that support 509 ASIDs.
+    off=  40 op=0x05 qid=   16 | No help string
+    off=  41 op=0x07 qid=   17 | SEV VMs using ASIDs below the SEV-ES ASID Space Limit must enable the SEV-ES feature. ASIDs from SEV-ES ASID Space Limit to (SEV ASID Count + 1) can only be used with SEV VMs. If this field is set to (SEV ASID Count + 1), all ASIDs are forced to be SEV-ES ASIDs. Hence, the valid values for this field is 1 - (SEV ASID Count + 1)
+    off=  45 op=0x05 qid=   18 | Enables or disables the streaming stores functionality
+    off=  47 op=0x05 qid=   20 | Determines whether or not to declare the C1 state to the OS.
+    off=  48 op=0x05 qid=   21 | Enable MCA error thresholding.
+    off=  49 op=0x07 qid=   22 | Effective error threshold count = 4095(0xFFF) - <this value> (e.g. the default value of 0xFF5 results in a threshold of 10).
+    off=  51 op=0x05 qid=   23 | When this option is enabled, specific uncorrected errors detected by the PSP FW or SMU FW will hang and not reset the system
+    off=  52 op=0x05 qid=   24 | Turn on PPIN feature
+    off=  53 op=0x05 qid=28684 | No help string
+    off=  56 op=0x05 qid=28688 | Disable - disable this Pstate
+Custom - customize this Pstate, applicable only if PcdOcDisable=FALSE
+
+WARNING - DAMAGE CAUSED BY USE OF YOUR AMD PROCESSOR OUTSIDE OF SPECIFICATION OR IN EXCESS OF FACTORY SETTINGS ARE NOT COVERED UNDER YOUR AMD PRODUCT WARRANTY AND MAY NOT BE COVERED BY YOUR SYSTEM MANUFACTURER'S WARRANTY.
+Operating your AMD processor outside of specification or in excess of factory settings, including but not limited to overclocking, may damage or shorten the life of your processor or other system components, create system instabilities (e.g., data loss and corrupted images) and in extreme cases may result in total system failure. AMD does not provide support or service for issues or damages related to use of an AMD processor outside of processor specifications or in excess of factory settings.
+    off=  57 op=0x07 qid=28689 | Specifies the core voltage.
+    off=  58 op=0x05 qid=   32 | Option to Enable | Disable L1 Stream HW Prefetcher
+    off=  59 op=0x05 qid=   33 | Option to Enable | Disable L2 Stream HW Prefetcher
+    off=  60 op=0x05 qid=28690 | Enable or disable CPU Watchdog Timer
+    off=  61 op=0x05 qid=   34 | No help string
+    off=  63 op=0x05 qid=   35 | Specify the CPU watch dog timer severity (MSRC001_0074[CpuWdTmrCfgSeverity]).
+    off=  64 op=0x05 qid=   44 | Provide a value that is the number of hours to scrub memory.
+    off=  65 op=0x05 qid=   46 | Control DF::RedirScrubCtrl[RedirScrubMode[0]]
+    off=  66 op=0x05 qid=   41 | Control DF::PIEConfig[DisSyncFloodProp]
+Disables propagation from PIE to other DF components and eventually to SDP ports
+    off=  67 op=0x05 qid=   38 | Control whether or not the CC6 save/restore memory is encrypted
+    off=  68 op=0x05 qid=   48 | Allows for disabling memory channel interleaving.
+    off=  69 op=0x05 qid=   49 | Controls the memory interleaving size. The valid values are AUTO, 256 bytes, 512 bytes, 1 Kbytes or 2Kbytes. This determines the starting address of the interleave (bit 8, 9, 10 or 11).
+    off=  70 op=0x05 qid=   42 | Disabling this option sets DF:DfGlobalCtrl[DisImmSyncFloodOnFatalError]
+Enables freezing of all DF queues on error and also forces a sync flood on HWA even if MCAs are disabled
+    off=  71 op=0x05 qid=   47 | Controls the number of redirect scrubs allowed at any one time (DF::RedirScrubCtrl[RedirScrubReqLmt])
+    off=  74 op=0x05 qid=   64 | Memory Overclock Settings
+    off=  75 op=0x05 qid=   65 | Specifies the memory clock frequency.
+    off=  76 op=0x05 qid=   66 | Specifies the CAS latency.
+    off=  77 op=0x05 qid=   67 | Specifies the RAS# Active to CAS# Read Delay Time.
+    off=  78 op=0x05 qid=   68 | Specifies the RAS# Active to CAS# Write Delay Time.
+    off=  79 op=0x05 qid=   69 | Specifies Row Precharge Delay Time.
+    off=  80 op=0x05 qid=   70 | Specifies the Active to Precharge Delay Time.
+    off=  81 op=0x05 qid=   71 | Specify Trc
+    off=  82 op=0x07 qid=   72 | Specifies Active to Active/Refresh Delay Time. Valid values 87h-1Dh.
+    off=  83 op=0x05 qid=   73 | Specifies the Activate to Activate Delay Time, different bank group (tRRD_S)
+    off=  84 op=0x05 qid=   74 | Specifies the Activate to Activate Delay Time, same bank group (tRRD_L)
+    off=  85 op=0x05 qid=   75 | Specify Tfaw
+    off=  86 op=0x07 qid=   76 | Specifies the Four Activate Window Time. Valid values 36h-6h.
+    off=  87 op=0x05 qid=   77 | Specifies the Minimum Write to Read Time, different bank group
+    off=  88 op=0x05 qid=   78 | Specifies the Minimum Write to Read Time, same bank group
+    off=  89 op=0x05 qid=   79 | Specify Twr
+    off=  90 op=0x07 qid=   80 | Specifies the Minimum Write Recovery Time. Valid value 51h-Ah
+    off=  91 op=0x05 qid=   81 | Specify Trcpage
+    off=  92 op=0x07 qid=   82 | SDRAM Optional Features (tMAW, MAC). Valid value 3FFh - 0h
+    off=  94 op=0x05 qid=   83 | Specify TrdrdScL
+    off=  95 op=0x07 qid=   84 | Specifies the CAS to CAS Delay Time, same bank group. Valid values Fh-1h
+    off=  96 op=0x05 qid=   85 | Specify TwrwrScL
+    off=  97 op=0x07 qid=   86 | Specifies the CAS to CAS Delay Time, same bank group. Valid values 3Fh-1h
+    off=  98 op=0x05 qid=   87 | Specify Trfc
+    off=  99 op=0x07 qid=   88 | Specifies the Refresh Recovery Delay Time (tRFC1). Valid values 3DEh-3Ch
+    off= 101 op=0x05 qid=   89 | Specify Trfc2
+    off= 102 op=0x07 qid=   90 | Specifies the Refresh Recovery Delay Time (tRFC2).  Valid values 3DEh-3Ch
+    off= 104 op=0x05 qid=   91 | Specify Trfc4
+    off= 105 op=0x07 qid=   92 | Specifies the Refresh Recovery Delay Time (tRFC4). Valid values 3DEh-3Ch
+    off= 107 op=0x05 qid=   93 | Specifies the CAS Write Latency
+    off= 108 op=0x05 qid=   94 | Specifies the Read CAS# to Precharge Delay Time.
+    off= 109 op=0x05 qid=   95 | Specifies the CKE minimum high and low pulse width in memory clock cycles.
+    off= 110 op=0x05 qid=   96 | Specifies the Read to Write turnaround timing.
+    off= 111 op=0x05 qid=   97 | Specifies the Write to Read turnaround timing.
+    off= 112 op=0x05 qid=   98 | Specifies the Write to Write turnaround timing in the same chipselect.
+    off= 113 op=0x05 qid=   99 | Specifies the Write to Write turnaround timing in the same DIMM.
+    off= 114 op=0x05 qid=  100 | Specifies the Write to Write turnaround timing in a different DIMM.
+    off= 115 op=0x05 qid=  101 | Specifies the Read to Read turnaround timing in the same chipselect.
+    off= 116 op=0x05 qid=  102 | Specifies the Read to Read turnaround timing in the same DIMM.
+    off= 117 op=0x05 qid=  103 | Specifies the Read to Read turnaround timing in a different DIMM.
+    off= 118 op=0x05 qid=  104 | Specifies the Processor ODT
+    off= 119 op=0x05 qid=  106 | Select between 1T and 2T mode on ADDR/CMD
+    off= 120 op=0x05 qid=  107 | No help string
+    off= 121 op=0x05 qid=  109 | Enable or disable DDR power down mode
+    off= 122 op=0x05 qid=  114 | Setup time on CAD bus signals to Auto or Manual
+    off= 123 op=0x07 qid=  115 | Setup time on CAD bus signals. Valid values 3Fh-0h.
+    off= 124 op=0x07 qid=  116 | Setup time on CAD bus signals. Valid values 3Fh-0h.
+    off= 125 op=0x07 qid=  117 | Setup time on CAD bus signals. Valid values 3Fh-0h.
+    off= 126 op=0x05 qid=  118 | Drive Strength on CAD bus signals to Auto or Manual
+    off= 127 op=0x05 qid=  119 | No help string
+    off= 128 op=0x05 qid=  120 | No help string
+    off= 129 op=0x05 qid=  121 | No help string
+    off= 130 op=0x05 qid=  122 | No help string
+    off= 131 op=0x05 qid=  123 | Specify the mode for drive strength to Auto or Manual
+    off= 132 op=0x05 qid=  124 | No help string
+    off= 133 op=0x05 qid=  125 | No help string
+    off= 134 op=0x05 qid=  126 | No help string
+    off= 135 op=0x05 qid=  127 | No help string
+    off= 136 op=0x05 qid=  128 | Enable or Disable DRAM  Post Package Repair.
+    off= 137 op=0x05 qid=  129 | No help string
+    off= 138 op=0x05 qid=  130 | UMC_CH::RecCtrl[RecEn][0] and UMC_CH::RecCtrl[MaxParRply]
+    off= 139 op=0x07 qid=  131 | Value in hex, 1, 2 or 3 is invalid
+    off= 140 op=0x05 qid=  132 | No help string
+    off= 141 op=0x05 qid=  133 | UMC_CH::RecCtrl[RecEn][1] and UMC_CH::RecCtrl[MaxCrcRply]
+    off= 142 op=0x07 qid=  134 | Value in hex, 1, 2 or 3 is invalid
+    off= 143 op=0x05 qid=  135 | True: UMC::CH::MiscCfg[DisErrInj]=1
+    off= 144 op=0x05 qid=  137 | DRAM ECC Symbol Size (x4/x8) - UMC_CH::EccCtrl[EccSymbolSize]
+    off= 145 op=0x05 qid=  138 | Use this option to enable / disable DRAM ECC. Auto will set ECC to enable.
+    off= 146 op=0x05 qid=  139 | Use this option to enable / disable DRAM UECC Retry.
+    off= 147 op=0x05 qid=28708 | No help string
+    off= 148 op=0x05 qid=28709 | Data scrambling: DataScrambleEn
+    off= 149 op=0x05 qid=  140 | Interleave memory blocks across the DRAM chip selects for node 0.
+    off= 150 op=0x05 qid=  141 | No help string
+    off= 151 op=0x05 qid=  142 | Enable or disable bank address hashing
+    off= 152 op=0x05 qid=  143 | Enable or disable CS address hashing
+    off= 153 op=0x05 qid=  144 | Enable or disable RM address hashing
+    off= 154 op=0x05 qid=  145 | Enable or disable SPD Read Optimization, Enabled - SPD reads are skipped for Reserved fields and most of upper 256 Bytes, Disabled - read all 512 SPD Bytes
+    off= 155 op=0x05 qid=  149 | Enable or disable Memory MBIST
+    off= 156 op=0x05 qid=  150 | Select MBIST Test Mode -Interface Mode (Tests Single and Multiple CS transactions and Basic Connectivity) or Data Eye Mode (Measures Voltage vs. Timing)
+    off= 157 op=0x05 qid=  151 | Enable or disable MBIST Aggressor test
+    off= 158 op=0x05 qid=  152 | Reports 2D Data Eye Results in ABL Log for each DQ, Chipselect, and Channel
+    off= 159 op=0x05 qid=  154 | No help string
+    off= 160 op=0x07 qid=  155 | This token helps to determine the pattern length. The possible options are N=3...12
+    off= 161 op=0x05 qid=  156 | This helps read the aggressors channels. If it is enabled, you can read from one or more than one aggressor channel. The default is set to disabled.
+    off= 162 op=0x05 qid=  157 | This option, if enabled, will control the Aggressor Static Lane Controls.
+    off= 163 op=0x07 qid=  158 | Static Lane Select for Upper 32 bits. The bit mask represents the bits to be read
+    off= 167 op=0x07 qid=  159 | Static Lane Select for Lower 32 bits. The bit mask represents the bits to be read
+    off= 171 op=0x07 qid=  160 | Static Lane Select for ECC Lanes. The bit mask represents the bits to be read
+    off= 172 op=0x07 qid=  161 | TBD
+    off= 173 op=0x05 qid=  162 | No help string
+    off= 174 op=0x07 qid=  163 | Static Lane Select for Upper 32 bit. The bit mask represents the bits to be read
+    off= 178 op=0x07 qid=  164 | Static Lane Select for Lower 32 bit. The bit mask represents the bits to be read
+    off= 182 op=0x07 qid=  165 | TBD
+    off= 183 op=0x07 qid=  166 | No help string
+    off= 184 op=0x05 qid=  167 | This options determines which results are expected to be captured for Data Eye. Supported options are 1D Voltage Sweep, 1D Timing Sweep, 2D Full Data Eye and Worst Case Margin only.
+    off= 185 op=0x05 qid=  168 | No help string
+    off= 186 op=0x05 qid=  169 | This option determines the step size for Read Data Eye voltage sweep, Supported options are 1,2 and 4
+    off= 187 op=0x05 qid=  170 | This options supports step size for Read Data Eye. Supported options are 1, 2 and 4
+    off= 188 op=0x05 qid=  171 | This option determines the step size for write Data Eye voltage sweep, Supported options are 1,2 and 4
+    off= 189 op=0x05 qid=  172 | This options supports step size for write Data Eye. Supported options are 1, 2 and 4
+    off= 190 op=0x05 qid=28724 | Warning: Select System Configuration may cause the system to hang, as some System Configuration may not be supported by your OPN.
+    off= 191 op=0x05 qid=  185 | Audio IOs control
+    off= 192 op=0x05 qid=  219 | System Temperature Tracking [0 = disabled; 1 = enabled]
+    off= 193 op=0x05 qid=  181 | UMA Mode
+    off= 196 op=0x05 qid=  182 | Set UMA FB size
+    off= 200 op=0x05 qid=  184 | Enable Integrate HD Audio controller
+    off= 201 op=0x05 qid=  173 | Enable/Disable IOMMU
+    off= 202 op=0x05 qid=  176 | No help string
+    off= 203 op=0x05 qid=  204 | Auto = Use the default fan controller settings
+Manual = User can set customized fan controller settings
+    off= 204 op=0x05 qid=  205 | Unforce = Do not force the fan PWM
+Force = Force the fan PWM to the use specified value
+    off= 205 op=0x07 qid=  206 | Specify the PWM to force the fan to [0-100]
+    off= 206 op=0x05 qid=  207 | Auto = Use the default fan table
+Manual = User can set customized fan table
+    off= 207 op=0x07 qid=  208 | Low Temperature ['C]
+    off= 208 op=0x07 qid=  209 | Medium Temperature ['C]
+    off= 209 op=0x07 qid=  210 | High Temperature ['C]
+    off= 210 op=0x07 qid=  211 | Critical Temperature ['C]
+    off= 211 op=0x07 qid=  212 | Low Pwm [0-100]
+    off= 212 op=0x07 qid=  213 | Medium Pwm [0-100]
+    off= 213 op=0x07 qid=  214 | High Pwm [0-100]
+    off= 214 op=0x07 qid=  215 | Temperature Hysteresis ['C]
+    off= 215 op=0x05 qid=  216 | 0 = 25kHz
+1 = 100Hz
+    off= 216 op=0x05 qid=  217 | 0 = negative
+1 = positive
+    off= 217 op=0x05 qid=28738 | Disable or enable OnChip SATA controller
+    off= 218 op=0x05 qid=28740 | Select OnChip SATA Type. Don't select RAID for Raven FP5 platform. Raven FP5 doesn't support RAID.
+    off= 219 op=0x05 qid=  261 | Disable or enable Sata RAS Support
+    off= 220 op=0x05 qid=  262 | Disable or enable Sata Disabled AHCI Prefetch Function
+    off= 221 op=0x05 qid=  263 | No help string
+    off= 222 op=0x05 qid=  265 | No help string
+    off= 223 op=0x05 qid=  273 | Enable or disable USB3 controller.
+    off= 224 op=0x05 qid=  274 | Enable or disable USB3 controller.
+    off= 225 op=0x05 qid=  292 | Select Ac Loss Control Method
+    off= 226 op=0x05 qid=  293 | No help string
+    off= 227 op=0x05 qid=  294 | No help string
+    off= 228 op=0x05 qid=  295 | No help string
+    off= 229 op=0x05 qid=  296 | No help string
+    off= 230 op=0x05 qid=  297 | Uart 0 has no HW FC if Uart 2 is enabled
+    off= 231 op=0x05 qid=  298 | No help string
+    off= 232 op=0x05 qid=  299 | Uart 1 has no HW FC if Uart 3 is enabled
+    off= 233 op=0x05 qid=  300 | No help string
+    off= 234 op=0x05 qid=  301 | No help string
+    off= 235 op=0x05 qid=  302 | No help string
+    off= 236 op=0x05 qid=  303 | No help string
+    off= 237 op=0x05 qid=  304 | No help string
+    off= 238 op=0x05 qid=  305 | No help string
+    off= 239 op=0x05 qid=  306 | Enable or disable Ethernet controller.
+    off= 240 op=0x05 qid=  307 | Enable or disable Ethernet controller.
+    off= 241 op=0x05 qid=  308 | No help string
+    off= 242 op=0x05 qid=  238 | No help string
+    off= 243 op=0x05 qid=  239 | STAPM Boost Enable [1 = boost disabled; 2 = boost enabled]
+    off= 244 op=0x07 qid=  240 | Tskin time constant [seconds]
+    off= 248 op=0x05 qid=  241 | No help string
+    off= 249 op=0x05 qid=  242 | A+A Support Enable
+    off= 250 op=0x05 qid=   50 | Inverting the map will cause the highest memory channels to get assigned the lowest addresses in the system.
+    off= 251 op=0x05 qid=   45 | Control DF::RedirScrubCtrl[RedirScrubMode[1]]
+    off= 252 op=0x05 qid=   40 | Disables Error propagation to UMC or any downstream slaves eg. FCH. Use this to avoid reset in failure scenario
+    off= 253 op=0x05 qid=   39 | When this feature is disabled, BIOS does not implement MemClear after memory training (only if non-ECC DIMMs are used).
+    off= 256 op=0x05 qid=  192 | Precision Boost Overdrive:
+  Disabled: stock board values for standard IRM
+  Enabled: Loads board limits for EDC, TDC and PPT.
+  Manual: manual setting of PPT, TDC and EDC
+    off= 257 op=0x05 qid=  196 | Disabled:Part runs with a scalar of 1X, i.e. normal operation.
+
+Manual = Part runs with a scalar of customized Value.
+    off= 258 op=0x05 qid=  197 | Precision Boost Overdrive increases the maximum boost voltage used (runs above parts specified maximum) and the amount of time spent at that voltage. The larger the value entered the larger the boost voltage used and the longer that voltage will be maintained.
+    off= 262 op=0x07 qid=  193 | PPT Limit [W], Board Socket Power capability, adjustable up to motherboard programed PPT limit.
+    off= 266 op=0x07 qid=  194 | TDC Limit [A], Board thermally constrained current delivery capability, adjustable up to motherboard programed board TDC limit.
+    off= 270 op=0x07 qid=  195 | EDC Limit [A], Board electrically constrained current delivery capability, adjustable up to motherboard programed board EDC limit.
+    off= 274 op=0x05 qid=  189 | Specifies the FCLK frequency.
+    off= 275 op=0x07 qid=  190 | Specifies the Voltage ID (VID) value for VDDR_SOC to support overclocking.
+NOTE:  This is a VID value in hex and not a voltage level and applied if DDR speed is > 2933.
+ Voltage(V)=1.55V-Hex2Dec(VID)*0.00625V
+    off= 276 op=0x05 qid=  191 | If UclkDiv1Mode==1, UCLK==MEMCLK
+if UclkDiv1Mode==0, UCLK==MEMCLK/2
+    off= 277 op=0x07 qid=   31 | Specifies core frequency (MHz)
+    off= 281 op=0x05 qid=  218 | Auto = Use the default STT controller settings
+Manual = User can set customized STT controller settings
+    off= 282 op=0x05 qid=28727 | No help string
+    off= 283 op=0x07 qid=  221 | No help string
+    off= 285 op=0x07 qid=  222 | No help string
+    off= 287 op=0x07 qid=  223 | No help string
+    off= 289 op=0x07 qid=  224 | No help string
+    off= 291 op=0x07 qid=  225 | No help string
+    off= 293 op=0x07 qid=  226 | No help string
+    off= 295 op=0x07 qid=  227 | No help string
+    off= 297 op=0x07 qid=  228 | No help string
+    off= 299 op=0x07 qid=  230 | No help string
+    off= 301 op=0x07 qid=  231 | No help string
+    off= 303 op=0x07 qid=  233 | No help string
+    off= 305 op=0x07 qid=  234 | No help string
+    off= 307 op=0x07 qid=  236 | No help string
+    off= 309 op=0x07 qid=  237 | No help string
+    off= 311 op=0x05 qid=  147 | Perform 2D Read Training with DFE on.
+    off= 312 op=0x05 qid=  148 | Perform 2D Write Training with FFE on.
+    off= 313 op=0x07 qid=  243 | APU Only sPPT Limit in mW
+    off= 317 op=0x05 qid=  183 | Option to disable GPU Host Translation Cache
+    off= 318 op=0x05 qid=   43 | When DF Cstate feature is enabled, FW programs the registers required to enable this feature is the DF HW. (For auto option, it means this option will synchronized with Global C State.)
+    off= 319 op=0x05 qid=  108 | Auto will result in all banks being enabled. Per bank enables refreshes to be sent on a per bank basis.
+    off= 320 op=0x07 qid=  220 | Specifies the minimum sustained power that the APU power is allowed to reduce to in mWatts.
+    off= 322 op=0x05 qid=  186 | PDM Mic Selection
+    off= 323 op=0x05 qid=  311 | Enable : Enable ConsoleOut Function for ABL
+Disable : Disable ConsoleOut Function for ABL
+Auto : Keep default behavior
+    off= 324 op=0x05 qid=28739 | Disable SATA controller if there is no port connection.
+    off= 325 op=0x05 qid=  247 | CPPC Control :
+Enable- Override, 
+Disabled: - Set default.
+    off= 326 op=0x07 qid=  248 | Range of CppcPerfLimitMax: 0 - 255
+    off= 327 op=0x07 qid=  249 | Range of CppcPerfLimitMin: 0 - 255
+    off= 328 op=0x07 qid=  250 | Range of EPP Max: 0 - 255
+    off= 329 op=0x07 qid=  251 | Range of EPP Min: 0 - 255
+    off= 330 op=0x05 qid=28713 | Enable DMAr system protection during POST.
+    off= 331 op=0x05 qid=  309 | No help string
+    off= 332 op=0x05 qid=  312 | No help string
+    off= 333 op=0x05 qid=  174 | Enable/Disable ARI
+    off= 384 op=0x07 qid=  264 | SATA port number map to DEVSLP pad 0: 0-7: SATA 0; 8-15: SATA 1
+    off= 385 op=0x07 qid=  266 | SATA port number map to DEVSLP pad 1: 0-7: SATA 0 ports; 8-15: SATA 1 ports
+    off= 386 op=0x07 qid=  244 | PcdMsgSetSustainedPowerLimit
+    off= 390 op=0x07 qid=  245 | PcdMsgSetFastPPTLimit
+    off= 394 op=0x07 qid=  246 | PcdMsgSetSlowPPTLimit
+    off= 422 op=0x05 qid=28725 | Warning: Select System Configuration may cause the system to hang, as some System Configuration may not be supported by your OPN.
+    off= 423 op=0x05 qid=  175 | ARI Forwarding Enable for each downstream port
+    off= 424 op=0x05 qid=  313 | To control the total number of PMU debug messages.
+Several major controls are listed below:
+1. Detailed debug messages (e.g. Eye delays)
+2. Coarse debug messages (e.g. rank information)
+3. Stage completion
+4. Firmware completion messages only
+    off= 425 op=0x05 qid=   19 | No help string
+    off= 426 op=0x05 qid=  275 | No help string
+    off= 427 op=0x05 qid=28728 | Enabled = CPPC highest capability register of each thread will have a different value to express the AMD recommended scheduling order to OS. CPPC must be enabled for this parameter to have effect. 
+Disabled = Does not declare AMD preferred scheduling order to OS.
+    off= 428 op=0x05 qid=  269 | Enable/Disable port 0 of SATA controller 0
+    off= 429 op=0x05 qid=  270 | Enable/Disable port 1 of SATA controller 0
+    off= 430 op=0x05 qid=  271 | Enable/Disable port 0 of SATA controller 1
+    off= 431 op=0x05 qid=  272 | Enable/Disable port 1 of SATA controller 1
+    off= 432 op=0x07 qid=  229 | No help string
+    off= 434 op=0x07 qid=  232 | No help string
+    off= 436 op=0x07 qid=  235 | No help string
+    off= 438 op=0x05 qid=  280 | Disable or Enable XHCI0 2.0 port 0
+    off= 439 op=0x05 qid=  281 | Disable or Enable XHCI0 2.0 port 1
+    off= 440 op=0x05 qid=  282 | Disable or Enable XHCI0 2.0 port 2
+    off= 441 op=0x05 qid=  283 | Disable or Enable XHCI0 2.0 port 3
+    off= 442 op=0x05 qid=  284 | Disable or Enable XHCI1 2.0 port 0
+    off= 443 op=0x05 qid=  285 | Disable or Enable XHCI1 2.0 port 1
+    off= 444 op=0x05 qid=  288 | Disable or Enable XHCI0 3.1 port 0
+    off= 445 op=0x05 qid=  289 | Disable or Enable XHCI0 3.1 port 1
+    off= 446 op=0x05 qid=  290 | Disable or Enable XHCI1 3.1 port 0
+    off= 447 op=0x05 qid=  291 | Disable or Enable XHCI1 3.1 port 1
+    off= 448 op=0x05 qid=  286 | Disable or Enable XHCI1 2.0 port 2
+    off= 449 op=0x05 qid=  287 | Disable or Enable XHCI1 2.0 port 3
+    off= 450 op=0x05 qid=   25 | No help string
+    off= 451 op=0x05 qid=   26 | No help string
+    off= 452 op=0x07 qid=  111 | Specifies the stored refresh limit to required enter sub-urgent refresh mode
+Constraint: SubUrgRefLowerBound <= UrgRefLimit
+Valid value: 6 ~ 1
+    off= 453 op=0x07 qid=  112 | Specifies the stored refresh limit to required enter urgent refresh mode
+Constraint: SubUrgRefLowerBound <= UrgRefLimit
+Valid value: 6 ~ 1
+    off= 454 op=0x05 qid=  113 | Override DIMM SPD Byte 7 [3:0] Maximum Activate Count (MAC)
+Auto: based on SPD setting
+    off= 455 op=0x05 qid=  110 | Programming SubUrgRefLowerBound = 1 and UrgRefLimit = 1 will disable burst/postponed refresh
+    off= 457 op=0x05 qid=28712 | Enable DMA remap support in IVRS IVinfo Field.
+    off= 458 op=0x05 qid=   27 | Set if using IBS execution sampling without software workaround for erratum 1,285. May impact performance.
+    off= 473 op=0x05 qid=  310 | Control RPMC usage.
+Enable : Enable RMPC function
+Disable : Disable RMPC function
+Auto : Keep default behavior
+
+This option is for test purpose only,
+NOT FOR PRODUCTION!!!
+    off= 474 op=0x05 qid=  203 | No help string
+
+===== AmdPbsSetupDxe (1 varstores, 125 questions) =====
+  vid=0x0001 size=  136 name='AMD_PBS_SETUP' a339d746-f678-49b3-9fc7-54ce0f9df226
+
+  --- options in varstore 'AMD_PBS_SETUP' (118) ---
+    off=   2 op=0x07 qid=   99 | 
+    off=   4 op=0x05 qid= 2014 | Enable/Disable HybridGraphics
+    off=   5 op=0x05 qid=   24 | Disable Discrete GPU's Audio or keep its ROM strap setting
+    off=   6 op=0x05 qid=   45 | Select Internal/External Graphics
+    off=   7 op=0x05 qid= 2037 | Enable/Disable exposing of _HID(PNP0C50) in ACPI ASL code to OS
+    off=   8 op=0x05 qid= 2038 | Enable/Disable exposing of _HID(PNP0C50) in ACPI ASL code to OS
+    off=   9 op=0x05 qid= 2039 | Enable/Disable exposing of _HID(BCM2F25) in ACPI ASL code to OS
+    off=  10 op=0x05 qid= 2040 | Enable/Disable exposing of _HID(CPLM3218) in ACPI ASL code to OS
+    off=  11 op=0x05 qid=   50 | HDMI over USB-C1
+    off=  12 op=0x05 qid=   51 | Force HDMI signals route over USB Type C port
+    off=  13 op=0x05 qid=    2 | Enable or disable the power of HDD
+    off=  14 op=0x05 qid= 2028 | Enable or disable the power of ODD
+    off=  15 op=0x05 qid=    3 | Enable/Disable Zero-Power ODD Feature
+    off=  16 op=0x05 qid= 2023 | Enable or disable the power of SSD
+    off=  17 op=0x05 qid=   65 | Enable Serial Debug Message Under OS
+    off=  18 op=0x05 qid= 2013 | Enable or disable the power of DT SLOT
+    off=  19 op=0x05 qid=    6 | Enable or disable the power of WLAN/WIFI
+    off=  20 op=0x05 qid=    5 | Enable or disable LAN Power
+    off=  21 op=0x05 qid=    4 | Enable or disable the power of WWAN
+    off=  22 op=0x05 qid=   11 | Enable or disable the power of EVAL Slot
+    off=  23 op=0x05 qid=    8 | Enable or disable the power of FRONT CAMERA 0
+    off=  24 op=0x05 qid=    9 | Enable or disable the power of FRONT CAMERA 1
+    off=  25 op=0x05 qid=   70 | Enable/Disable UCSI (USB Type-C Connector System Software Interface)
+    off=  26 op=0x05 qid=   72 | Enable/Disable charger BYPASS mode.
+    off=  27 op=0x05 qid=   77 | MITT Only
+    off=  28 op=0x05 qid=   78 | Turn Unused GPP Clocks Off
+    off=  29 op=0x05 qid=   79 | Enable or disable CLK_REQ0# for MXM x8 Slot J10
+    off=  30 op=0x05 qid=   80 | Enable or disable CLK_REQ1# for Onboard LAN U55
+    off=  31 op=0x05 qid=   81 | Enable or disable CLK_REQ2# for M.2 WWAN Slot J90
+    off=  32 op=0x05 qid=   82 | Enable or disable CLK_REQ3# for Thunderbolt CON1
+    off=  33 op=0x05 qid=   83 | Enable or disable CLK_REQ4# for DT x4 Slot J79
+    off=  34 op=0x05 qid=   84 | Enable or disable CLK_REQ5# for M.2 SSD Slot J19
+    off=  35 op=0x05 qid=   85 | Enable or disable CLK_REQ6# for M.2 WLAN Slot J92
+    off=  36 op=0x05 qid=   86 | Enable/Disable KBC Support under OS
+    off=  37 op=0x05 qid=   87 | Enable/disable AcDcSwitch.
+    off=  38 op=0x07 qid=   88 | AmdDcTimer Setting.
+    off=  39 op=0x07 qid=   89 | AmdAcTimer Setting.
+    off=  41 op=0x05 qid=   91 | VDDP voltage  Setting.
+    off=  42 op=0x05 qid=   92 | VDD18 voltage  Setting.
+    off=  43 op=0x05 qid=   94 | Dynamic Power and Thermal Control Interface Enable/Disable
+    off=  44 op=0x05 qid=   95 | Enable temperature report or STT through APML
+    off=  46 op=0x05 qid=   16 | Select Discrete GPU Hotplug Mode - HotplugEnhanced or HotplugBasic
+    off=  47 op=0x05 qid=   23 | Enable/Disable Discrete GPU Display HPD Circuitry
+    off=  48 op=0x05 qid= 2020 | Enable/Disable Discrete GPU BOMACO Support
+    off=  49 op=0x07 qid=   28 | MACO-PWR Timing: MACO_EN assert to PWR_EN deassert
+    off=  50 op=0x07 qid=   29 | PWROFF-RST Timing: PWR_EN deassert to PERSTb assert
+    off=  51 op=0x07 qid=   30 | PWRON-RST Timing: PWR_EN assert to PERSTb deassert
+    off=  52 op=0x07 qid=   31 | RST-MACO Timing: PERSTb deassert to MACO_EN deassert
+    off=  53 op=0x05 qid=   93 | Swtich KVM Mouse Protocol between Absolut/Simple
+    off=  54 op=0x05 qid=   96 | Enable/Disable BLINK LED to identify S3/S4 state
+    off=  56 op=0x05 qid= 2036 | Switch S3/Modern Standby
+    off=  57 op=0x07 qid=   98 | 
+    off=  58 op=0x05 qid=   67 | Bluetooth PLDR support Enable/Disable
+    off=  59 op=0x05 qid=   40 | Enable/Disable ATIF Function 23 Support
+    off=  60 op=0x05 qid= 2035 | Enable/Disable Reduce Hardware Support. Please disable PME wakeup, when Reduce Hardware enabled.
+    off=  61 op=0x05 qid=   48 | Select Above 4GB MMIO Limit to 35~48bits limit.
+    off=  62 op=0x05 qid=   14 | Enable/Disable PCIe x8 Slot D3Cold
+    off=  63 op=0x05 qid=   76 | Enable/Disable Sensor Fusion User Mode Driver
+    off=  64 op=0x05 qid=   22 | Enable to support Non-Eval Discrete GPU that doesn't have specific EVAL_PWRGD(B30), EVAL_PRESENT#(A5)
+    off=  65 op=0x05 qid= 2061 | Select which MP2 FW to load
+    off=  66 op=0x05 qid=   73 | Select S0I2 or S0I3 type for Modern Standby.
+    off=  67 op=0x05 qid=   75 | Determines the action taken when the system power is off and a PCI Power Management Enable wake up event occurs.
+    off=  68 op=0x05 qid= 2016 | Enable Thunderbolt Support
+    off=  69 op=0x05 qid=   56 | Select Thunderbolt Security Level
+    off=  70 op=0x05 qid=   57 | Enable Thunderbolt Force PWR
+    off=  71 op=0x05 qid=   58 | Do Thunderbolt (Boot On) Command Before/After PCI Enumeration
+    off=  72 op=0x05 qid=   59 | Do Thunderbolt (USB On) Command Before/After PCI Enumeration
+    off=  73 op=0x05 qid=   60 | Assign Thunderbolt Resource Before/After PCI Enumeration
+    off=  74 op=0x05 qid=   61 | Select Thunderbolt PCIE MMIO Resource
+    off=  75 op=0x05 qid= 2015 | Select Thunderbolt Slot
+    off=  76 op=0x05 qid=   62 | Select Thunderbolt Legacy/Native/RTD3 Mode
+    off=  77 op=0x05 qid=   63 | Select Thunderbolt PCIE L1SS Support
+    off=  78 op=0x05 qid=   97 | Reserved 1M bytes MMIO space on 1M boundary when iLA TraceMemoryEn enabled
+    off=  79 op=0x07 qid=   41 | Vari-Bright level for Maximum Performance on DC: 0 - 4
+    off=  80 op=0x07 qid=   42 | Vari-Bright level for Better Performance on DC: 0 - 4
+    off=  81 op=0x05 qid=   66 | Wireless LAN Recovery suppport Enable/Disable
+    off=  82 op=0x05 qid=   10 | Enable or disable the power of USB CAMERA
+    off=  83 op=0x05 qid= 2060 | Enable or disable Power Sensors Routing Select
+    off=  85 op=0x07 qid=   43 | Vari-Bright level for Better Battery on DC: 0 - 4
+    off=  86 op=0x07 qid=   44 | Vari-Bright level for Battery Saver on DC: 0 - 4
+    off=  87 op=0x05 qid=   13 | Select which APU eSPI port route to EC
+    off=  88 op=0x05 qid= 2041 | Enable or Disable Wake On Voice
+    off=  89 op=0x05 qid=   46 | Enable or Disable ACP Power Gating
+    off=  90 op=0x05 qid= 2042 | Usage of GPP8/9
+    off=  91 op=0x05 qid=   49 | Enable or disable NVMe RAID mode. Please setting the 'PCIe/GFX Lanes Configuration' item according to the RAID configuration
+    off=  92 op=0x05 qid=   17 | Enable/Disable Discrete GPU D3Cold HPD function
+    off=  93 op=0x05 qid=   18 | Enable to support sending PME_Turn_Off message to Discrete GPU when going to D3Cold
+    off=  94 op=0x05 qid=   52 | DP0 Select only avaliable for Celadon Nova TBT/Non-TBT
+    off=  95 op=0x05 qid=   53 | DP1 Select only avaliable for Celadon Nova TBT/Non-TBT
+    off=  96 op=0x05 qid=   47 | Enable or Disable ACP CLOCK Gating
+    off=  97 op=0x05 qid=   74 | Enable: Enable USB current resource for MS; Disable: Disable USB current resource for MS.
+    off=  98 op=0x05 qid=   15 | For NVIDIA mobile DGPU card only. Output DGPU_EN# A19 pin and DGPU_SEL# B17 pin to high at every power on state.
+    off=  99 op=0x05 qid=   25 | Disable Discrete GPU's USB Port or keep default setting
+    off= 100 op=0x05 qid=   71 | UCSI tunnel can be put on ECRAM or MMIO space, this option specify which one is selected.
+    off= 101 op=0x05 qid= 2017 | Select Thunderbolt Host Card Chipset Name
+    off= 102 op=0x05 qid=   64 | Select Thunderbolt Wake Up Command
+    off= 103 op=0x05 qid=   68 | Enable/Disable Wireless Manageability support
+    off= 104 op=0x05 qid=   19 | Force Discrete GPU to Gen1 before entering D3Cold (before sending PME_Turn_Off message)
+    off= 105 op=0x05 qid=   20 | PCI-SIG ECN _DSM Function A for Discrete GPU's GPP bridge.
+    off= 106 op=0x05 qid=   21 | PCI-SIG ECN _DSM Function B for Discrete GPU's GPP bridge.
+    off= 107 op=0x05 qid=   55 | Enable or disable Titan Ridge Host Card PCIe FPB Capability
+    off= 108 op=0x05 qid= 2050 | Program Discrete GPU's SSID/SVID depends on HybridGraphics setting
+    off= 110 op=0x05 qid=   32 | Enable/Disable ATCS Function 9 Support
+    off= 111 op=0x07 qid=   33 | Power limit adjustment percent for [Maximum Performance] on AC: 0 - 100
+    off= 112 op=0x07 qid=   34 | Power limit adjustment percent for [Better Performance] on AC: 0 - 100
+    off= 113 op=0x07 qid=   35 | Power limit adjustment percent for [Better Battery] on AC: 0 - 100
+    off= 114 op=0x07 qid=   36 | Power limit adjustment percent for [Maximum Performance] on DC: 0 - 100
+    off= 115 op=0x07 qid=   37 | Power limit adjustment percent for [Better Performance] on DC: 0 - 100
+    off= 116 op=0x07 qid=   38 | Power limit adjustment percent for [Better Battery] on DC: 0 - 100
+    off= 117 op=0x07 qid=   39 | Power limit adjustment percent for [Battery Saver] on DC: 0 - 100
+    off= 120 op=0x07 qid=   26 | Overwrite Discrete GPU's VGA SSID/SVID. Default value 0 means depends on HybridGraphics setting.
+    off= 124 op=0x07 qid=   27 | Overwrite Discrete GPU's AUDIO SSID/SVID. Default value 0 means depends on HybridGraphics setting.
+    off= 128 op=0x07 qid= 2070 | VDDIO voltage  Setting. VDDIO=1.2v+(N-128)*5mv  N=0~255
+    off= 129 op=0x05 qid=    7 | Enable or disable the Wlan Power In S3/S4 state
+    off= 130 op=0x05 qid=   54 | Disable the Xtal during S3/S5
+    off= 131 op=0x05 qid=   12 | Enable option to allocate 100KB for MP2 customize request
+    off= 132 op=0x05 qid=   69 | Enable/Disable Wireless Botton
+    off= 133 op=0x07 qid=   90 | This filed used for specify the fake battery percentage, it will take effect if AC/DC switch enabled w/o real battery
+
+===== AodSetupDxe (1 varstores, 525 questions) =====
+  vid=0xf000 size= 1020 name='AOD_SETUP' 5ed15dc0-edef-4161-9151-6014c4cc630c
+
+  --- options in varstore 'AOD_SETUP' (207) ---
+    off=  38 op=0x07 qid=   17 | Specifies a custom CPU core frequency. Should be combined with a custom CPU voltage. Power saving features for idle cores (e.g. cc6 sleep) remain active.
+    off=  42 op=0x07 qid=   18 | Specifies a custom CPU core voltage (mV). Should be combined with a custom CPU core frequency. Power saving features for idle cores (e.g. cc6 sleep) remain active.
+    off=  48 op=0x05 qid=   24 | Can be used to disable symmetric multithreading. To re-enable SMT, a POWER CYCLE is needed after selecting the 'Auto' option. WARNING - S3 is NOT SUPPORTED on systems where SMT is disabled.
+    off=  72 op=0x05 qid=   34 | Memory Overclock Settings
+    off=  73 op=0x05 qid=   36 | Specifies the memory clock frequency.
+    off=  74 op=0x05 qid=   37 | Specifies the CAS latency.
+    off=  75 op=0x05 qid=   38 | Specifies the RAS# Active to CAS# Read Delay Time.
+    off=  76 op=0x05 qid=   39 | Specifies the RAS# Active to CAS# Write Delay Time.
+    off=  77 op=0x05 qid=   40 | Specifies Row Precharge Delay Time.
+    off=  78 op=0x05 qid=   41 | Specifies the Active to Precharge Delay Time.
+    off=  79 op=0x05 qid=   42 | Specify Trc
+    off=  80 op=0x07 qid=   43 | Specifies Active to Active/Refresh Delay Time. Valid values 87h-1Dh.
+    off=  81 op=0x05 qid=   44 | Specifies the Activate to Activate Delay Time, different bank group (tRRD_S)
+    off=  82 op=0x05 qid=   45 | Specifies the Activate to Activate Delay Time, same bank group (tRRD_L)
+    off=  83 op=0x05 qid=   46 | Specify Tfaw
+    off=  84 op=0x07 qid=   47 | Specifies the Four Activate Window Time. Valid values 36h-6h.
+    off=  85 op=0x05 qid=   48 | Specifies the Minimum Write to Read Time, different bank group
+    off=  86 op=0x05 qid=   49 | Specifies the Minimum Write to Read Time, same bank group
+    off=  87 op=0x05 qid=   50 | Specify Twr
+    off=  88 op=0x07 qid=   51 | Specifies the Minimum Write Recovery Time. Valid value 51h-Ah
+    off=  89 op=0x05 qid=   52 | Specify Trcpage
+    off=  90 op=0x07 qid=   53 | SDRAM Optional Features (tMAW, MAC). Valid value 3FFh - 0h
+    off=  92 op=0x05 qid=   54 | Specify TrdrdScL
+    off=  93 op=0x07 qid=   55 | Specifies the CAS to CAS Delay Time, same bank group. Valid values Fh-1h
+    off=  94 op=0x05 qid=   56 | Specify TwrwrScL
+    off=  95 op=0x07 qid=   57 | Specifies the CAS to CAS Delay Time, same bank group. Valid values 3Fh-1h
+    off=  96 op=0x05 qid=   58 | Specify Trfc
+    off=  97 op=0x07 qid=   59 | Specifies the Refresh Recovery Delay Time (tRFC1). Valid values 3DEh-3Ch
+    off=  99 op=0x05 qid=   60 | Specify Trfc2
+    off= 100 op=0x07 qid=   61 | Specifies the Refresh Recovery Delay Time (tRFC2).  Valid values 3DEh-3Ch
+    off= 102 op=0x05 qid=   62 | Specify Trfc4
+    off= 103 op=0x07 qid=   63 | Specifies the Refresh Recovery Delay Time (tRFC4). Valid values 3DEh-3Ch
+    off= 106 op=0x05 qid=   75 | Specifies the Processor ODT
+    off= 107 op=0x05 qid=   64 | Specifies the CAS Write Latency
+    off= 108 op=0x05 qid=   65 | Specifies the Read CAS# to Precharge Delay Time.
+    off= 109 op=0x05 qid=   66 | Specifies the CKE minimum high and low pulse width in memory clock cycles.
+    off= 110 op=0x05 qid=   72 | Specifies the Read to Read turnaround timing in the same chipselect.
+    off= 111 op=0x05 qid=   73 | Specifies the Read to Read turnaround timing in the same DIMM.
+    off= 112 op=0x05 qid=   74 | Specifies the Read to Read turnaround timing in a different DIMM.
+    off= 113 op=0x05 qid=   69 | Specifies the Write to Write turnaround timing in the same chipselect.
+    off= 114 op=0x05 qid=   70 | Specifies the Write to Write turnaround timing in the same DIMM.
+    off= 115 op=0x05 qid=   71 | Specifies the Write to Write turnaround timing in a different DIMM.
+    off= 116 op=0x05 qid=   67 | Specifies the Read to Write turnaround timing.
+    off= 117 op=0x05 qid=   68 | Specifies the Write to Read turnaround timing.
+    off= 118 op=0x05 qid=   77 | Select between 1T and 2T mode on ADDR/CMD
+    off= 119 op=0x05 qid=   78 | No help string
+    off= 121 op=0x05 qid=   79 | Enable or disable DDR power down mode
+    off= 122 op=0x05 qid=   80 | Setup time on CAD bus signals to Auto or Manual
+    off= 123 op=0x07 qid=   81 | Setup time on CAD bus signals. Valid values 3Fh-0h.
+    off= 124 op=0x07 qid=   82 | Setup time on CAD bus signals. Valid values 3Fh-0h.
+    off= 125 op=0x07 qid=   83 | Setup time on CAD bus signals. Valid values 3Fh-0h.
+    off= 126 op=0x05 qid=   84 | Drive Strength on CAD bus signals to Auto or Manual
+    off= 127 op=0x05 qid=   85 | No help string
+    off= 128 op=0x05 qid=   86 | No help string
+    off= 129 op=0x05 qid=   87 | No help string
+    off= 130 op=0x05 qid=   88 | No help string
+    off= 131 op=0x05 qid=   89 | Specify the mode for drive strength to Auto or Manual
+    off= 132 op=0x05 qid=   90 | No help string
+    off= 133 op=0x05 qid=   91 | No help string
+    off= 134 op=0x05 qid=   92 | No help string
+    off= 135 op=0x05 qid=   32 | Infinity Fabric frequency (FCLK) is automatically synchronized 1:1 with memory frequency (MCLK) for best performance
+    off= 135 op=0x05 qid=   33 | Infinity Fabric frequency (FCLK) is automatically synchronized 1:1 with memory frequency (MCLK) for best performance
+    off= 138 op=0x05 qid=  111 | Forces CPU SoC/uncore components (e.g. Infinity Fabric, memory, and integrated graphics) to run at their maximum specified frequency at all times. May improve performance at the expense of idle power savings.
+    off= 142 op=0x05 qid=   94 | Precision Boost Overdrive:
+  Enabled: Allows Processor to run beyond defined values for PPT, VDD_CPU EDC, VDD_CPU TDC, VDD_SOC EDC, VDD_SOC TDC to the limits of the board, and allows it to boost at higher voltages for longer durations than default operation.
+    off= 143 op=0x05 qid=   95 | Default: Loads AMD default socket power (PPT), electrically-limited VRM current (EDC), and thermally-limited VRM current (TDC) limits. Motherboard: Allows the processor to run according to increased PPT, EDC, and TDC limits defined by your motherboard. Manual: Allows the processor to ignore AMD default limits for PPT, EDC, and TDC and instead use manual values (up to the maximum capabilities of the of the motherboard).
+    off= 144 op=0x07 qid=   96 | Adjust total CPU socket power delivery capability. Adjustable up to the limit supported by your motherboard.
+    off= 148 op=0x07 qid=   97 | Adjust peak current from your motherboard’s CPU core VRM phases in thermally-limited scenarios. Adjustable up to the limit supported by your motherboard.
+    off= 152 op=0x07 qid=   99 | Adjust peak current from your motherboard’s SoC/uncore VRM phases in thermally-limited scenarios. Adjustable up to the limit supported by your motherboard.
+    off= 156 op=0x07 qid=   98 | Adjust peak current from your motherboard’s CPU core VRM phases in electrically-limited scenarios. Adjustable up to the limit supported by your motherboard.
+    off= 160 op=0x07 qid=  100 | Adjust peak current from your motherboard’s SoC/uncore VRM phases in electrically-limited scenarios. Adjustable up to the limit supported by your motherboard.
+    off= 164 op=0x05 qid=  101 | 
+    off= 165 op=0x05 qid=  102 | Overrides the AMD default silicon health management to potentially achieve higher sustained frequencies under CPU load.
+    off= 169 op=0x05 qid=  104 | Increases the maximum CPU frequency that may be automatically achieved by the Precision Boost 2 algorithm.
+    off= 173 op=0x05 qid=  105 | Increases the maximum GPU frequency that may be automatically achieved by the GPU boost algorithm.
+    off= 177 op=0x07 qid=  107 | Allows the user to decrease the maximum allowed processor temperature (celsius).
+    off= 181 op=0x05 qid=  106 | Allows the user to decrease the maximum allowed processor temperature (celsius).
+    off= 182 op=0x05 qid=  108 | Increases the maximum CPU frequency that may be automatically achieved by the CPU boost algorithm
+    off= 183 op=0x05 qid=  109 | Increases the maximum GPU frequency that may be automatically achieved by the GPU boost algorithm
+    off= 184 op=0x05 qid=  112 | VDDP is a voltage for the DDR4 bus signaling (PHY), and it is derived from your DRAM Voltage (VDDIO_Mem). As a result, VDDP voltage in mV can approach but not exceed your DRAM Voltage
+    off= 185 op=0x07 qid=  113 | VDDP is a voltage for the DDR4 bus signaling (PHY), and it is derived from your DRAM Voltage (VDDIO_Mem). As a result, VDDP voltage in mV can approach but not exceed your DRAM Voltage
+    off= 189 op=0x05 qid=  114 | VDDG represents voltage for the data portion of the Infinity Fabric. It is derived from the CPU SoC/Uncore Voltage (VDD_SOC). VDDG can approach but not exceed VDD_SOC.
+    off= 190 op=0x07 qid=  115 | VDDG IOD Voltage Control
+    off= 194 op=0x05 qid= 2001 | Increase VDDIO
+    off= 195 op=0x07 qid= 2002 | Current VDDIO Value (mV)
+    off= 199 op=0x07 qid=   16 | Current VDDIO Value (mV)
+    off= 221 op=0x07 qid=  227 | 
+    off= 222 op=0x07 qid=  225 | 
+    off= 223 op=0x07 qid=  224 | 
+    off= 224 op=0x07 qid=  222 | 
+    off= 225 op=0x07 qid=  221 | 
+    off= 226 op=0x07 qid=  220 | 
+    off= 227 op=0x07 qid=  219 | 
+    off= 231 op=0x07 qid=  215 | 
+    off= 232 op=0x07 qid=  212 | 
+    off= 233 op=0x07 qid=  211 | 
+    off= 234 op=0x07 qid=  209 | 
+    off= 235 op=0x07 qid=  208 | 
+    off= 236 op=0x07 qid=  207 | 
+    off= 237 op=0x07 qid=  206 | 
+    off= 238 op=0x07 qid=  159 | 
+    off= 240 op=0x07 qid=  210 | 
+    off= 241 op=0x07 qid=  202 | 
+    off= 242 op=0x07 qid=  201 | 
+    off= 243 op=0x07 qid=  199 | 
+    off= 244 op=0x07 qid=  198 | 
+    off= 245 op=0x07 qid=  197 | 
+    off= 246 op=0x07 qid=  196 | 
+    off= 247 op=0x07 qid=  195 | 
+    off= 248 op=0x07 qid=  194 | 
+    off= 249 op=0x07 qid=  193 | 
+    off= 250 op=0x07 qid=  191 | 
+    off= 251 op=0x07 qid=  190 | 
+    off= 252 op=0x07 qid=  189 | 
+    off= 253 op=0x07 qid=  187 | 
+    off= 254 op=0x07 qid=  186 | 
+    off= 255 op=0x07 qid=  185 | 
+    off= 256 op=0x07 qid=  183 | 
+    off= 257 op=0x07 qid=  181 | 
+    off= 258 op=0x07 qid=  179 | 
+    off= 259 op=0x07 qid=  177 | 
+    off= 260 op=0x07 qid=  175 | 
+    off= 261 op=0x07 qid=  173 | 
+    off= 262 op=0x07 qid=  171 | 
+    off= 263 op=0x07 qid=  170 | 
+    off= 264 op=0x07 qid=  169 | 
+    off= 265 op=0x07 qid=  168 | 
+    off= 266 op=0x07 qid=  167 | 
+    off= 267 op=0x07 qid=  166 | 
+    off= 268 op=0x07 qid=  165 | 
+    off= 269 op=0x07 qid=  164 | 
+    off= 270 op=0x07 qid=  163 | 
+    off= 271 op=0x07 qid=  162 | 
+    off= 272 op=0x07 qid=  161 | 
+    off= 273 op=0x07 qid=  160 | 
+    off= 274 op=0x07 qid=  158 | 
+    off= 275 op=0x07 qid=  157 | 
+    off= 276 op=0x07 qid=  156 | 
+    off= 277 op=0x07 qid=  155 | 
+    off= 278 op=0x07 qid=  151 | 
+    off= 279 op=0x07 qid=  150 | 
+    off= 280 op=0x07 qid=  149 | 
+    off= 281 op=0x07 qid=  148 | 
+    off= 282 op=0x07 qid=  147 | 
+    off= 283 op=0x07 qid=  146 | 
+    off= 284 op=0x07 qid=  145 | 
+    off= 285 op=0x07 qid=  144 | 
+    off= 286 op=0x07 qid=  143 | 
+    off= 287 op=0x07 qid=  139 | 
+    off= 288 op=0x07 qid=  138 | 
+    off= 289 op=0x07 qid=  132 | 
+    off= 290 op=0x07 qid=  131 | 
+    off= 291 op=0x07 qid=  127 | 
+    off= 292 op=0x07 qid=  122 | 
+    off= 293 op=0x07 qid=  217 | 
+    off= 294 op=0x07 qid=  216 | 
+    off= 295 op=0x07 qid=  192 | 
+    off= 296 op=0x07 qid=  188 | 
+    off= 297 op=0x07 qid=  184 | 
+    off= 298 op=0x07 qid=  182 | 
+    off= 299 op=0x07 qid=  180 | 
+    off= 300 op=0x07 qid=  178 | 
+    off= 301 op=0x07 qid=  176 | 
+    off= 302 op=0x07 qid=  174 | 
+    off= 303 op=0x07 qid=  172 | 
+    off= 304 op=0x07 qid=  154 | 
+    off= 305 op=0x07 qid=  153 | 
+    off= 306 op=0x07 qid=  152 | 
+    off= 307 op=0x07 qid=  137 | 
+    off= 308 op=0x07 qid=  136 | 
+    off= 309 op=0x07 qid=  135 | 
+    off= 310 op=0x07 qid=  134 | 
+    off= 311 op=0x07 qid=  133 | 
+    off= 312 op=0x07 qid=  129 | 
+    off= 313 op=0x07 qid=  128 | 
+    off= 314 op=0x07 qid=  126 | 
+    off= 316 op=0x07 qid=  203 | 
+    off= 317 op=0x07 qid=  218 | 
+    off= 318 op=0x07 qid=  125 | 
+    off= 319 op=0x07 qid=  124 | 
+    off= 320 op=0x07 qid=  226 | 
+    off= 321 op=0x07 qid=  214 | 
+    off= 322 op=0x07 qid=  213 | 
+    off= 323 op=0x07 qid=  123 | 
+    off= 324 op=0x07 qid=  141 | 
+    off= 325 op=0x07 qid=  140 | 
+    off= 326 op=0x07 qid=  142 | 
+    off= 327 op=0x07 qid=   20 | Specifies a custom GFX core frequency. Must be combined with a custom GFX voltage. Power saving features (like GFX Pstates) remain active
+    off= 331 op=0x07 qid=   21 | Specifies a custom GFX core voltage (mV). Must be combined with a custom GFX frequency. GFX voltage is derived from SOC / uncore voltage rail. Power saving features (like GFX Pstates) remain active.
+    off= 335 op=0x07 qid=  110 | Specifies the SoC/uncore voltage (VDD_SOC) in mV to support memory and Infinity Fabric overclocking. VDD_SOC also determines the GPU voltage on processors with integrated graphics. 'SoC/Uncore OC Mode' needs to be enabled to force this voltage.
+    off= 339 op=0x05 qid= 2003 | ECO Mode:65W Matisse is Group B: TDC=60A/EDC=90A/PPT=87.8W;45W Matisse is Group H: TDC=45A/EDC=65A/PPT=60.8W
+    off= 339 op=0x05 qid= 2004 | ECO Mode:65W Matisse is Group B: TDC=60A/EDC=90A/PPT=87.8W;45W Matisse is Group H: TDC=45A/EDC=65A/PPT=60.8W
+    off= 346 op=0x07 qid=  223 | 
+    off= 347 op=0x05 qid=   93 | Enables settings that provide additional stability at extreme cold operating temperatures
+    off= 352 op=0x07 qid=  116 | VDDG IOD represents voltage for the data portion of the Infinity Fabric. It is derived from the CPU SoC/Uncore Voltage (VDD_SOC). VDDG can approach but not exceed VDD_SOC.
+    off= 356 op=0x07 qid=  121 | 
+    off= 357 op=0x07 qid=  120 | 
+    off= 358 op=0x05 qid=  117 | Limitation: 1. Once user set the Gaming Mode as Enable, the CCD control option will not work any more; 2. if user want to use the CCD control under AOD, make sure set Gaming Mode as Disable
+    off= 360 op=0x05 qid=  118 | Specifies the number of desired NUMA nodes per socket.  Zero will attempt to interleave the two sockets together.
+    off= 361 op=0x07 qid=  119 | 
+    off= 365 op=0x07 qid=  130 | 
+    off= 366 op=0x07 qid=  205 | 
+    off= 367 op=0x07 qid=  204 | 
+    off= 368 op=0x05 qid=   29 | Allows the user to shift the Voltage / Frequency (AVFS) curve to include higher voltages (positive values) or lower voltages (negative values). The larger the value entered the larger the magnitude of the voltage shift
+    off= 369 op=0x05 qid=   30 | Determines the direction of the curve shift on all cores. Positive shifts the curve up to use higher voltages. Negative shifts the curve down to use lower voltages
+    off= 370 op=0x07 qid=   31 | Determines the magnitude of the curve shift to be made (entered in whole numbers) the larger the value entered the larger the magnitude of the shift
+    off= 564 op=0x05 qid=   35 | DRAM Latency Enhance.
+    off= 566 op=0x07 qid=  200 | 

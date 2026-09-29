@@ -1,0 +1,17 @@
+# Setup offsets off factory default, cross-referenced with the static IFR
+# off  cur/dflt  opcode qid (prompt)
+
+off=3    00/01  no IFR question at this offset (hidden/derived)
+off=4    00/01  op0x07 q371 ''
+off=9    01/00  op0x07 q375 ''
+off=13   01/00  op0x07 q376 ''
+off=21   01/00  op0x07 q368 ''
+off=22   01/00  op0x07 q367 ''
+off=23   01/00  op0x07 q366 ''
+off=174  02/00  op0x07 q362 ''
+off=244  00/04  op0x05 q20480 'Enabled'
+off=276  01/00  op0x05 q36864 'Enabled'
+off=278  02/01  op0x05 q40960 'Enabled'
+off=280  00/02  op0x05 q45056 'Enabled'
+off=284  00/04  op0x05 q53248 'Enabled'
+off=316  01/00  op0x06 q241 'This item enables or disables the reporting of battery remaining time '  op0x05 q269 'This item enables or disables the reporting of battery remaining time '

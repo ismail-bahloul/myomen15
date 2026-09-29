@@ -1,0 +1,1695 @@
+
+===== Setup  (322 B, ec87d643-eba4-4bb5-a1e5-3f3e36b20da9)  module=Setup  live=yes  default=yes =====
+  off=   0 op=0x05 cur=01 dfl=01  Select the keyboard NumLock state
+        choices: Off=1 | Boot Option Priorities=0
+  off=   1 op=0x05 cur=01 dfl=01  TCM State
+        choices: TPM Set to Factory Defaults=0 | Disabled=1*
+  off=   1 op=0x05 cur=01 dfl=01  TPM Embedded Security Device
+        choices: TPM Set to Factory Defaults=0 | Disabled=1*
+  off=   2 op=0x05 cur=00 dfl=00  Pending operation
+        choices: Enabled=0* | TCM Clear=5
+  off=   2 op=0x05 cur=00 dfl=00  Pending operation
+        choices: Enabled=0* | TCM Clear=5
+  off=   2 op=0x05 cur=00 dfl=00  Configuration
+        choices: Enabled=0* | TCM Clear=1
+  off=   4 op=0x07 cur=00 dfl=01  (hidden)
+  off=   6 op=0x05 cur=00 dfl=00  Security Device Support
+        choices: Enabled=0 | Disabled=1*
+  off=   6 op=0x05 cur=00 dfl=00  Security Device Support
+        choices: Enabled=0 | Disabled=1*
+  off=   6 op=0x05 cur=00 dfl=00  Pwd Authentication
+        choices: Enabled=0 | Disabled=1*
+  off=   6 op=0x05 cur=00 dfl=00  Security Device Support
+        choices: Enabled=0 | Disabled=1*
+  off=   7 op=0x07 cur=00 dfl=00  (hidden)
+  off=   8 op=0x07 cur=00 dfl=00  (hidden)
+  off=   9 op=0x07 cur=01 dfl=00  (hidden)
+  off=  11 op=0x07 cur=00 dfl=00  (hidden)
+  off=  13 op=0x07 cur=01 dfl=00  (hidden)
+  off=  14 op=0x05 cur=02 dfl=02  Select the TCG2 Spec Version Support,
+
+TCG_1_2: the Compatible mode for Win8/Win10,
+
+TCG_2: Support new TCG2 protocol and event format for Win10 or later
+        choices: TCG_2=1 | TPM 2.0 Device Found=2*
+  off=  15 op=0x05 cur=01 dfl=01  Enable or Disable Platform Hierarchy
+        choices: Activated=0 | TPM Owner Status:=1*
+  off=  16 op=0x05 cur=01 dfl=01  Enable or Disable Storage Hierarchy
+        choices: Activated=0 | TPM Owner Status:=1*
+  off=  17 op=0x05 cur=01 dfl=01  Enable or Disable Endorsement Hierarchy
+        choices: Activated=0 | TPM Owner Status:=1*
+  off=  18 op=0x05 cur=00 dfl=00  Select the Communication Interface to TPM 20 Device.
+        choices: TIS=0* | Device Select=1
+  off=  19 op=0x05 cur=02 dfl=02  TPM 1.2
+        choices: TPM 2.0=0 | Auto=1 | TPM 1.2 will restrict support to TPM 1.2 devices, TPM 2.0 will restrict support to TPM 2.0 devices, Auto will support both with the default set to TPM 2.0 devices if not found, TPM 1.2 devices will be enumerated=2*
+  off=  19 op=0x05 cur=02 dfl=02  TPM 1.2
+        choices: TPM 2.0=0 | Auto=1 | TPM 1.2 will restrict support to TPM 1.2 devices, TPM 2.0 will restrict support to TPM 2.0 devices, Auto will support both with the default set to TPM 2.0 devices if not found, TPM 1.2 devices will be enumerated=2*
+  off=  21 op=0x07 cur=01 dfl=00  (hidden)
+  off=  22 op=0x07 cur=01 dfl=00  (hidden)
+  off=  23 op=0x07 cur=01 dfl=00  (hidden)
+  off=  24 op=0x07 cur=00 dfl=00  (hidden)
+  off=  25 op=0x07 cur=00 dfl=00  (hidden)
+  off=  26 op=0x05 cur=00 dfl=00  Enable or Disable SHA-1 PCR Bank
+        choices: Activated=0 | TPM Owner Status:=1
+  off=  27 op=0x05 cur=02 dfl=02  Enable or Disable SHA256 PCR Bank
+        choices: Activated=0 | TPM Owner Status:=2
+  off=  28 op=0x05 cur=00 dfl=00  Enable or Disable SHA384 PCR Bank
+        choices: Activated=0 | TPM Owner Status:=4
+  off=  29 op=0x05 cur=00 dfl=00  Enable or Disable SHA512 PCR Bank
+        choices: Activated=0 | TPM Owner Status:=8
+  off=  30 op=0x05 cur=00 dfl=00  Enable or Disable SM3_256 PCR Bank
+        choices: Activated=0 | TPM Owner Status:=1
+  off=  32 op=0x05 cur=01 dfl=01  Select to Tell O.S. to support PPI Spec Version 1.2 or 1.3. Note some HCK tests might not support 1.3.
+        choices: 1.3=0 | =1*
+  off=  33 op=0x05 cur=00 dfl=00  Override to allow SID authentication in TCG Storage device
+        choices: TPM Owner Status:=1 | Activated=0*
+  off=  33 op=0x05 cur=00 dfl=00  Override to allow SID authentication in TCG Storage device
+        choices: TPM Owner Status:=1 | Activated=0*
+  off=  35 op=0x05 cur=00 dfl=00  To select.0:AMD CPU fTPM. 1:AMD CPU fTPM Disabled.
+        choices: Erase fTPM NV for factory reset=0* | Device0=2
+  off=  36 op=0x05 cur=01 dfl=01  When New CPU is installed, Select "Enabled" to reset fTPM, if you have BitLocker or encryption-enabled system, the system will not boot without a recovery key. Select "Disabled" to keep previous fTPM record and continue system boot, fTPM will NOT be enabled with new CPU unless fTPM is reset (reinitialized), you could swap back to the old CPU to recover TPM related keys and data.
+        choices: Enabled=0 | WTAS Selection=1*
+  off=  37 op=0x06 cur=00 dfl=00  Enables or Disables BIOS ACPI Auto Configuration.
+  off=  38 op=0x05 cur=02 dfl=02  Select the highest ACPI sleep state the system will enter when the SUSPEND button is pressed.
+        choices: Enable Hibernation=0 | Suspend Disabled=2*
+  off=  40 op=0x06 cur=00 dfl=00  Enables or Disables Lock of Legacy Resources
+  off=  41 op=0x06 cur=01 dfl=01  Enables or Disables System ability to Hibernate (OS/S4 Sleep State). This option may not be effective with some operating systems.
+  off=  45 op=0x05 cur=ff dfl=ff  OnChip SATA Type
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off=  46 op=0x05 cur=02 dfl=02  Native IDE /n RAID /n AHCI /n AHCI /n Legacy IDE /n IDE->AHCI /n HyperFlash
+        choices: AHCI=0 | Legacy IDE=2* | AHCI as ID 7804=3 | SATA IDE Combined Mode=5
+  off=  47 op=0x05 cur=00 dfl=00  RAID Or RAID5
+        choices: RAID5=0* | SD Mode=1
+  off=  59 op=0x05 cur=01 dfl=01  Enabled/Disabled XHCI0 Port 0(XHCI/EHCI)
+        choices: Auto=0 | Disabled=1*
+  off=  60 op=0x05 cur=01 dfl=01  Enabled/Disabled XHCI0 Port 1(XHCI/EHCI)
+        choices: Auto=0 | Disabled=1*
+  off=  61 op=0x05 cur=01 dfl=01  Enabled/Disabled XHCI0 Port 2(EHCI)
+        choices: Auto=0 | Disabled=1*
+  off=  62 op=0x05 cur=01 dfl=01  Enabled/Disabled XHCI0 Port 3(EHCI)
+        choices: Auto=0 | Disabled=1*
+  off=  63 op=0x05 cur=01 dfl=01  Enabled/Disabled XHCI1 Port 0(XHCI/EHCI)
+        choices: Auto=0 | Disabled=1*
+  off=  64 op=0x05 cur=01 dfl=01  Enabled/Disabled XHCI1 Port 1(XHCI/EHCI)
+        choices: Auto=0 | Disabled=1*
+  off=  65 op=0x05 cur=01 dfl=01  Enabled/Disabled XHCI1 Port 2(EHCI)
+        choices: Auto=0 | Disabled=1*
+  off=  66 op=0x05 cur=01 dfl=01  Enabled/Disabled XHCI1 Port 3(EHCI)
+        choices: Auto=0 | Disabled=1*
+  off=  68 op=0x05 cur=01 dfl=01  Infrared (IR) Configuration
+        choices: Auto=0 | RX & TX1 Only=1* | RX, TX0, And TX1=2 | SATA Ports Auto Clock Control=3
+  off=  69 op=0x05 cur=ff dfl=ff  SD Mode Configuration
+        choices: Auto=0 | Ver3.0=1 | V3_SDR50=2 | V3_SDR104=3 | V3_DDR50=4 | SdDump=5 | Auto(Ver2.0+Low speed)=6 | I2C 0 D3 Support=15
+  off=  76 op=0x05 cur=ff dfl=ff  Enable/Disable GPIO ACPI Devices Support, disable it will disable i2C and uart interface device.
+        choices: Disabled=1 | Setup=255*
+  off=  77 op=0x05 cur=01 dfl=01  I2C 0 Enable
+        choices: Disabled=1* | Auto=0
+  off=  78 op=0x05 cur=01 dfl=01  I2C 1 Enable
+        choices: Disabled=1* | Auto=0
+  off=  79 op=0x05 cur=00 dfl=00  I2C 2 Enable
+        choices: Disabled=1 | Auto=0*
+  off=  80 op=0x05 cur=00 dfl=00  I2C 3 Enable
+        choices: Disabled=1 | Auto=0*
+  off=  81 op=0x05 cur=01 dfl=01  Uart 0 Enable
+        choices: Disabled=1* | Auto=0
+  off=  82 op=0x05 cur=01 dfl=01  Uart 1 Enable
+        choices: Disabled=1* | Auto=0
+  off=  83 op=0x05 cur=ff dfl=ff  Enable/Disable AB Internal Clock Gating
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off=  84 op=0x05 cur=ff dfl=ff  Enable The Auto Clkrun Functionality
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 112 op=0x05 cur=ff dfl=ff  Set Sata Max Gen2 Mode
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 113 op=0x05 cur=ff dfl=ff  SATA Reference Clock Selector And Divider
+        choices: INT 48MHz=0 | INT 100MHz=1 | SATA Target Support 8 Devices=9 | Setup=255*
+  off= 114 op=0x05 cur=ff dfl=ff  Indicates Whether Host Bus Adapter (HBA) Can Support Auto-Generating Link Requests To The Partial Or Slumber States When There Are No Commands To Process
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 115 op=0x05 cur=ff dfl=ff  Indicates Whether Host Bus Adapter (HBA) Can Support A Port Multiplier
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 116 op=0x05 cur=ff dfl=ff  EnableDisable SATA Ports Auto Clock Control
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 117 op=0x05 cur=ff dfl=ff  Indicates Whether SATA Host Bus Adapter (HBA) Can Support Transitions To The Partial State
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 118 op=0x05 cur=ff dfl=ff  Indicates Whether SATA Host Bus Adapter (HBA) Can Support Port Multiplier FIS-Based Switching
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 119 op=0x05 cur=ff dfl=ff  Indicates Whether SATA Host Bus Adapter (HBA) Can Support Command Completion Coalescing
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 120 op=0x05 cur=ff dfl=ff  Indicates Whether SATA Host Bus Adapter (HBA) Can Support Transitions To The Slumber State
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 121 op=0x05 cur=ff dfl=ff  SATA Controller Message-Based Interrupts Capability Support
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 122 op=0x05 cur=ff dfl=ff  Indicates Whether SATA Target Support 8 Devices Function
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 123 op=0x05 cur=ff dfl=ff  Sata Disable Generic Mode
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 124 op=0x05 cur=ff dfl=ff  SATA AHCI Enclosure Management
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 125 op=0x05 cur=ff dfl=ff  Enable/Disable SATA Serial General Purpose Input/Output (SGPIO) 0
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 130 op=0x05 cur=ff dfl=ff  Mark The Periodic Timer Interrupt
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 135 op=0x05 cur=ff dfl=ff  Qual IO 1-4-4
+        choices: Qual IO 1-2-2=5 | Qual IO 1-1-4=4 | Qual IO 1-1-2=3 | Fast Read=2 | Normal=7 | Change Dependent On Flash Part=6 | PSPP Policy=0 | Setup=255*
+  off= 136 op=0x05 cur=ff dfl=ff  SPI Burst Write
+        choices: 66MHz=5 | 33MHz=1 | 22MHz=2 | 16.5MHz=3 | SPI Normal Speed=4 | Setup=255*
+  off= 137 op=0x05 cur=ff dfl=ff  100MHz
+        choices: 66MHz=5 | 33MHz=1 | 22MHz=2 | 16.5MHz=3 | PSPP Policy=0 | Setup=255*
+  off= 140 op=0x05 cur=ff dfl=ff  I2C 0 D3 Support
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 141 op=0x05 cur=ff dfl=ff  I2C 1 D3 Support
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 142 op=0x05 cur=ff dfl=ff  I2C 2 D3 Support
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 143 op=0x05 cur=ff dfl=ff  I2C 3 D3 Support
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 144 op=0x05 cur=ff dfl=ff  I2C 4 D3 Support
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 145 op=0x05 cur=ff dfl=ff  I2C 5 D3 Support
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 146 op=0x05 cur=ff dfl=ff  UART 0 D3 Support
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 147 op=0x05 cur=ff dfl=ff  UART 1 D3 Support
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 148 op=0x05 cur=ff dfl=ff  UART 2 D3 Support
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 149 op=0x05 cur=ff dfl=ff  UART 3 D3 Support
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 150 op=0x05 cur=ff dfl=ff  SATA D3 Support
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 151 op=0x05 cur=ff dfl=ff  EHCI D3 Support
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 152 op=0x05 cur=ff dfl=ff  XHCI D3 Support
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 153 op=0x05 cur=ff dfl=ff  SD D3 Support
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 154 op=0x05 cur=ff dfl=ff  S0I3 flag
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 156 op=0x05 cur=ff dfl=ff  Enable/Disable CG1_PLL Spread Spectrum
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 157 op=0x05 cur=ff dfl=ff  HPET Function Switch
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 158 op=0x05 cur=ff dfl=ff  Expose MSI capability in HPET Capbility register
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 159 op=0x05 cur=ff dfl=ff  PCIe NativePcieSupport - Debug function.
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 169 op=0x05 cur=ff dfl=ff  Restore Status On AC Power Loss
+        choices: Auto=0 | Power Off=1 | Last State=2 | AB Clock Gating=3 | Setup=255*
+  off= 170 op=0x05 cur=ff dfl=ff  GPP Serial Debug Bus Enable
+        choices: Auto=0 | Disabled=1 | Setup=255*
+  off= 172 op=0x06 cur=01 dfl=01  Run SMART Self Test on all HDDs during POST.
+  off= 173 op=0x05 cur=01 dfl=01  Enable/disable the generation of ACPI _PPC, _PSS, and _PCT objects.
+        choices: Auto=0 | Node 0 Information=1*
+  off= 174 op=0x07 cur=02 dfl=00  (hidden)
+  off= 175 op=0x05 cur=00 dfl=00  Provide to adjust _PPC object.
+        choices: PState 1=0*
+  off= 175 op=0x05 cur=00 dfl=00  Provide to adjust _PPC object.
+        choices: PState 1=0* | PState 2=1
+  off= 175 op=0x05 cur=00 dfl=00  Provide to adjust _PPC object.
+        choices: PState 1=0* | PState 2=1 | PState 3=2
+  off= 175 op=0x05 cur=00 dfl=00  Provide to adjust _PPC object.
+        choices: PState 1=0* | PState 2=1 | PState 3=2 | PState 4=3
+  off= 175 op=0x05 cur=00 dfl=00  Provide to adjust _PPC object.
+        choices: PState 1=0* | PState 2=1 | PState 3=2 | PState 4=3 | PState 5=4
+  off= 175 op=0x05 cur=00 dfl=00  Provide to adjust _PPC object.
+        choices: PState 1=0* | PState 2=1 | PState 3=2 | PState 4=3 | PState 5=4 | PState 6=5
+  off= 175 op=0x05 cur=00 dfl=00  Provide to adjust _PPC object.
+        choices: PState 1=0* | PState 2=1 | PState 3=2 | PState 4=3 | PState 5=4 | PState 6=5 | PState 7=6
+  off= 175 op=0x05 cur=00 dfl=00  Provide to adjust _PPC object.
+        choices: PState 1=0* | PState 2=1 | PState 3=2 | PState 4=3 | PState 5=4 | PState 6=5 | PState 7=6 | NX Mode=7
+  off= 176 op=0x05 cur=01 dfl=01  Enable/disable CPU Virtualization
+        choices: Auto=0 | Node 0 Information=1*
+  off= 176 op=0x06 cur=01 dfl=01  Hardware VT enables a processor feature for running multiple simultaneous Virtual Machines allowing specialized software applications to run in full isolation of each other.
+  off= 176 op=0x05 cur=01 dfl=01  Hardware VT enables a processor feature for running multiple simultaneous Virtual Machines allowing specialized software applications to run in full isolation of each other.
+        choices: LAN Power Saving=0* | Disabled=1
+  off= 177 op=0x05 cur=01 dfl=01  Enable/disable No-execute page protection Function
+        choices: Auto=0 | Node 0 Information=1*
+  off= 178 op=0x05 cur=00 dfl=00  Sample Code
+        choices: PSPP Policy=0* | CRT=1
+  off= 179 op=0x05 cur=00 dfl=00  Priority2
+        choices: LCD=0* | CRT2=1 | DFP1=2 | DFP2=3 | DFP3=4 | DFP4=5 | DFP5=6 | DFP6=7
+  off= 183 op=0x05 cur=01 dfl=01  Priority3
+        choices: LCD=0 | CRT2=1* | DFP1=2 | DFP2=3 | DFP3=4 | DFP4=5 | DFP5=6 | DFP6=7
+  off= 187 op=0x05 cur=03 dfl=03  Priority4
+        choices: LCD=0 | CRT2=1 | DFP1=2 | DFP2=3* | DFP3=4 | DFP4=5 | DFP5=6 | DFP6=7
+  off= 191 op=0x05 cur=04 dfl=04  Priority5
+        choices: LCD=0 | CRT2=1 | DFP1=2 | DFP2=3 | DFP3=4* | DFP4=5 | DFP5=6 | DFP6=7
+  off= 195 op=0x05 cur=05 dfl=05  Priority6
+        choices: LCD=0 | CRT2=1 | DFP1=2 | DFP2=3 | DFP3=4 | DFP4=5* | DFP5=6 | DFP6=7
+  off= 199 op=0x05 cur=07 dfl=07  For Multi Connector Display Priority
+        choices: LCD=0 | CRT2=1 | DFP1=2 | DFP2=3 | DFP3=4 | DFP4=5 | DFP5=6 | DFP6=7*
+  off= 203 op=0x07 cur=ff dfl=ff  Lcd Only, Range 0 - 255
+  off= 210 op=0x05 cur=00 dfl=00  Output Interface
+        choices: Unknown Device=0*
+  off= 210 op=0x05 cur=00 dfl=00  Output Interface
+        choices: Unknown Device=0* | Unknown Device=1
+  off= 210 op=0x05 cur=00 dfl=00  Output Interface
+        choices: Unknown Device=0* | Unknown Device=1 | Unknown Device=2
+  off= 210 op=0x05 cur=00 dfl=00  Output Interface
+        choices: Unknown Device=0* | Unknown Device=1 | Unknown Device=2 | Unknown Device=3
+  off= 210 op=0x05 cur=00 dfl=00  Output Interface
+        choices: Unknown Device=0* | Unknown Device=1 | Unknown Device=2 | Unknown Device=3 | Unknown Device=4
+  off= 210 op=0x05 cur=00 dfl=00  Output Interface
+        choices: Unknown Device=0* | Unknown Device=1 | Unknown Device=2 | Unknown Device=3 | Unknown Device=4 | Unknown Device=5
+  off= 210 op=0x05 cur=00 dfl=00  Output Interface
+        choices: Unknown Device=0* | Unknown Device=1 | Unknown Device=2 | Unknown Device=3 | Unknown Device=4 | Unknown Device=5 | Unknown Device=6
+  off= 210 op=0x05 cur=00 dfl=00  Output Interface
+        choices: Unknown Device=0* | Unknown Device=1 | Unknown Device=2 | Unknown Device=3 | Unknown Device=4 | Unknown Device=5 | Unknown Device=6 | Debug Port Table Configuration=7
+  off= 211 op=0x05 cur=00 dfl=00  Debug Port Table
+        choices: Auto=0 | Disabled=1
+  off= 212 op=0x05 cur=00 dfl=00  Debug Port Table 2
+        choices: Auto=0 | Disabled=1
+  off= 218 op=0x05 cur=01 dfl=01  The Onboard PCIE LAN PXE ROM
+        choices: Auto=0 | Disabled=1*
+  off= 221 op=0x05 cur=00 dfl=00  If the item is set to Hidden, the TPM device is not visible in the operating system.
+        choices: Hidden=1* | No Operation=0
+  off= 221 op=0x05 cur=00 dfl=00  If the item is set to Hidden, the TPM device is not visible in the operating system.
+        choices: Hidden=1* | No Operation=0
+  off= 222 op=0x05 cur=02 dfl=02  If the TPM Device setting is set to Hidden, the BIOS hides this item. If the TPM Device setting changes from Hidden to Available, the BIOS makes this item visible immediately without a restart. The TPM State setting is saved when the TPM Device setting changes to Hidden and is restored when it is changed back to Available. The TPM State setting can change only if you confirm the request prompted by the BIOS during the next startup.
+        choices: Enabled=1* | Disabled=2
+  off= 223 op=0x05 cur=00 dfl=00  Clearing the TPM causes you to lose all created keys associated with the TPM, and data protected by those keys, such as a virtual smart card or a login PIN. Make sure that you have a backup and recovery method for any data that is protected or encrypted by the TPM.
+ 
+TPM can be cleared only when you confirm the request via the Physical Presence check prompted by the BIOS during the next startup. If you select Yes, TPM security setting and content will be cleared.
+ 
+After the BIOS clears the TPM or you reject clearing the TPM during the physical presence check in POST, this setting is reverted to No.
+        choices: Set HDD Password.=0* | No=1
+  off= 223 op=0x05 cur=00 dfl=00  Clearing the TPM causes you to lose all created keys associated with the TPM, and data protected by those keys, such as a virtual smart card or a login PIN. Make sure that you have a backup and recovery method for any data that is protected or encrypted by the TPM.
+ 
+TPM can be cleared only when you confirm the request via the Physical Presence check prompted by the BIOS during the next startup. If you select Yes, TPM security setting and content will be cleared.
+ 
+After the BIOS clears the TPM or you reject clearing the TPM during the physical presence check in POST, this setting is reverted to No.
+        choices: Set HDD Password.=0* | No=1
+  off= 224 op=0x06 cur=00 dfl=00  Enable or disable HP SpareKey support. Before you use [SpareKey Enroll], please set password and enable support.
+  off= 224 op=0x05 cur=00 dfl=00  Enable or disable HP SpareKey support. Before you use [SpareKey Enroll], please set password and enable support.
+        choices: TPM Device=0* | Disabled=1
+  off= 225 op=0x06 cur=00 dfl=00  Set the Fan Always On
+  off= 225 op=0x05 cur=00 dfl=00  Set the Fan Always On
+        choices: TPM Device=0* | Disabled=1
+  off= 226 op=0x06 cur=00 dfl=00  Disabled: Requires pressing fn key + f1 through f12 to activate action keys
+Enabled: Requires pressing only f1 through f12 to activate action keys
+  off= 226 op=0x05 cur=00 dfl=00  Disabled: Requires pressing fn key + f1 through f12 to activate action keys
+Enabled: Requires pressing only f1 through f12 to activate action keys
+        choices: TPM Device=0* | Disabled=1
+  off= 227 op=0x05 cur=01 dfl=01  Enable/Disable CDROM boot during boot time.
+        choices: TPM Device=0 | Disabled=1*
+  off= 227 op=0x06 cur=01 dfl=01  Enable/Disable CDROM boot during boot time.
+  off= 228 op=0x05 cur=00 dfl=00  Enable/Disable floppy boot during boot time.
+        choices: TPM Device=0* | Disabled=1
+  off= 228 op=0x06 cur=00 dfl=00  Enable/Disable floppy boot during boot time.
+  off= 229 op=0x05 cur=01 dfl=01  Enable/Disable USB boot.
+        choices: TPM Device=0 | Disabled=1*
+  off= 229 op=0x06 cur=01 dfl=01  Enable/Disable USB boot.
+  off= 230 op=0x05 cur=00 dfl=00  Network Boot allows boot to the Network via F12 or boot order.
+        choices: TPM Device=0* | Disabled=1
+  off= 230 op=0x06 cur=00 dfl=00  Network Boot allows boot to the Network via F12 or boot order.
+  off= 231 op=0x05 cur=03 dfl=03  Select Network Boot Protocol using IPv4, IPv6 or IPv4+IPV6. When IPV4+IPV6 is selected, BIOS will use IPv4 first.
+        choices: IPv6 (UEFI)=1 | IPv4+IPv6 (UEFI)=2 | Changing this setting may make the system unable to boot the OS.
+Do you want to make this change?=3*
+  off= 231 op=0x05 cur=03 dfl=03  Select Network Boot Protocol using IPv4, IPv6 or IPv4+IPV6. When IPV4+IPV6 is selected, BIOS will use IPv4 first.
+        choices: IPv6 (UEFI)=1 | IPv4+IPv6 (UEFI)=2 | Changing this setting may make the system unable to boot the OS.
+Do you want to make this change?=3*
+  off= 232 op=0x05 cur=00 dfl=00  When Legacy Support is enabled, BIOS will load Compatibility Support Module (CSM) to support Legacy OS such as Windows 7, Windows Vista, Windows XP and DOS.When Legacy Support is disabled, BIOS will boot in UEFI Mode without CSM to support newer OS such as Windows 8.System might be unable to boot into operating system after changing this setting.
+        choices: Enabled=0* | Enabled=1
+  off= 232 op=0x05 cur=00 dfl=00  When Legacy Support is enabled, BIOS will load Compatibility Support Module (CSM) to support Legacy OS such as Windows 7, Windows Vista, Windows XP and DOS.When Legacy Support is disabled, BIOS will boot in UEFI Mode without CSM to support newer OS such as Windows 8.System might be unable to boot into operating system after changing this setting.
+        choices: Enabled=0* | Enabled=1
+  off= 233 op=0x06 cur=00 dfl=00  When Secure Boot is enabled, BIOS performs cryptographic check during bootup, for the integrity of the software image. It prevents unauthorized or maliciously modified software from running.
+  off= 233 op=0x05 cur=00 dfl=00  When Secure Boot is enabled, BIOS performs cryptographic check during bootup, for the integrity of the software image. It prevents unauthorized or maliciously modified software from running.
+        choices: Disabled=1 | TPM Device=0*
+  off= 234 op=0x07 cur=00 dfl=00  (hidden)
+  off= 235 op=0x06 cur=01 dfl=01  Allow the system to charge the USB device such as mobile phone in S4 (Hibernation) or S5 (off) state.
+  off= 235 op=0x05 cur=01 dfl=01  Allow the system to charge the USB device such as mobile phone in S4 (Hibernation) or S5 (off) state.
+        choices: TPM Device=0 | Disabled=1*
+  off= 236 op=0x05 cur=00 dfl=00  Enabled
+        choices: HP Boot Option 1=0* | HP Boot Option 2=1 | HP Boot Option 3=2 | HP Boot Option 4=3 | HP Boot Option 5=4 | HP Boot Option 0=5
+  off= 238 op=0x05 cur=01 dfl=01  Enabled
+        choices: HP Boot Option 1=0 | HP Boot Option 2=1* | HP Boot Option 3=2 | HP Boot Option 4=3 | HP Boot Option 5=4 | HP Boot Option 0=5
+  off= 240 op=0x05 cur=02 dfl=02  Enabled
+        choices: HP Boot Option 1=0 | HP Boot Option 2=1 | HP Boot Option 3=2* | HP Boot Option 4=3 | HP Boot Option 5=4 | HP Boot Option 0=5
+  off= 242 op=0x05 cur=03 dfl=03  Enabled
+        choices: HP Boot Option 1=0 | HP Boot Option 2=1 | HP Boot Option 3=2 | HP Boot Option 4=3* | HP Boot Option 5=4 | HP Boot Option 0=5
+  off= 244 op=0x05 cur=00 dfl=04  Enabled
+        choices: HP Boot Option 1=0 | HP Boot Option 2=1 | HP Boot Option 3=2 | HP Boot Option 4=3 | HP Boot Option 5=4* | HP Boot Option 0=5
+  off= 246 op=0x05 cur=05 dfl=05  Enabled
+        choices: HP Boot Option 1=0 | HP Boot Option 2=1 | HP Boot Option 3=2 | HP Boot Option 4=3 | HP Boot Option 5=4 | HP Boot Option 0=5*
+  off= 276 op=0x05 cur=01 dfl=00  Enabled
+        choices: HP Boot Option 1=0* | HP Boot Option 2=1 | HP Boot Option 3=2 | HP Boot Option 4=3 | Legacy Support=4
+  off= 278 op=0x05 cur=02 dfl=01  Enabled
+        choices: HP Boot Option 1=0 | HP Boot Option 2=1* | HP Boot Option 3=2 | HP Boot Option 4=3 | Legacy Support=4
+  off= 280 op=0x05 cur=00 dfl=02  Enabled
+        choices: HP Boot Option 1=0 | HP Boot Option 2=1 | HP Boot Option 3=2* | HP Boot Option 4=3 | Legacy Support=4
+  off= 282 op=0x05 cur=03 dfl=03  Enabled
+        choices: HP Boot Option 1=0 | HP Boot Option 2=1 | HP Boot Option 3=2 | HP Boot Option 4=3* | Legacy Support=4
+  off= 284 op=0x05 cur=00 dfl=04  Enabled
+        choices: HP Boot Option 1=0 | HP Boot Option 2=1 | HP Boot Option 3=2 | HP Boot Option 4=3 | Legacy Support=4*
+  off= 316 op=0x06 cur=01 dfl=00  This item enables or disables the reporting of battery remaining time from the BIOS to the operating system. If disabled, the operating system displays battery life in a percentage only.
+  off= 316 op=0x05 cur=01 dfl=00  This item enables or disables the reporting of battery remaining time from the BIOS to the operating system. If disabled, the operating system displays battery life in a percentage only.
+        choices: Disabled=1 | TPM Device=0*
+  off= 317 op=0x05 cur=00 dfl=00  Battery Care Function (100%): The battery charge stops at 91~100%.
+Battery Care Function (80%): The battery charge stops at 76~80%.
+Battery Care Function (50%): The battery charge stops at 46~50%.
+        choices: 80%=0* | 50%=1 | S3/S4/S5 Wake on LAN=2
+  off= 317 op=0x05 cur=00 dfl=00  Battery Care Function (100%): The battery charge stops at 91~100%.
+Battery Care Function (80%): The battery charge stops at 76~80%.
+Battery Care Function (50%): The battery charge stops at 46~50%.
+        choices: 80%=0* | 50%=1 | S3/S4/S5 Wake on LAN=2
+  off= 318 op=0x05 cur=01 dfl=01  Dynamic battery protection to optimize battery pack longevity.
+        choices: TPM Device=0 | Disabled=1*
+  off= 318 op=0x05 cur=01 dfl=01  Dynamic battery protection to optimize battery pack longevity.
+        choices: TPM Device=0 | Disabled=1*
+  off= 319 op=0x06 cur=00 dfl=00  Permits the user to control whether the system should wake from S3 or S4/S5 if a magic packet is received by the NIC.
+  off= 319 op=0x05 cur=00 dfl=00  Permits the user to control whether the system should wake from S3 or S4/S5 if a magic packet is received by the NIC.
+        choices: Disabled=1 | TPM Device=0*
+  off= 320 op=0x05 cur=00 dfl=00  This option can provide RAID0 support when two identical NVMe SSDs are used.
+        choices: NVMe Emulation=0* | NVMe=1
+  off= 320 op=0x05 cur=00 dfl=00  This option can provide RAID0 support when two identical NVMe SSDs are used.
+        choices: NVMe Emulation=0* | NVMe=1
+  off= 321 op=0x05 cur=01 dfl=01  (hidden)
+        choices: For more information, please visit the website or scan the QR code :=1* | Graphic=0
+
+===== PlatformLang  (2 B, 8be4df61-93ca-11d2-aa0d-00e098032b8c)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x05 cur=None dfl=None  BIOS Information
+        choices: Enabled=0 | Enabled=1
+  off=   0 op=0x05 cur=None dfl=None  Select the display language for the BIOS.
+        choices: Enabled=0 | Enabled=1
+  off=   0 op=0x05 cur=None dfl=None  Select the display language for the BIOS.
+        choices: Enabled=0 | Enabled=1
+
+===== PlatformLangCodes  (2 B, 8be4df61-93ca-11d2-aa0d-00e098032b8c)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== SystemAccess  (1 B, e770bb69-bcb4-4d04-9e97-23ff9456feac)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== AMICallback  (2 B, 9cf0f18e-7c7d-49de-b5aa-bbbad6b21007)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== AMITSESetup  (65 B, c811fa38-42c8-4579-a9bb-60e94eddfb34)  module=Setup  live=NO  default=no =====
+  off=  64 op=0x06 cur=None dfl=None  Enables or disables Quiet Boot option
+
+===== BootManager  (2 B, b4909cf3-7b93-4751-9bd8-5ba8220b9bb2)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== Timeout  (2 B, 8be4df61-93ca-11d2-aa0d-00e098032b8c)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  Number of seconds to wait for setup activation key. 65535(0xFFFF) means indefinite waiting.
+  off=   0 op=0x05 cur=None dfl=None  POST Hotkey Delay (sec) controls the amount of time given to press the function key to enter the Setup Utilities when the system starts.
+To disable the audible password prompt (beeping sound) for both the Administrator Password and Power-On Password, set the POST Hotkey Delay (sec) option to 0.
+        choices: 2=0* | 10=5 | 15=10 | 20=15 | 30 sec=20
+  off=   0 op=0x05 cur=None dfl=None  POST Hotkey Delay (sec) controls the amount of time given to press the function key to enter the Setup Utilities when the system starts.
+To disable the audible password prompt (beeping sound) for both the Administrator Password and Power-On Password, set the POST Hotkey Delay (sec) option to 0.
+        choices: 2=0* | 10=5 | 15=10 | 20=15 | 30 sec=20
+
+===== BootOrder  (2 B, 8be4df61-93ca-11d2-aa0d-00e098032b8c)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x05 cur=None dfl=None  Boot Option #%d
+        choices: Enabled=0 | Enabled=1
+
+===== LegacyDev  (2 B, a56074db-65fe-45f7-bd21-2d2bdd8e9652)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== LegacyGroup  (2 B, a56074db-65fe-45f7-bd21-2d2bdd8e9652)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== LegacyDevOrder  (2 B, a56074db-65fe-45f7-bd21-2d2bdd8e9652)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x05 cur=None dfl=None  Up and Down arrow keys select a device. <F5> and <F6> keys move the device down or up.
+The boot capability will be disabled if the Device is marked with an exclamation mark.
+When Legacy Support is enabled, UEFI boot order and Legacy boot order are both available and UEFI boot order has higher priority than Legacy boot order.
+        choices: Enabled=0 | Enabled=1
+
+===== BootNowCount  (2 B, 052e6eb0-f240-42c5-8309-45874545c6b4)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== AmiAmdSbSuppressIfSetupData  (1 B, b66b8637-96c0-4615-b8bd-d98efd5d3b17)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== AmiSbXhciSwitchSuppressIfSetupData  (1 B, c0f8bda9-52c8-40dd-92fc-6efffef9524a)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== DriverManager  (2 B, c0b4fb05-15e5-4588-9fe9-b3d39c067715)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== DriverOrder  (2 B, 8be4df61-93ca-11d2-aa0d-00e098032b8c)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x05 cur=None dfl=None  Sets the system driver order
+        choices: Enabled=0* | Enabled=1
+
+===== AmiGopPolicySetupData  (2 B, c143929c-bf5d-423b-999b-0f2dd2b61ff7)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+  off=   1 op=0x07 cur=None dfl=None  (hidden)
+
+===== UsbMassDevNum  (2 B, ec87d643-eba4-4bb5-a1e5-3f3e36b20da9)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== UsbMassDevValid  (32 B, ec87d643-eba4-4bb5-a1e5-3f3e36b20da9)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+  off=   1 op=0x07 cur=None dfl=None  (hidden)
+  off=   2 op=0x07 cur=None dfl=None  (hidden)
+  off=   3 op=0x07 cur=None dfl=None  (hidden)
+  off=   4 op=0x07 cur=None dfl=None  (hidden)
+  off=   5 op=0x07 cur=None dfl=None  (hidden)
+  off=   6 op=0x07 cur=None dfl=None  (hidden)
+  off=   7 op=0x07 cur=None dfl=None  (hidden)
+  off=   8 op=0x07 cur=None dfl=None  (hidden)
+  off=   9 op=0x07 cur=None dfl=None  (hidden)
+  off=  10 op=0x07 cur=None dfl=None  (hidden)
+  off=  11 op=0x07 cur=None dfl=None  (hidden)
+  off=  12 op=0x07 cur=None dfl=None  (hidden)
+  off=  13 op=0x07 cur=None dfl=None  (hidden)
+  off=  14 op=0x07 cur=None dfl=None  (hidden)
+  off=  15 op=0x07 cur=None dfl=None  (hidden)
+  off=  16 op=0x07 cur=None dfl=None  (hidden)
+  off=  17 op=0x07 cur=None dfl=None  (hidden)
+  off=  18 op=0x07 cur=None dfl=None  (hidden)
+  off=  19 op=0x07 cur=None dfl=None  (hidden)
+  off=  20 op=0x07 cur=None dfl=None  (hidden)
+  off=  21 op=0x07 cur=None dfl=None  (hidden)
+  off=  22 op=0x07 cur=None dfl=None  (hidden)
+  off=  23 op=0x07 cur=None dfl=None  (hidden)
+  off=  24 op=0x07 cur=None dfl=None  (hidden)
+  off=  25 op=0x07 cur=None dfl=None  (hidden)
+  off=  26 op=0x07 cur=None dfl=None  (hidden)
+  off=  27 op=0x07 cur=None dfl=None  (hidden)
+  off=  28 op=0x07 cur=None dfl=None  (hidden)
+  off=  29 op=0x07 cur=None dfl=None  (hidden)
+  off=  30 op=0x07 cur=None dfl=None  (hidden)
+  off=  31 op=0x07 cur=None dfl=None  (hidden)
+
+===== UsbControllerNum  (4 B, ec87d643-eba4-4bb5-a1e5-3f3e36b20da9)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+  off=   1 op=0x07 cur=None dfl=None  (hidden)
+  off=   2 op=0x07 cur=None dfl=None  (hidden)
+  off=   3 op=0x07 cur=None dfl=None  (hidden)
+
+===== UsbSupport  (49 B, ec87d643-eba4-4bb5-a1e5-3f3e36b20da9)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x05 cur=None dfl=None  USB Support Parameters
+        choices: Auto=0 | Disabled=1*
+  off=   1 op=0x05 cur=None dfl=None  Enable or disable legacy USB support
+        choices: Disabled=0* | Auto=1 | USB Controllers:=2
+  off=   2 op=0x05 cur=None dfl=None  This is a workaround for OSes without EHCI hand-off support. The EHCI ownership change should be claimed by EHCI driver.
+        choices: Auto=0* | Disabled=1
+  off=   8 op=0x05 cur=None dfl=None  USB mass storage device Start Unit command time-out.
+        choices: 20 sec=0 | 30 sec=1* | 40 sec=2 | Port 60/64 Emulation=3
+  off=   9 op=0x05 cur=None dfl=None  The time-out value for Control, Bulk, and Interrupt transfers.
+        choices: 5 sec=1 | 10 sec=5 | 20 sec=10 | 30 sec=20*
+  off=  10 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  11 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  12 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  13 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  14 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  15 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  16 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  17 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  18 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  19 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  20 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  21 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  22 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  23 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  24 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  25 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  26 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  27 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  28 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  29 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  30 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  31 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  32 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  33 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  34 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  35 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  36 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  37 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  38 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  39 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  40 op=0x05 cur=None dfl=None  N/A
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  41 op=0x05 cur=None dfl=None  Mass Storage Devices:
+        choices: USB Controllers:=0* | Forced FDD=1 | Hard Disk=2 | CD-ROM=3 | Mass storage device emulation type. 'AUTO' enumerates devices less than 530MB as floppies. Forced FDD option can be used to force HDD formatted drive to boot as FDD (e.g. ZIP drive).=4
+  off=  42 op=0x05 cur=None dfl=None  Enable/Disable XHCI Controller Legacy support.
+        choices: Disabled=1* | Auto=0
+  off=  43 op=0x05 cur=None dfl=None  This is a workaround for OSes without XHCI hand-off support. The XHCI ownership change should be claimed by XHCI driver.
+        choices: Disabled=1 | Auto=0
+  off=  44 op=0x05 cur=None dfl=None  Maximum time the device will take before it properly reports itself to the Host Controller. 'Auto' uses default value: for a Root port it is 100 ms, for a Hub port the delay is taken from Hub descriptor.
+        choices: USB Controllers:=0* | Device power-up delay in seconds=1
+  off=  45 op=0x07 cur=None dfl=None  Delay range is 1..40 seconds, in one second increments
+  off=  47 op=0x05 cur=None dfl=None  Enable/Disable USB Mass Storage Driver Support.
+        choices: Auto=0 | Disabled=1*
+
+===== NetworkStackVar  (8 B, d1405d16-7afc-4695-bb12-41459d3695a2)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x05 cur=None dfl=None  Enable/Disable UEFI Network Stack
+        choices: Auto=0 | Disabled=1
+  off=   1 op=0x05 cur=None dfl=None  Enable/Disable IPv4 PXE boot support. If disabled, IPv4 PXE boot support will not be available.
+        choices: Auto=0 | Disabled=1
+  off=   2 op=0x05 cur=None dfl=None  Enable/Disable IPv6 PXE boot support. If disabled, IPv6 PXE boot support will not be available.
+        choices: Auto=0 | Disabled=1
+  off=   4 op=0x07 cur=None dfl=None  Wait time in seconds to press ESC key to abort the PXE boot. Use either +/- or numeric keys to set the value.
+  off=   5 op=0x07 cur=None dfl=None  Number of times the presence of media will be checked. Use either +/- or numeric keys to set the value.
+  off=   6 op=0x05 cur=None dfl=None  Enable/Disable IPv4 HTTP boot support. If disabled, IPv4 HTTP boot support will not be available.
+        choices: Auto=0 | Disabled=1
+  off=   7 op=0x05 cur=None dfl=None  Enable/Disable IPv6 HTTP boot support. If disabled, IPv6 HTTP boot support will not be available.
+        choices: Auto=0 | Disabled=1
+
+===== SecureBootSetup  (7 B, 7b59104a-c00d-4158-87ff-f04d6396a915)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x05 cur=None dfl=None  When Secure Boot is enabled, BIOS performs cryptographic check during bootup, for the integrity of the software image. It prevents unauthorized or maliciously modified software from running.
+        choices: Auto=0 | Disabled=1
+  off=   1 op=0x05 cur=None dfl=None  Secure Boot mode options:
+Standard or Custom.
+In Custom mode, Secure Boot Policy variables can be configured by a physically present user without full authentication
+        choices: Custom=0 | Enter Audit Mode=1
+  off=   2 op=0x05 cur=None dfl=None  Install factory default Secure Boot keys after the platform reset and while the System is in Setup mode
+        choices: Auto=0 | Disabled=1
+
+===== SecureVarPresent  (6 B, 7b59104a-c00d-4158-87ff-f04d6396a915)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+  off=   1 op=0x07 cur=None dfl=None  (hidden)
+  off=   2 op=0x07 cur=None dfl=None  (hidden)
+  off=   3 op=0x07 cur=None dfl=None  (hidden)
+  off=   4 op=0x07 cur=None dfl=None  (hidden)
+  off=   5 op=0x07 cur=None dfl=None  (hidden)
+
+===== VendorKeys  (1 B, 8be4df61-93ca-11d2-aa0d-00e098032b8c)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== SetupMode  (1 B, 8be4df61-93ca-11d2-aa0d-00e098032b8c)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== SecureBoot  (1 B, 8be4df61-93ca-11d2-aa0d-00e098032b8c)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== AuditMode  (1 B, 8be4df61-93ca-11d2-aa0d-00e098032b8c)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== DeployedMode  (1 B, 8be4df61-93ca-11d2-aa0d-00e098032b8c)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== OEMDeviceStatus  (8 B, 0ee72c08-8185-427a-a58a-855b78b7ba0b)  module=Setup  live=NO  default=no =====
+  off=   2 op=0x07 cur=None dfl=None  (hidden)
+  off=   3 op=0x07 cur=None dfl=None  (hidden)
+  off=   5 op=0x07 cur=None dfl=None  (hidden)
+
+===== HideFccId  (1 B, 0ee72c08-8185-427a-a58a-855b78b7ba0b)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== NewSystemFamily  (1 B, 0ee72c08-8185-427a-a58a-855b78b7ba0b)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== HideBornOnDate  (1 B, 0ee72c08-8185-427a-a58a-855b78b7ba0b)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== HideGOPRevision  (1 B, 0ee72c08-8185-427a-a58a-855b78b7ba0b)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== GOPCount  (1 B, 0ee72c08-8185-427a-a58a-855b78b7ba0b)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== HideVBIOSRevision  (1 B, 0ee72c08-8185-427a-a58a-855b78b7ba0b)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== InternalDisallowTpmFlag  (1 B, 70fff0ff-a543-45b9-8be3-1bdb90412080)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== ResetSecurityFlag  (1 B, 0ee72c08-8185-427a-a58a-855b78b7ba0b)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== PlatformKey  (1 B, 0ee72c08-8185-427a-a58a-855b78b7ba0b)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== PendingAction  (1 B, 0ee72c08-8185-427a-a58a-855b78b7ba0b)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== WindowsToGo  (1 B, 0ee72c08-8185-427a-a58a-855b78b7ba0b)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== FixedBootNum  (2 B, 0ee72c08-8185-427a-a58a-855b78b7ba0b)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== UefiFixedBootNum  (2 B, 0ee72c08-8185-427a-a58a-855b78b7ba0b)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== HideCdromBootOption  (1 B, 0ee72c08-8185-427a-a58a-855b78b7ba0b)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== HideFanAlwaysOn  (1 B, 0ee72c08-8185-427a-a58a-855b78b7ba0b)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== MSFTDebugPolicy  (1 B, 0ee72c08-8185-427a-a58a-855b78b7ba0b)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== TpmStateFlag  (1 B, 0ee72c08-8185-427a-a58a-855b78b7ba0b)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x06 cur=None dfl=None  If the TPM Device setting is set to Hidden, the BIOS hides this item. If the TPM Device setting changes from Hidden to Available, the BIOS makes this item visible immediately without a restart. The TPM State setting is saved when the TPM Device setting changes to Hidden and is restored when it is changed back to Available. The TPM State setting can change only if you confirm the request prompted by the BIOS during the next startup.
+
+===== HpShowSpareKeyItem  (1 B, 0ee72c08-8185-427a-a58a-855b78b7ba0b)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== HpBootOrder  (16 B, 0ee72c08-8185-427a-a58a-855b78b7ba0b)  module=Setup  live=NO  default=no =====
+
+===== DynamicPageCount  (2 B, b63bf800-f267-4f55-9217-e97fb3b69846)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== DriverHlthEnable  (2 B, 0885f288-418c-4be1-a6af-8bad61da08fe)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== DriverHealthCount  (2 B, 7459a7d4-6533-4480-bba7-79e25a4443c9)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== DrvHealthCtrlCnt  (2 B, 58279c2d-fb19-466e-b42e-cd437016dc25)  module=Setup  live=NO  default=no =====
+  off=   0 op=0x07 cur=None dfl=None  (hidden)
+
+===== AmdSetup  (1448 B, 3a997502-647a-4c82-998e-52ef9486a247)  module=CbsSetupDxeRN  live=yes  default=no =====
+  off=  32 op=0x07 cur=11 dfl=None  No help string
+  off=  33 op=0x05 cur=ff dfl=None  From a workaround for GCC/C000005 issue for XV Core on CZ A0, setting MSRC001_1029 Decode Configuration (DE_CFG) bit 14 [DecfgNoRdrctForReturns] to 1
+        choices: 1=255* | 0=1 | Platform First Error Handling=0
+  off=  34 op=0x05 cur=03 dfl=None  Enable/disable PFEH, cloak individual banks, and mask deferred error interrupts from each bank.
+        choices: Disabled=1 | Core Performance Boost=0 | 1=3*
+  off=  35 op=0x05 cur=01 dfl=None  Disable CPB
+        choices: Core Performance Boost=0 | 1=1*
+  off=  36 op=0x05 cur=03 dfl=None  Controls IO based C-state generation and DF C-states.
+There is another DF Cstate option which will be synchronized with this option if DF Cstate option is auto.
+        choices: Core Performance Boost=0 | Disabled=1 | 1=3*
+  off=  37 op=0x05 cur=00 dfl=None  No help string
+        choices: Platform First Error Handling=0* | 0=1 | Opcache Control=2
+  off=  38 op=0x05 cur=ff dfl=None  Enables or disables the Opcache
+        choices: Core Performance Boost=1 | Disabled=0 | 1=255*
+  off=  39 op=0x05 cur=03 dfl=None  This fields specifies the maximum valid ASID, which affects the maximum system physical address space. 16TB of physical address space is available for systems that support 253 ASIDs, while 8TB of physical address space is available for systems that support 509 ASIDs.
+        choices: 509 ASIDs=0 | SEV-ES ASID Space Limit Control=1 | 1=3*
+  off=  40 op=0x05 cur=00 dfl=None  No help string
+        choices: 1=0* | SEV-ES ASID Space Limit=1
+  off=  41 op=0x07 cur=01 dfl=None  SEV VMs using ASIDs below the SEV-ES ASID Space Limit must enable the SEV-ES feature. ASIDs from SEV-ES ASID Space Limit to (SEV ASID Count + 1) can only be used with SEV VMs. If this field is set to (SEV ASID Count + 1), all ASIDs are forced to be SEV-ES ASIDs. Hence, the valid values for this field is 1 - (SEV ASID Count + 1)
+  off=  45 op=0x05 cur=ff dfl=None  Enables or disables the streaming stores functionality
+        choices: Core Performance Boost=1 | Disabled=0 | 1=255*
+  off=  47 op=0x05 cur=03 dfl=None  Determines whether or not to declare the C1 state to the OS.
+        choices: Core Performance Boost=0 | Disabled=1 | 1=3*
+  off=  48 op=0x05 cur=01 dfl=None  Enable MCA error thresholding.
+        choices: True=0 | MCA error thresh count=1*
+  off=  49 op=0x07 cur=f5 dfl=None  Effective error threshold count = 4095(0xFFF) - <this value> (e.g. the default value of 0xFF5 results in a threshold of 10).
+  off=  51 op=0x05 cur=03 dfl=None  When this option is enabled, specific uncorrected errors detected by the PSP FW or SMU FW will hang and not reset the system
+        choices: Core Performance Boost=0 | Disabled=1 | 1=3*
+  off=  52 op=0x05 cur=ff dfl=None  Turn on PPIN feature
+        choices: Core Performance Boost=0 | Disabled=1 | 1=255*
+  off=  53 op=0x05 cur=05 dfl=None  No help string
+        choices: OC1=0 | OC2=1 | OC3=2 | Customized=3 | Custom Core Pstates=5*
+  off=  56 op=0x05 cur=02 dfl=None  Disable - disable this Pstate
+Custom - customize this Pstate, applicable only if PcdOcDisable=FALSE
+
+WARNING - DAMAGE CAUSED BY USE OF YOUR AMD PROCESSOR OUTSIDE OF SPECIFICATION OR IN EXCESS OF FACTORY SETTINGS ARE NOT COVERED UNDER YOUR AMD PRODUCT WARRANTY AND MAY NOT BE COVERED BY YOUR SYSTEM MANUFACTURER'S WARRANTY.
+Operating your AMD processor outside of specification or in excess of factory settings, including but not limited to overclocking, may damage or shorten the life of your processor or other system components, create system instabilities (e.g., data loss and corrupted images) and in extreme cases may result in total system failure. AMD does not provide support or service for issues or damages related to use of an AMD processor outside of processor specifications or in excess of factory settings.
+        choices: Pstate0 Freq (MHz)=1 | 1=2*
+  off=  57 op=0x07 cur=ff dfl=None  Specifies the core voltage.
+  off=  58 op=0x05 cur=03 dfl=None  Option to Enable | Disable L1 Stream HW Prefetcher
+        choices: Enable=0 | L2 Stream HW Prefetcher=1 | 1=3*
+  off=  59 op=0x05 cur=03 dfl=None  Option to Enable | Disable L2 Stream HW Prefetcher
+        choices: Enable=0 | L2 Stream HW Prefetcher=1 | 1=3*
+  off=  60 op=0x05 cur=03 dfl=None  Enable or disable CPU Watchdog Timer
+        choices: Core Performance Boost=0 | Disabled=1 | 1=3*
+  off=  61 op=0x05 cur=ff dfl=None  No help string
+        choices: 10.730s=2304 | 5.364s=2048 | 2.681s=0 | 1.340s=256 | 669.41ms=512 | 334.05ms=768 | 166.37ms=1024 | 82.53ms=1280
+  off=  63 op=0x05 cur=ff dfl=None  Specify the CPU watch dog timer severity (MSRC001_0074[CpuWdTmrCfgSeverity]).
+        choices: Transparent=0 | Corrected=1 | Deferred=2 | Uncorrected=3 | Fatal=4 | Scrubber=5 | 1=255*
+  off=  64 op=0x05 cur=ff dfl=None  Provide a value that is the number of hours to scrub memory.
+        choices: Core Performance Boost=0 | 4 hours=1 | 8 hours=4 | 16 hours=8 | 24 hours=16 | 48 hours=24 | Poison scrubber control=48 | 1=255*
+  off=  65 op=0x05 cur=03 dfl=None  Control DF::RedirScrubCtrl[RedirScrubMode[0]]
+        choices: Core Performance Boost=0 | Disabled=1 | 1=3*
+  off=  66 op=0x05 cur=03 dfl=None  Control DF::PIEConfig[DisSyncFloodProp]
+Disables propagation from PIE to other DF components and eventually to SDP ports
+        choices: Sync flood enabled=1 | Disable DF sync flood propagation=0 | 1=3*
+  off=  67 op=0x05 cur=03 dfl=None  Control whether or not the CC6 save/restore memory is encrypted
+        choices: Core Performance Boost=0 | Disabled=1 | 1=3*
+  off=  68 op=0x05 cur=07 dfl=None  Allows for disabling memory channel interleaving.
+        choices: Core Performance Boost=0 | 1=7*
+  off=  69 op=0x05 cur=07 dfl=None  Controls the memory interleaving size. The valid values are AUTO, 256 bytes, 512 bytes, 1 Kbytes or 2Kbytes. This determines the starting address of the interleave (bit 8, 9, 10 or 11).
+        choices: 512 Bytes=0 | 1 KB=1 | 2 KB=2 | DRAM map inversion=3 | 1=7*
+  off=  70 op=0x05 cur=03 dfl=None  Disabling this option sets DF:DfGlobalCtrl[DisImmSyncFloodOnFatalError]
+Enables freezing of all DF queues on error and also forces a sync flood on HWA even if MCAs are disabled
+        choices: Core Performance Boost=0 | Disabled=1 | 1=3*
+  off=  71 op=0x05 cur=ff dfl=None  Controls the number of redirect scrubs allowed at any one time (DF::RedirScrubCtrl[RedirScrubReqLmt])
+        choices: 4=1 | 8=2 | Infinite=3 | Memory interleaving=0 | 1=255*
+  off=  74 op=0x05 cur=01 dfl=None  Memory Overclock Settings
+        choices: 1=255* | Disabled=1
+  off=  75 op=0x05 cur=ff dfl=None  Specifies the memory clock frequency.
+        choices: 1=255* | 933MHz=24 | 1067MHz=28 | 1200MHz=32 | 1333MHz=36 | 1367MHz=40 | 1400MHz=41 | 1433MHz=42
+  off=  76 op=0x05 cur=ff dfl=None  Specifies the CAS latency.
+        choices: 1=255* | 9 Clk=8 | 0Ah Clk=9 | 0Bh Clk=10 | 0Ch Clk=11 | 0Dh Clk=12 | 0Eh Clk=13 | 0Fh Clk=14
+  off=  77 op=0x05 cur=ff dfl=None  Specifies the RAS# Active to CAS# Read Delay Time.
+        choices: 1=255* | 9 Clk=8 | 0Ah Clk=9 | 0Bh Clk=10 | 0Ch Clk=11 | 0Dh Clk=12 | 0Eh Clk=13 | 0Fh Clk=14
+  off=  78 op=0x05 cur=ff dfl=None  Specifies the RAS# Active to CAS# Write Delay Time.
+        choices: 1=255* | 9 Clk=8 | 0Ah Clk=9 | 0B Clk=10 | 0C Clk=11 | 0D Clk=12 | 0E Clk=13 | 0F Clk=14
+  off=  79 op=0x05 cur=ff dfl=None  Specifies Row Precharge Delay Time.
+        choices: 1=255* | 9 Clk=8 | 0Ah Clk=9 | 0Bh Clk=10 | 0Ch Clk=11 | 0Dh Clk=12 | 0Eh Clk=13 | 0Fh Clk=14
+  off=  80 op=0x05 cur=ff dfl=None  Specifies the Active to Precharge Delay Time.
+        choices: 1=255* | 16h Clk=21 | 17h Clk=22 | 18h Clk=23 | 19h Clk=24 | 1Ah Clk=25 | 1Bh Clk=26 | 1Ch Clk=27
+  off=  81 op=0x05 cur=00 dfl=None  Specify Trc
+        choices: 1=0* | SEV-ES ASID Space Limit=1
+  off=  82 op=0x07 cur=39 dfl=None  Specifies Active to Active/Refresh Delay Time. Valid values 87h-1Dh.
+  off=  83 op=0x05 cur=ff dfl=None  Specifies the Activate to Activate Delay Time, different bank group (tRRD_S)
+        choices: 1=255* | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7 | 9 Clk=8 | 0Ah Clk=9 | 0Bh Clk=10
+  off=  84 op=0x05 cur=ff dfl=None  Specifies the Activate to Activate Delay Time, same bank group (tRRD_L)
+        choices: 1=255* | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7 | 9 Clk=8 | 0Ah Clk=9 | 0Bh Clk=10
+  off=  85 op=0x05 cur=00 dfl=None  Specify Tfaw
+        choices: 1=0* | SEV-ES ASID Space Limit=1
+  off=  86 op=0x07 cur=1a dfl=None  Specifies the Four Activate Window Time. Valid values 36h-6h.
+  off=  87 op=0x05 cur=ff dfl=None  Specifies the Minimum Write to Read Time, different bank group
+        choices: 1=255* | 3 Clk=2 | TwtrL=3 | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7 | 9 Clk=8
+  off=  88 op=0x05 cur=ff dfl=None  Specifies the Minimum Write to Read Time, same bank group
+        choices: 1=255* | 3 Clk=2 | TwtrL=3 | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7 | 9 Clk=8
+  off=  89 op=0x05 cur=00 dfl=None  Specify Twr
+        choices: 1=0* | SEV-ES ASID Space Limit=1
+  off=  90 op=0x07 cur=12 dfl=None  Specifies the Minimum Write Recovery Time. Valid value 51h-Ah
+  off=  91 op=0x05 cur=00 dfl=None  Specify Trcpage
+        choices: 1=0* | SEV-ES ASID Space Limit=1
+  off=  92 op=0x07 cur=00 dfl=None  SDRAM Optional Features (tMAW, MAC). Valid value 3FFh - 0h
+  off=  94 op=0x05 cur=00 dfl=None  Specify TrdrdScL
+        choices: 1=0* | SEV-ES ASID Space Limit=1
+  off=  95 op=0x07 cur=03 dfl=None  Specifies the CAS to CAS Delay Time, same bank group. Valid values Fh-1h
+  off=  96 op=0x05 cur=00 dfl=None  Specify TwrwrScL
+        choices: 1=0* | SEV-ES ASID Space Limit=1
+  off=  97 op=0x07 cur=03 dfl=None  Specifies the CAS to CAS Delay Time, same bank group. Valid values 3Fh-1h
+  off=  98 op=0x05 cur=00 dfl=None  Specify Trfc
+        choices: 1=0* | SEV-ES ASID Space Limit=1
+  off=  99 op=0x07 cur=38 dfl=None  Specifies the Refresh Recovery Delay Time (tRFC1). Valid values 3DEh-3Ch
+  off= 101 op=0x05 cur=00 dfl=None  Specify Trfc2
+        choices: 1=0* | SEV-ES ASID Space Limit=1
+  off= 102 op=0x07 cur=c0 dfl=None  Specifies the Refresh Recovery Delay Time (tRFC2).  Valid values 3DEh-3Ch
+  off= 104 op=0x05 cur=00 dfl=None  Specify Trfc4
+        choices: 1=0* | SEV-ES ASID Space Limit=1
+  off= 105 op=0x07 cur=84 dfl=None  Specifies the Refresh Recovery Delay Time (tRFC4). Valid values 3DEh-3Ch
+  off= 107 op=0x05 cur=ff dfl=None  Specifies the CAS Write Latency
+        choices: 1=255* | 0Ah Clk=9 | 0Bh Clk=10 | 0Ch Clk=11 | 0Dh Clk=12 | 0Fh Clk=14 | 11h Clk=16 | 13h Clk=18
+  off= 108 op=0x05 cur=ff dfl=None  Specifies the Read CAS# to Precharge Delay Time.
+        choices: 1=255* | 6 Clk=5 | 7 Clk=6 | TrrdL=7 | 9 Clk=8 | 0Ah Clk=9 | 0Bh Clk=10 | 0Ch Clk=11
+  off= 109 op=0x05 cur=ff dfl=None  Specifies the CKE minimum high and low pulse width in memory clock cycles.
+        choices: 1=255* | Trdwr=1 | 3 Clk=2 | TwtrL=3 | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7
+  off= 110 op=0x05 cur=ff dfl=None  Specifies the Read to Write turnaround timing.
+        choices: 1=255* | Trdwr=1 | 3 Clk=2 | TwtrL=3 | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7
+  off= 111 op=0x05 cur=ff dfl=None  Specifies the Write to Read turnaround timing.
+        choices: 1=255* | Trdwr=1 | 3 Clk=2 | TwtrL=3 | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7
+  off= 112 op=0x05 cur=ff dfl=None  Specifies the Write to Write turnaround timing in the same chipselect.
+        choices: 1=255* | Trdwr=1 | 3 Clk=2 | TwtrL=3 | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7
+  off= 113 op=0x05 cur=ff dfl=None  Specifies the Write to Write turnaround timing in the same DIMM.
+        choices: 1=255* | Trdwr=1 | 3 Clk=2 | TwtrL=3 | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7
+  off= 114 op=0x05 cur=ff dfl=None  Specifies the Write to Write turnaround timing in a different DIMM.
+        choices: 1=255* | Trdwr=1 | 3 Clk=2 | TwtrL=3 | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7
+  off= 115 op=0x05 cur=ff dfl=None  Specifies the Read to Read turnaround timing in the same chipselect.
+        choices: 1=255* | Trdwr=1 | 3 Clk=2 | TwtrL=3 | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7
+  off= 116 op=0x05 cur=ff dfl=None  Specifies the Read to Read turnaround timing in the same DIMM.
+        choices: 1=255* | Trdwr=1 | 3 Clk=2 | TwtrL=3 | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7
+  off= 117 op=0x05 cur=ff dfl=None  Specifies the Read to Read turnaround timing in a different DIMM.
+        choices: 1=255* | Trdwr=1 | 3 Clk=2 | TwtrL=3 | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7
+  off= 118 op=0x05 cur=ff dfl=None  Specifies the Processor ODT
+        choices: 1=255* | 480 ohm=0 | 240 ohm=1 | 160 ohm=2 | 120 ohm=3 | 96 ohm=8 | 80 ohm=9 | 68.6 ohm=10
+  off= 119 op=0x05 cur=ff dfl=None  Select between 1T and 2T mode on ADDR/CMD
+        choices: 2T=0 | Gear Down Mode=1 | 1=255*
+  off= 120 op=0x05 cur=ff dfl=None  No help string
+        choices: Core Performance Boost=0 | Disabled=1 | 1=255*
+  off= 121 op=0x05 cur=ff dfl=None  Enable or disable DDR power down mode
+        choices: Core Performance Boost=0 | Disabled=1 | 1=255*
+  off= 122 op=0x05 cur=ff dfl=None  Setup time on CAD bus signals to Auto or Manual
+        choices: 1=255* | SEV-ES ASID Space Limit=1
+  off= 123 op=0x07 cur=00 dfl=None  Setup time on CAD bus signals. Valid values 3Fh-0h.
+  off= 124 op=0x07 cur=00 dfl=None  Setup time on CAD bus signals. Valid values 3Fh-0h.
+  off= 125 op=0x07 cur=00 dfl=None  Setup time on CAD bus signals. Valid values 3Fh-0h.
+  off= 126 op=0x05 cur=ff dfl=None  Drive Strength on CAD bus signals to Auto or Manual
+        choices: 1=255* | SEV-ES ASID Space Limit=1
+  off= 127 op=0x05 cur=ff dfl=None  No help string
+        choices: 1=255* | 60.0 Ohm=0 | 40.0 Ohm=1 | 30.0 Ohm=3 | 24.0 Ohm=7 | 20.0 Ohm=15 | AddrCmdDrvStren=31
+  off= 128 op=0x05 cur=ff dfl=None  No help string
+        choices: 1=255* | 60.0 Ohm=0 | 40.0 Ohm=1 | 30.0 Ohm=3 | 24.0 Ohm=7 | 20.0 Ohm=15 | AddrCmdDrvStren=31
+  off= 129 op=0x05 cur=ff dfl=None  No help string
+        choices: 1=255* | 60.0 Ohm=0 | 40.0 Ohm=1 | 30.0 Ohm=3 | 24.0 Ohm=7 | 20.0 Ohm=15 | AddrCmdDrvStren=31
+  off= 130 op=0x05 cur=ff dfl=None  No help string
+        choices: 1=255* | 60.0 Ohm=0 | 40.0 Ohm=1 | 30.0 Ohm=3 | 24.0 Ohm=7 | 20.0 Ohm=15 | AddrCmdDrvStren=31
+  off= 131 op=0x05 cur=ff dfl=None  Specify the mode for drive strength to Auto or Manual
+        choices: 1=255* | SEV-ES ASID Space Limit=1
+  off= 132 op=0x05 cur=ff dfl=None  No help string
+        choices: RZQ/4=0 | RZQ/2=1 | RZQ/6=2 | RZQ/1=3 | RZQ/5=4 | RZQ/3=5 | RZQ/7=6 | RttWr=7
+  off= 133 op=0x05 cur=ff dfl=None  No help string
+        choices: Hi-Z=0 | RZQ/6=1 | RZQ/5=2 | RttPark=3 | RZQ/7=4 | 1=255*
+  off= 134 op=0x05 cur=ff dfl=None  No help string
+        choices: Data Poisoning=0 | RZQ/2=1 | RZQ/6=2 | RZQ/1=3 | RZQ/5=4 | RZQ/3=5 | RZQ/7=6 | RttWr=7
+  off= 135 op=0x05 cur=ff dfl=None  No help string
+        choices: Core Performance Boost=0 | Disabled=1 | 1=255*
+  off= 136 op=0x05 cur=00 dfl=None  Enable or Disable DRAM  Post Package Repair.
+        choices: L2 Stream HW Prefetcher=1 | Enable=0*
+  off= 137 op=0x05 cur=00 dfl=None  No help string
+        choices: 1=255 | Core Performance Boost=0* | Disabled=1
+  off= 138 op=0x05 cur=00 dfl=None  UMC_CH::RecCtrl[RecEn][0] and UMC_CH::RecCtrl[MaxParRply]
+        choices: 1=255 | Core Performance Boost=0* | Disabled=1
+  off= 139 op=0x07 cur=08 dfl=None  Value in hex, 1, 2 or 3 is invalid
+  off= 140 op=0x05 cur=00 dfl=None  No help string
+        choices: 1=255 | Core Performance Boost=0* | Disabled=1
+  off= 141 op=0x05 cur=00 dfl=None  UMC_CH::RecCtrl[RecEn][1] and UMC_CH::RecCtrl[MaxCrcRply]
+        choices: 1=255 | Core Performance Boost=0* | Disabled=1
+  off= 142 op=0x07 cur=08 dfl=None  Value in hex, 1, 2 or 3 is invalid
+  off= 143 op=0x05 cur=01 dfl=None  True: UMC::CH::MiscCfg[DisErrInj]=1
+        choices: True=0 | MCA error thresh count=1*
+  off= 144 op=0x05 cur=ff dfl=None  DRAM ECC Symbol Size (x4/x8) - UMC_CH::EccCtrl[EccSymbolSize]
+        choices: x8=0 | DRAM ECC Enable=1 | 1=255*
+  off= 145 op=0x05 cur=ff dfl=None  Use this option to enable / disable DRAM ECC. Auto will set ECC to enable.
+        choices: Core Performance Boost=0 | Disabled=1 | 1=255*
+  off= 146 op=0x05 cur=00 dfl=None  Use this option to enable / disable DRAM UECC Retry.
+        choices: Disabled=1 | Core Performance Boost=0*
+  off= 147 op=0x05 cur=ff dfl=None  No help string
+        choices: 1=255* | Disabled=1 | Core Performance Boost=0
+  off= 148 op=0x05 cur=ff dfl=None  Data scrambling: DataScrambleEn
+        choices: Disabled=1 | Core Performance Boost=0 | 1=255*
+  off= 149 op=0x05 cur=ff dfl=None  Interleave memory blocks across the DRAM chip selects for node 0.
+        choices: Core Performance Boost=0 | 1=255*
+  off= 150 op=0x05 cur=ff dfl=None  No help string
+        choices: 1=255* | Core Performance Boost=0 | APU Mode=1 | ALT Mode=2 | Address Hash Bank=3
+  off= 151 op=0x05 cur=ff dfl=None  Enable or disable bank address hashing
+        choices: Core Performance Boost=0 | Disabled=1 | 1=255*
+  off= 152 op=0x05 cur=ff dfl=None  Enable or disable CS address hashing
+        choices: 1=255* | Disabled=1 | Core Performance Boost=0
+  off= 153 op=0x05 cur=ff dfl=None  Enable or disable RM address hashing
+        choices: 1=255* | Disabled=1 | Core Performance Boost=0
+  off= 154 op=0x05 cur=01 dfl=None  Enable or disable SPD Read Optimization, Enabled - SPD reads are skipped for Reserved fields and most of upper 256 Bytes, Disabled - read all 512 SPD Bytes
+        choices: 1=255 | Disabled=1* | Core Performance Boost=0
+  off= 155 op=0x05 cur=00 dfl=None  Enable or disable Memory MBIST
+        choices: Core Performance Boost=0* | Disabled=1
+  off= 156 op=0x05 cur=01 dfl=None  Select MBIST Test Mode -Interface Mode (Tests Single and Multiple CS transactions and Basic Connectivity) or Data Eye Mode (Measures Voltage vs. Timing)
+        choices: MBIST Aggressors=1*
+  off= 157 op=0x05 cur=ff dfl=None  Enable or disable MBIST Aggressor test
+        choices: Core Performance Boost=0 | Disabled=1 | 1=255*
+  off= 158 op=0x05 cur=ff dfl=None  Reports 2D Data Eye Results in ABL Log for each DQ, Chipselect, and Channel
+        choices: Core Performance Boost=0 | Disabled=1 | 1=255*
+  off= 159 op=0x05 cur=00 dfl=None  No help string
+        choices: SSO=0* | Both=1 | Pattern Length=2
+  off= 160 op=0x07 cur=06 dfl=None  This token helps to determine the pattern length. The possible options are N=3...12
+  off= 161 op=0x05 cur=01 dfl=None  This helps read the aggressors channels. If it is enabled, you can read from one or more than one aggressor channel. The default is set to disabled.
+        choices: Core Performance Boost=0 | 3 Aggressor Channels=1* | 7 Aggressor Channels=3 | Aggressor Static Lane Control=7
+  off= 162 op=0x05 cur=00 dfl=None  This option, if enabled, will control the Aggressor Static Lane Controls.
+        choices: Core Performance Boost=0* | Disabled=1
+  off= 163 op=0x07 cur=00 dfl=None  Static Lane Select for Upper 32 bits. The bit mask represents the bits to be read
+  off= 167 op=0x07 cur=00 dfl=None  Static Lane Select for Lower 32 bits. The bit mask represents the bits to be read
+  off= 171 op=0x07 cur=00 dfl=None  Static Lane Select for ECC Lanes. The bit mask represents the bits to be read
+  off= 172 op=0x07 cur=00 dfl=None  TBD
+  off= 173 op=0x05 cur=00 dfl=None  No help string
+        choices: Core Performance Boost=0* | Disabled=1
+  off= 174 op=0x07 cur=00 dfl=None  Static Lane Select for Upper 32 bit. The bit mask represents the bits to be read
+  off= 178 op=0x07 cur=00 dfl=None  Static Lane Select for Lower 32 bit. The bit mask represents the bits to be read
+  off= 182 op=0x07 cur=00 dfl=None  TBD
+  off= 183 op=0x07 cur=00 dfl=None  No help string
+  off= 184 op=0x05 cur=03 dfl=None  This options determines which results are expected to be captured for Data Eye. Supported options are 1D Voltage Sweep, 1D Timing Sweep, 2D Full Data Eye and Worst Case Margin only.
+        choices: 1D Timing Sweep=0 | 2D Full Data Eye=1 | Worst Case Margin Only=2 | Worst Case Margin Granularity=3*
+  off= 185 op=0x05 cur=00 dfl=None  No help string
+        choices: Per Nibble=0* | Read Voltage Sweep Step Size=1
+  off= 186 op=0x05 cur=04 dfl=None  This option determines the step size for Read Data Eye voltage sweep, Supported options are 1,2 and 4
+        choices: 0=1 | 4=2 | 8=4*
+  off= 187 op=0x05 cur=01 dfl=None  This options supports step size for Read Data Eye. Supported options are 1, 2 and 4
+        choices: 0=1* | 4=2 | 8=4
+  off= 188 op=0x05 cur=02 dfl=None  This option determines the step size for write Data Eye voltage sweep, Supported options are 1,2 and 4
+        choices: 0=1 | 4=2* | 8=4
+  off= 189 op=0x05 cur=01 dfl=None  This options supports step size for write Data Eye. Supported options are 1, 2 and 4
+        choices: 0=1* | 4=2 | 8=4
+  off= 190 op=0x05 cur=0f dfl=None  Warning: Select System Configuration may cause the system to hang, as some System Configuration may not be supported by your OPN.
+        choices: 15W POR Configuration - 2 Commercial/Consumer=1 | 25W POR Configuration - 3 Commercial/Consumer=2 | 35W POR Configuration - 4 Consumer=3 | 45W POR Configuration - 5 Consumer=4 | 54W POR Configuration - 6 Consumer=5 | System Configuration AM4=6 | 1=15*
+  off= 191 op=0x05 cur=00 dfl=None  Audio IOs control
+        choices: 1=15 | SoundWire=0* | Azalia  and  SoundWire=3 | I2STDM and I2SBT=2 | Azalia and I2SBT=4 | SoundWire and I2SBT=5 | Azalia mHDA=6 | PDM Mic Selection=1
+  off= 192 op=0x05 cur=0f dfl=None  System Temperature Tracking [0 = disabled; 1 = enabled]
+        choices: 1=15* | Enable=0 | L2 Stream HW Prefetcher=1
+  off= 193 op=0x05 cur=0f dfl=None  UMA Mode
+        choices: 1=15* | UMA_SPECIFIED=0 | UMA_AUTO=1 | UMA_GAME_OPTIMIZED=2 | UMA Frame buffer Size=3
+  off= 196 op=0x05 cur=ff dfl=None  Set UMA FB size
+        choices: 1=4294967295* | 128M=64 | 256M=128 | 384M=256 | 512M=384 | 80M=512 | 96M=80 | 768M=96
+  off= 200 op=0x05 cur=00 dfl=None  Enable Integrate HD Audio controller
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15
+  off= 201 op=0x05 cur=01 dfl=None  Enable/Disable IOMMU
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15
+  off= 202 op=0x05 cur=02 dfl=None  No help string
+        choices: Core Performance Boost=0 | GFX Configuration=2* | 1=15
+  off= 203 op=0x05 cur=00 dfl=None  Auto = Use the default fan controller settings
+Manual = User can set customized fan controller settings
+        choices: SEV-ES ASID Space Limit=1 | 1=0*
+  off= 204 op=0x05 cur=00 dfl=None  Unforce = Do not force the fan PWM
+Force = Force the fan PWM to the use specified value
+        choices: Unforce=1 | Force PWM=0*
+  off= 205 op=0x07 cur=0a dfl=None  Specify the PWM to force the fan to [0-100]
+  off= 206 op=0x05 cur=00 dfl=None  Auto = Use the default fan table
+Manual = User can set customized fan table
+        choices: SEV-ES ASID Space Limit=1 | 1=0*
+  off= 207 op=0x07 cur=3c dfl=None  Low Temperature ['C]
+  off= 208 op=0x07 cur=50 dfl=None  Medium Temperature ['C]
+  off= 209 op=0x07 cur=5a dfl=None  High Temperature ['C]
+  off= 210 op=0x07 cur=5f dfl=None  Critical Temperature ['C]
+  off= 211 op=0x07 cur=64 dfl=None  Low Pwm [0-100]
+  off= 212 op=0x07 cur=50 dfl=None  Medium Pwm [0-100]
+  off= 213 op=0x07 cur=1e dfl=None  High Pwm [0-100]
+  off= 214 op=0x07 cur=03 dfl=None  Temperature Hysteresis ['C]
+  off= 215 op=0x05 cur=00 dfl=None  0 = 25kHz
+1 = 100Hz
+        choices: 25kHz=1 | Fan Polarity=0*
+  off= 216 op=0x05 cur=00 dfl=None  0 = negative
+1 = positive
+        choices: Positive=0* | STT Control=1
+  off= 217 op=0x05 cur=0f dfl=None  Disable or enable OnChip SATA controller
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 218 op=0x05 cur=0f dfl=None  Select OnChip SATA Type. Don't select RAID for Raven FP5 platform. Raven FP5 doesn't support RAID.
+        choices: AHCI as ID 0x7904=2 | RAID=5 | 1=15* | Sata RAS Support=1
+  off= 219 op=0x05 cur=0f dfl=None  Disable or enable Sata RAS Support
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 220 op=0x05 cur=0f dfl=None  Disable or enable Sata Disabled AHCI Prefetch Function
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 221 op=0x05 cur=0f dfl=None  No help string
+        choices: Enable=0 | L2 Stream HW Prefetcher=1 | 1=15*
+  off= 222 op=0x05 cur=0f dfl=None  No help string
+        choices: Enable=0 | L2 Stream HW Prefetcher=1 | 1=15*
+  off= 223 op=0x05 cur=0f dfl=None  Enable or disable USB3 controller.
+        choices: Disabled=1 | Core Performance Boost=0 | 1=15*
+  off= 224 op=0x05 cur=0f dfl=None  Enable or disable USB3 controller.
+        choices: Disabled=1 | Core Performance Boost=0 | 1=15*
+  off= 225 op=0x05 cur=03 dfl=None  Select Ac Loss Control Method
+        choices: Always On=0 | Reserved=1 | Previous=2 | I2C 0 Enable=3* | 1=15
+  off= 226 op=0x05 cur=0f dfl=None  No help string
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 227 op=0x05 cur=0f dfl=None  No help string
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 228 op=0x05 cur=0f dfl=None  No help string
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 229 op=0x05 cur=01 dfl=None  No help string
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15
+  off= 230 op=0x05 cur=0f dfl=None  Uart 0 has no HW FC if Uart 2 is enabled
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 231 op=0x05 cur=0f dfl=None  No help string
+        choices: Core Performance Boost=0 | 0x2F8=1 | 0x3E8=2 | 0x3F8=3 | Uart 1 Enable=4 | 1=15*
+  off= 232 op=0x05 cur=0f dfl=None  Uart 1 has no HW FC if Uart 3 is enabled
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 233 op=0x05 cur=0f dfl=None  No help string
+        choices: Core Performance Boost=0 | 0x2F8=1 | 0x3E8=2 | 0x3F8=3 | Uart 1 Enable=4 | 1=15*
+  off= 234 op=0x05 cur=0f dfl=None  No help string
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 235 op=0x05 cur=0f dfl=None  No help string
+        choices: Core Performance Boost=0 | 0x2F8=1 | 0x3E8=2 | 0x3F8=3 | Uart 1 Enable=4 | 1=15*
+  off= 236 op=0x05 cur=0f dfl=None  No help string
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 237 op=0x05 cur=0f dfl=None  No help string
+        choices: Core Performance Boost=0 | 0x2F8=1 | 0x3E8=2 | 0x3F8=3 | Uart 1 Enable=4 | 1=15*
+  off= 238 op=0x05 cur=0f dfl=None  No help string
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 239 op=0x05 cur=0f dfl=None  Enable or disable Ethernet controller.
+        choices: Disabled=1 | Core Performance Boost=0 | 1=15*
+  off= 240 op=0x05 cur=0f dfl=None  Enable or disable Ethernet controller.
+        choices: Disabled=1 | Core Performance Boost=0 | 1=15*
+  off= 241 op=0x05 cur=0f dfl=None  No help string
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 242 op=0x05 cur=00 dfl=None  No help string
+        choices: 1=0* | SEV-ES ASID Space Limit=1
+  off= 243 op=0x05 cur=0f dfl=None  STAPM Boost Enable [1 = boost disabled; 2 = boost enabled]
+        choices: 1=15* | Enable=0 | L2 Stream HW Prefetcher=1
+  off= 244 op=0x07 cur=00 dfl=None  Tskin time constant [seconds]
+  off= 248 op=0x05 cur=0f dfl=None  No help string
+        choices: 1=15* | SEV-ES ASID Space Limit=1
+  off= 249 op=0x05 cur=0f dfl=None  A+A Support Enable
+        choices: 1=15* | Enable=0 | L2 Stream HW Prefetcher=1
+  off= 250 op=0x05 cur=03 dfl=None  Inverting the map will cause the highest memory channels to get assigned the lowest addresses in the system.
+        choices: Core Performance Boost=0 | Disabled=1 | 1=3*
+  off= 251 op=0x05 cur=03 dfl=None  Control DF::RedirScrubCtrl[RedirScrubMode[1]]
+        choices: Core Performance Boost=0 | Disabled=1 | 1=3*
+  off= 252 op=0x05 cur=ff dfl=None  Disables Error propagation to UMC or any downstream slaves eg. FCH. Use this to avoid reset in failure scenario
+        choices: Sync flood enabled=1 | Disable DF sync flood propagation=0 | 1=255*
+  off= 253 op=0x05 cur=03 dfl=None  When this feature is disabled, BIOS does not implement MemClear after memory training (only if non-ECC DIMMs are used).
+        choices: Disabled=0 | Core Performance Boost=1 | 1=3*
+  off= 256 op=0x05 cur=0f dfl=None  Precision Boost Overdrive:
+  Disabled: stock board values for standard IRM
+  Enabled: Loads board limits for EDC, TDC and PPT.
+  Manual: manual setting of PPT, TDC and EDC
+        choices: 1=15* | Enable=0 | L2 Stream HW Prefetcher=1 | SEV-ES ASID Space Limit=2
+  off= 257 op=0x05 cur=0f dfl=None  Disabled:Part runs with a scalar of 1X, i.e. normal operation.
+
+Manual = Part runs with a scalar of customized Value.
+        choices: 1=15* | Core Performance Boost=0 | SEV-ES ASID Space Limit=1
+  off= 258 op=0x05 cur=c8 dfl=None  Precision Boost Overdrive increases the maximum boost voltage used (runs above parts specified maximum) and the amount of time spent at that voltage. The larger the value entered the larger the boost voltage used and the longer that voltage will be maintained.
+        choices: 2X=100 | 3X=200* | 4X=300 | 5X=400 | 6X=500 | 7X=600 | 8X=700 | 9X=800
+  off= 262 op=0x07 cur=00 dfl=None  PPT Limit [W], Board Socket Power capability, adjustable up to motherboard programed PPT limit.
+  off= 266 op=0x07 cur=00 dfl=None  TDC Limit [A], Board thermally constrained current delivery capability, adjustable up to motherboard programed board TDC limit.
+  off= 270 op=0x07 cur=00 dfl=None  EDC Limit [A], Board electrically constrained current delivery capability, adjustable up to motherboard programed board EDC limit.
+  off= 274 op=0x05 cur=ff dfl=None  Specifies the FCLK frequency.
+        choices: 1=255* | SOC OVERCLOCK VID=0 | 933MHz=1 | 1067MHz=2 | 1200MHz=3 | 1333MHz=4 | 1367MHz=5 | 1400MHz=6
+  off= 275 op=0x07 cur=00 dfl=None  Specifies the Voltage ID (VID) value for VDDR_SOC to support overclocking.
+NOTE:  This is a VID value in hex and not a voltage level and applied if DDR speed is > 2933.
+ Voltage(V)=1.55V-Hex2Dec(VID)*0.00625V
+  off= 276 op=0x05 cur=ff dfl=None  If UclkDiv1Mode==1, UCLK==MEMCLK
+if UclkDiv1Mode==0, UCLK==MEMCLK/2
+        choices: 1=255* | UCLK==MEMCLK/2=1 | Precision Boost Overdrive=0
+  off= 277 op=0x07 cur=00 dfl=None  Specifies core frequency (MHz)
+  off= 281 op=0x05 cur=0f dfl=None  Auto = Use the default STT controller settings
+Manual = User can set customized STT controller settings
+        choices: 1=15* | SEV-ES ASID Space Limit=1
+  off= 282 op=0x05 cur=0f dfl=None  No help string
+        choices: 1=15* | APU+dGPU=2 | STT_M1=3
+  off= 283 op=0x07 cur=00 dfl=None  No help string
+  off= 285 op=0x07 cur=00 dfl=None  No help string
+  off= 287 op=0x07 cur=00 dfl=None  No help string
+  off= 289 op=0x07 cur=00 dfl=None  No help string
+  off= 291 op=0x07 cur=00 dfl=None  No help string
+  off= 293 op=0x07 cur=00 dfl=None  No help string
+  off= 295 op=0x07 cur=00 dfl=None  No help string
+  off= 297 op=0x07 cur=00 dfl=None  No help string
+  off= 299 op=0x07 cur=00 dfl=None  No help string
+  off= 301 op=0x07 cur=00 dfl=None  No help string
+  off= 303 op=0x07 cur=00 dfl=None  No help string
+  off= 305 op=0x07 cur=00 dfl=None  No help string
+  off= 307 op=0x07 cur=00 dfl=None  No help string
+  off= 309 op=0x07 cur=00 dfl=None  No help string
+  off= 311 op=0x05 cur=ff dfl=None  Perform 2D Read Training with DFE on.
+        choices: 1=255* | L2 Stream HW Prefetcher=1 | Enable=0
+  off= 312 op=0x05 cur=ff dfl=None  Perform 2D Write Training with FFE on.
+        choices: 1=255* | L2 Stream HW Prefetcher=1 | Enable=0
+  off= 313 op=0x07 cur=00 dfl=None  APU Only sPPT Limit in mW
+  off= 317 op=0x05 cur=0f dfl=None  Option to disable GPU Host Translation Cache
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 318 op=0x05 cur=ff dfl=None  When DF Cstate feature is enabled, FW programs the registers required to enable this feature is the DF HW. (For auto option, it means this option will synchronized with Global C State.)
+        choices: Core Performance Boost=0 | Disabled=1 | 1=255*
+  off= 319 op=0x05 cur=00 dfl=None  Auto will result in all banks being enabled. Per bank enables refreshes to be sent on a per bank basis.
+        choices: 1=0* | Per Bank=1 | Power Down Enable=2
+  off= 320 op=0x07 cur=00 dfl=None  Specifies the minimum sustained power that the APU power is allowed to reduce to in mWatts.
+  off= 322 op=0x05 cur=0f dfl=None  PDM Mic Selection
+        choices: 1=15* | Use 6 Channel=0 | WARNING - DAMAGE CAUSED BY USE OF YOUR AMD PROCESSOR OUTSIDE OF SPECIFICATION OR IN EXCESS OF FACTORY SETTINGS ARE NOT COVERED UNDER YOUR AMD PRODUCT WARRANTY AND MAY NOT BE COVERED BY YOUR SYSTEM MANUFACTURER'S WARRANTY.=1
+  off= 323 op=0x05 cur=02 dfl=None  Enable : Enable ConsoleOut Function for ABL
+Disable : Disable ConsoleOut Function for ABL
+Auto : Keep default behavior
+        choices: 1=2* | L2 Stream HW Prefetcher=1 | Enable=0
+  off= 324 op=0x05 cur=0f dfl=None  Disable SATA controller if there is no port connection.
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 325 op=0x05 cur=0f dfl=None  CPPC Control :
+Enable- Override, 
+Disabled: - Set default.
+        choices: 1=15* | Disabled=1 | Core Performance Boost=0
+  off= 326 op=0x07 cur=ff dfl=None  Range of CppcPerfLimitMax: 0 - 255
+  off= 327 op=0x07 cur=00 dfl=None  Range of CppcPerfLimitMin: 0 - 255
+  off= 328 op=0x07 cur=ff dfl=None  Range of EPP Max: 0 - 255
+  off= 329 op=0x07 cur=00 dfl=None  Range of EPP Min: 0 - 255
+  off= 330 op=0x05 cur=01 dfl=None  Enable DMAr system protection during POST.
+        choices: 1=15 | Disabled=1 | Core Performance Boost=0
+  off= 331 op=0x05 cur=0f dfl=None  No help string
+        choices: Core Performance Boost=0 | PSP RPMC Switch=1 | 1=15*
+  off= 332 op=0x05 cur=ff dfl=None  No help string
+        choices: S3/S0i3 only=255* | Normal boot only=2 | ABL PMU message Control=1
+  off= 333 op=0x05 cur=0f dfl=None  Enable/Disable ARI
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 384 op=0x07 cur=00 dfl=None  SATA port number map to DEVSLP pad 0: 0-7: SATA 0; 8-15: SATA 1
+  off= 385 op=0x07 cur=00 dfl=None  SATA port number map to DEVSLP pad 1: 0-7: SATA 0 ports; 8-15: SATA 1 ports
+  off= 386 op=0x07 cur=00 dfl=None  PcdMsgSetSustainedPowerLimit
+  off= 390 op=0x07 cur=00 dfl=None  PcdMsgSetFastPPTLimit
+  off= 394 op=0x07 cur=00 dfl=None  PcdMsgSetSlowPPTLimit
+  off= 422 op=0x05 cur=0f dfl=None  Warning: Select System Configuration may cause the system to hang, as some System Configuration may not be supported by your OPN.
+        choices: 45W COMMERCIAL and CONSUMER - SYSTEM CONFIG 2=1 | 65W COMMERCIAL - SYSTEM CONFIG 3=2 | 65W CONSUMER - SYSTEM CONFIG 6=3 | CPPC=6 | 1=15*
+  off= 423 op=0x05 cur=0f dfl=None  ARI Forwarding Enable for each downstream port
+        choices: Enable=0 | L2 Stream HW Prefetcher=1 | 1=15*
+  off= 424 op=0x05 cur=ff dfl=None  To control the total number of PMU debug messages.
+Several major controls are listed below:
+1. Detailed debug messages (e.g. Eye delays)
+2. Coarse debug messages (e.g. rank information)
+3. Stage completion
+4. Firmware completion messages only
+        choices: Coarse debug message=3 | Stage completion=10 | Firmware completion message only=200 | =254 | 1=255*
+  off= 425 op=0x05 cur=ff dfl=None  No help string
+        choices: xAPIC=0 | x2APIC=1 | ACPI _CST C1 Declaration=2 | 1=255*
+  off= 426 op=0x05 cur=0f dfl=None  No help string
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 427 op=0x05 cur=0f dfl=None  Enabled = CPPC highest capability register of each thread will have a different value to express the AMD recommended scheduling order to OS. CPPC must be enabled for this parameter to have effect. 
+Disabled = Does not declare AMD preferred scheduling order to OS.
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 428 op=0x05 cur=0f dfl=None  Enable/Disable port 0 of SATA controller 0
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 429 op=0x05 cur=0f dfl=None  Enable/Disable port 1 of SATA controller 0
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 430 op=0x05 cur=0f dfl=None  Enable/Disable port 0 of SATA controller 1
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 431 op=0x05 cur=0f dfl=None  Enable/Disable port 1 of SATA controller 1
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 432 op=0x07 cur=00 dfl=None  No help string
+  off= 434 op=0x07 cur=00 dfl=None  No help string
+  off= 436 op=0x07 cur=00 dfl=None  No help string
+  off= 438 op=0x05 cur=0f dfl=None  Disable or Enable XHCI0 2.0 port 0
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 439 op=0x05 cur=0f dfl=None  Disable or Enable XHCI0 2.0 port 1
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 440 op=0x05 cur=0f dfl=None  Disable or Enable XHCI0 2.0 port 2
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 441 op=0x05 cur=0f dfl=None  Disable or Enable XHCI0 2.0 port 3
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 442 op=0x05 cur=0f dfl=None  Disable or Enable XHCI1 2.0 port 0
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 443 op=0x05 cur=0f dfl=None  Disable or Enable XHCI1 2.0 port 1
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 444 op=0x05 cur=0f dfl=None  Disable or Enable XHCI0 3.1 port 0
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 445 op=0x05 cur=0f dfl=None  Disable or Enable XHCI0 3.1 port 1
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 446 op=0x05 cur=0f dfl=None  Disable or Enable XHCI1 3.1 port 0
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 447 op=0x05 cur=0f dfl=None  Disable or Enable XHCI1 3.1 port 1
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 448 op=0x05 cur=0f dfl=None  Disable or Enable XHCI1 2.0 port 2
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 449 op=0x05 cur=0f dfl=None  Disable or Enable XHCI1 2.0 port 3
+        choices: Core Performance Boost=0 | Disabled=1 | 1=15*
+  off= 450 op=0x05 cur=01 dfl=None  No help string
+        choices: Core Performance Boost=0 | Disabled=1*
+  off= 451 op=0x05 cur=01 dfl=None  No help string
+        choices: Core Performance Boost=0 | Disabled=1*
+  off= 452 op=0x07 cur=01 dfl=None  Specifies the stored refresh limit to required enter sub-urgent refresh mode
+Constraint: SubUrgRefLowerBound <= UrgRefLimit
+Valid value: 6 ~ 1
+  off= 453 op=0x07 cur=01 dfl=None  Specifies the stored refresh limit to required enter urgent refresh mode
+Constraint: SubUrgRefLowerBound <= UrgRefLimit
+Valid value: 6 ~ 1
+  off= 454 op=0x05 cur=ff dfl=None  Override DIMM SPD Byte 7 [3:0] Maximum Activate Count (MAC)
+Auto: based on SPD setting
+        choices: 1=255* | 700 K=0 | 600 K=1 | 500 K=2 | 400 K=3 | 300 K=4 | 200 K=5 | Unlimited MAC=6
+  off= 455 op=0x05 cur=ff dfl=None  Programming SubUrgRefLowerBound = 1 and UrgRefLimit = 1 will disable burst/postponed refresh
+        choices: 1=255* | Disabled=1
+  off= 457 op=0x05 cur=01 dfl=None  Enable DMA remap support in IVRS IVinfo Field.
+        choices: 1=15 | Disabled=1 | Core Performance Boost=0
+  off= 458 op=0x05 cur=00 dfl=None  Set if using IBS execution sampling without software workaround for erratum 1,285. May impact performance.
+        choices: 1=0* | Disabled=1
+  off= 473 op=0x05 cur=00 dfl=None  Control RPMC usage.
+Enable : Enable RMPC function
+Disable : Disable RMPC function
+Auto : Keep default behavior
+
+This option is for test purpose only,
+NOT FOR PRODUCTION!!!
+        choices: 1=255 | Core Performance Boost=0* | Disabled=1
+  off= 474 op=0x05 cur=0f dfl=None  No help string
+        choices: 1=15* | Enable=0 | L2 Stream HW Prefetcher=1
+
+===== AMD_PBS_SETUP  (136 B, a339d746-f678-49b3-9fc7-54ce0f9df226)  module=AmdPbsSetupDxe  live=yes  default=no =====
+  off=   2 op=0x07 cur=00 dfl=None  (hidden)
+  off=   4 op=0x05 cur=04 dfl=None  Enable/Disable HybridGraphics
+        choices: Auto=0 | Discrete GPU Hotplug Mode=4*
+  off=   5 op=0x05 cur=01 dfl=None  Disable Discrete GPU's Audio or keep its ROM strap setting
+        choices: Auto=0 | Discrete GPU BOMACO Support=1*
+  off=   6 op=0x05 cur=01 dfl=None  Select Internal/External Graphics
+        choices: Ext Graphics (PEG)=1* | Discrete GPU's USB Port=2
+  off=   7 op=0x05 cur=00 dfl=None  Enable/Disable exposing of _HID(PNP0C50) in ACPI ASL code to OS
+        choices: Under I2C 1 Bus=0* | Under I2C 2 Bus=1 | Under I2C 3 Bus=2 | Under USB 6 Bus=3 | ELAN TSP Under I2C 1 Bus=16 | ELAN TSP Under I2C 2 Bus=17 | ELAN TSP Under I2C 3 Bus=18 | HDMI over USB-C0=19
+  off=   8 op=0x05 cur=01 dfl=None  Enable/Disable exposing of _HID(PNP0C50) in ACPI ASL code to OS
+        choices: Under I2C 1 Bus=0 | Under I2C 2 Bus=1* | Under I2C 3 Bus=2 | Under USB 6 Bus=3 | ELAN TSP Under I2C 1 Bus=32 | ELAN TSP Under I2C 2 Bus=33 | ELAN TSP Under I2C 3 Bus=34 | HDMI over USB-C0=35
+  off=   9 op=0x05 cur=02 dfl=None  Enable/Disable exposing of _HID(BCM2F25) in ACPI ASL code to OS
+        choices: Under I2C 1 Bus=0 | Under I2C 2 Bus=1 | Under I2C 3 Bus=2* | Under USB 6 Bus=3 | Auto=4
+  off=  10 op=0x05 cur=02 dfl=None  Enable/Disable exposing of _HID(CPLM3218) in ACPI ASL code to OS
+        choices: Under I2C 1 Bus=0 | Under I2C 2 Bus=1 | Under I2C 3 Bus=2* | Under USB 6 Bus=3 | Auto=4
+  off=  11 op=0x05 cur=00 dfl=None  HDMI over USB-C1
+        choices: HDMI over USB Type-C=0* | DP over USB Type-C=1 | AcDcSwitch=2
+  off=  12 op=0x05 cur=00 dfl=None  Force HDMI signals route over USB Type C port
+        choices: HDMI over USB Type-C=0* | DP over USB Type-C=1 | AcDcSwitch=2
+  off=  13 op=0x05 cur=01 dfl=None  Enable or disable the power of HDD
+        choices: Auto=0 | Enabled (x4)=1*
+  off=  14 op=0x05 cur=01 dfl=None  Enable or disable the power of ODD
+        choices: Auto=0 | Enabled (x4)=1*
+  off=  15 op=0x05 cur=00 dfl=None  Enable/Disable Zero-Power ODD Feature
+        choices: Auto=0* | Enabled (x4)=1
+  off=  16 op=0x05 cur=02 dfl=None  Enable or disable the power of SSD
+        choices: Auto=0 | SSD x2=1 | SSD x4=2* | Front Camera 0 Enable=3
+  off=  17 op=0x05 cur=00 dfl=None  Enable Serial Debug Message Under OS
+        choices: Auto=0* | Enabled (x4)=1
+  off=  18 op=0x05 cur=00 dfl=None  Enable or disable the power of DT SLOT
+        choices: Disabled=0* | Enabled (x1) (Lane 0)=1 | Enabled (x2) (Lane 0 + 1)=2 | Auto=3
+  off=  19 op=0x05 cur=01 dfl=None  Enable or disable the power of WLAN/WIFI
+        choices: Auto=0 | Enabled (x4)=1* | Enabled=2
+  off=  20 op=0x05 cur=01 dfl=None  Enable or disable LAN Power
+        choices: Auto=0 | Enabled (x4)=1* | Enabled=2
+  off=  21 op=0x05 cur=01 dfl=None  Enable or disable the power of WWAN
+        choices: Auto=0 | Enabled (x4)=1* | Enabled=2
+  off=  22 op=0x05 cur=01 dfl=None  Enable or disable the power of EVAL Slot
+        choices: Auto=0 | Enabled (x4)=1*
+  off=  23 op=0x05 cur=01 dfl=None  Enable or disable the power of FRONT CAMERA 0
+        choices: Auto=0 | Enabled (x4)=1*
+  off=  24 op=0x05 cur=01 dfl=None  Enable or disable the power of FRONT CAMERA 1
+        choices: Auto=0 | Enabled (x4)=1*
+  off=  25 op=0x05 cur=01 dfl=None  Enable/Disable UCSI (USB Type-C Connector System Software Interface)
+        choices: Auto=0 | Enabled (x4)=1*
+  off=  26 op=0x05 cur=01 dfl=None  Enable/Disable charger BYPASS mode.
+        choices: Auto=0 | Enabled (x4)=1*
+  off=  27 op=0x05 cur=02 dfl=None  MITT Only
+        choices: WITT Only=0 | Both disable=1 | LAN Power Enable=2*
+  off=  28 op=0x05 cur=00 dfl=None  Turn Unused GPP Clocks Off
+        choices: Auto=0* | Enabled (x4)=1
+  off=  29 op=0x05 cur=00 dfl=None  Enable or disable CLK_REQ0# for MXM x8 Slot J10
+        choices: Auto=0* | Enabled (x4)=1
+  off=  30 op=0x05 cur=01 dfl=None  Enable or disable CLK_REQ1# for Onboard LAN U55
+        choices: Auto=0 | Enabled (x4)=1*
+  off=  31 op=0x05 cur=01 dfl=None  Enable or disable CLK_REQ2# for M.2 WWAN Slot J90
+        choices: Auto=0 | Enabled (x4)=1*
+  off=  32 op=0x05 cur=00 dfl=None  Enable or disable CLK_REQ3# for Thunderbolt CON1
+        choices: Auto=0* | Enabled (x4)=1
+  off=  33 op=0x05 cur=00 dfl=None  Enable or disable CLK_REQ4# for DT x4 Slot J79
+        choices: Auto=0* | Enabled (x4)=1
+  off=  34 op=0x05 cur=01 dfl=None  Enable or disable CLK_REQ5# for M.2 SSD Slot J19
+        choices: Auto=0 | Enabled (x4)=1*
+  off=  35 op=0x05 cur=01 dfl=None  Enable or disable CLK_REQ6# for M.2 WLAN Slot J92
+        choices: Auto=0 | Enabled (x4)=1*
+  off=  36 op=0x05 cur=01 dfl=None  Enable/Disable KBC Support under OS
+        choices: Auto=0 | Enabled (x4)=1*
+  off=  37 op=0x05 cur=00 dfl=None  Enable/disable AcDcSwitch.
+        choices: Auto=0* | Enabled (x4)=1
+  off=  38 op=0x07 cur=00 dfl=None  AmdDcTimer Setting.
+  off=  39 op=0x07 cur=00 dfl=None  AmdAcTimer Setting.
+  off=  41 op=0x05 cur=00 dfl=None  VDDP voltage  Setting.
+        choices: VDDP voltage (+10mv)=0* | VDDP voltage (+20mv)=1 | VDDP voltage (+30mv)=2 | VDDP voltage (+40mv)=3 | VDDP voltage (+50mv)=4 | VDDP voltage (+60mv)=5 | VDDP voltage (+70mv)=6 | VDDP voltage (+80mv)=7
+  off=  42 op=0x05 cur=00 dfl=None  VDD18 voltage  Setting.
+        choices: VDD18 voltage (ANPEC:+40mv/TI:+25mv)=0* | VDD18 voltage (ANPEC:+50mv/TI:+37.5mv)=1 | VDD18 voltage (ANPEC:+60mv/TI:+50mv)=2 | VDD18 voltage (ANPEC:+70mv/TI:+62.5mv)=3 | VDD18 voltage (ANPEC:+80mv/TI:+75mv)=4 | VDD18 voltage (ANPEC:+90mv/TI:+87.5mv)=5 | VDD18 voltage (ANPEC:+100mv/TI:+100mv)=6 | VDD18 voltage (ANPEC:+110mv/TI:+112.5mv)=7
+  off=  43 op=0x05 cur=00 dfl=None  Dynamic Power and Thermal Control Interface Enable/Disable
+        choices: Auto=0* | Enabled (x4)=1
+  off=  44 op=0x05 cur=00 dfl=None  Enable temperature report or STT through APML
+        choices: Auto=0* | Report onboard + eval card sensors=1 | BLINK LED=2
+  off=  46 op=0x05 cur=01 dfl=None  Select Discrete GPU Hotplug Mode - HotplugEnhanced or HotplugBasic
+        choices: Enhanced Mode=0 | DT Slot Power Enable=1*
+  off=  47 op=0x05 cur=00 dfl=None  Enable/Disable Discrete GPU Display HPD Circuitry
+        choices: Pulse Circuitry=0* | Discrete GPU's Audio=1
+  off=  48 op=0x05 cur=00 dfl=None  Enable/Disable Discrete GPU BOMACO Support
+        choices: Auto=0* | Enabled (x4)=1
+  off=  49 op=0x07 cur=0a dfl=None  MACO-PWR Timing: MACO_EN assert to PWR_EN deassert
+  off=  50 op=0x07 cur=14 dfl=None  PWROFF-RST Timing: PWR_EN deassert to PERSTb assert
+  off=  51 op=0x07 cur=14 dfl=None  PWRON-RST Timing: PWR_EN assert to PERSTb deassert
+  off=  52 op=0x07 cur=01 dfl=None  RST-MACO Timing: PERSTb deassert to MACO_EN deassert
+  off=  53 op=0x05 cur=03 dfl=None  Swtich KVM Mouse Protocol between Absolut/Simple
+        choices: Simple=0 | AMD DPTC interface=1 | WALLE lite PDT=3*
+  off=  54 op=0x05 cur=01 dfl=None  Enable/Disable BLINK LED to identify S3/S4 state
+        choices: Auto=0 | Enabled (x4)=1* | GPIO 11 Output High=2 | Thunderbolt Support=3
+  off=  56 op=0x05 cur=00 dfl=None  Switch S3/Modern Standby
+        choices: Modern Standby Enable=0* | Modern Standby Type=1
+  off=  57 op=0x07 cur=00 dfl=None  (hidden)
+  off=  58 op=0x05 cur=01 dfl=None  Bluetooth PLDR support Enable/Disable
+        choices: Auto=0 | Enabled (x4)=1* | MITT/WITT Selection=2
+  off=  59 op=0x05 cur=00 dfl=None  Enable/Disable ATIF Function 23 Support
+        choices: Auto=0* | Enabled (x4)=1
+  off=  60 op=0x05 cur=00 dfl=None  Enable/Disable Reduce Hardware Support. Please disable PME wakeup, when Reduce Hardware enabled.
+        choices: Auto=0* | Enabled (x4)=1
+  off=  61 op=0x05 cur=28 dfl=None  Select Above 4GB MMIO Limit to 35~48bits limit.
+        choices: 36bit (64GB)=35 | 37bit (128GB)=36 | 38bit (256GB)=37 | 39bit (512GB)=38 | 40bit (1TB)=39 | 41bit (2TB)=40* | 42bit (4TB)=41 | 43bit (8TB)=42
+  off=  62 op=0x05 cur=00 dfl=None  Enable/Disable PCIe x8 Slot D3Cold
+        choices: Auto=0* | Enabled (x4)=1 | Wireless Manageability Support=2
+  off=  63 op=0x05 cur=00 dfl=None  Enable/Disable Sensor Fusion User Mode Driver
+        choices: Auto=0* | Enabled (x4)=1
+  off=  64 op=0x05 cur=00 dfl=None  Enable to support Non-Eval Discrete GPU that doesn't have specific EVAL_PWRGD(B30), EVAL_PRESENT#(A5)
+        choices: Auto=0* | Enabled (x4)=1
+  off=  65 op=0x05 cur=00 dfl=None  Select which MP2 FW to load
+        choices: MP2_WalleLite=0* | EC=1
+  off=  66 op=0x05 cur=00 dfl=None  Select S0I2 or S0I3 type for Modern Standby.
+        choices: Modern Standby + S0i3=0* | Modern Standby + S0i2 + S0i3=1 | MS Resource=2
+  off=  67 op=0x05 cur=01 dfl=None  Determines the action taken when the system power is off and a PCI Power Management Enable wake up event occurs.
+        choices: Auto=0 | Enabled (x4)=1*
+  off=  68 op=0x05 cur=00 dfl=None  Enable Thunderbolt Support
+        choices: Auto=0* | Enabled (x4)=1
+  off=  69 op=0x05 cur=01 dfl=None  Select Thunderbolt Security Level
+        choices: User Authorization=0 | Secure Connect=1* | Display Port and USB=2 | USB Docking Only=3 | Thunderbolt Force PWR=4
+  off=  70 op=0x05 cur=00 dfl=None  Enable Thunderbolt Force PWR
+        choices: Auto=0* | Enabled (x4)=1
+  off=  71 op=0x05 cur=00 dfl=None  Do Thunderbolt (Boot On) Command Before/After PCI Enumeration
+        choices: Auto=0* | Enabled (x4)=1
+  off=  72 op=0x05 cur=00 dfl=None  Do Thunderbolt (USB On) Command Before/After PCI Enumeration
+        choices: Auto=0* | Enabled (x4)=1
+  off=  73 op=0x05 cur=00 dfl=None  Assign Thunderbolt Resource Before/After PCI Enumeration
+        choices: Auto=0* | Thunderbolt MMIO Resource=1
+  off=  74 op=0x05 cur=00 dfl=None  Select Thunderbolt PCIE MMIO Resource
+        choices: Half Size=0* | Three Quarters=1 | Thunderbolt in SLOT=2
+  off=  75 op=0x05 cur=02 dfl=None  Select Thunderbolt Slot
+        choices: PCIE DT SLOT=0 | PCIE TBT SLOT=1 | Legacy/Native/RTD3=2*
+  off=  76 op=0x05 cur=01 dfl=None  Select Thunderbolt Legacy/Native/RTD3 Mode
+        choices: Native Mode=0 | Native + RTD3Hot=1* | Native + RTD3Cold=2 | Thunderbolt L1SS Support=3
+  off=  77 op=0x05 cur=00 dfl=None  Select Thunderbolt PCIE L1SS Support
+        choices: Auto=0* | Enabled (x4)=1
+  off=  78 op=0x05 cur=00 dfl=None  Reserved 1M bytes MMIO space on 1M boundary when iLA TraceMemoryEn enabled
+        choices: Auto=0* | Enabled (x4)=1
+  off=  79 op=0x07 cur=00 dfl=None  Vari-Bright level for Maximum Performance on DC: 0 - 4
+  off=  80 op=0x07 cur=01 dfl=None  Vari-Bright level for Better Performance on DC: 0 - 4
+  off=  81 op=0x05 cur=01 dfl=None  Wireless LAN Recovery suppport Enable/Disable
+        choices: Auto=0 | Enabled (x4)=1* | Bluetooth PLDR support=2
+  off=  82 op=0x05 cur=01 dfl=None  Enable or disable the power of USB CAMERA
+        choices: Auto=0 | Enabled (x4)=1*
+  off=  83 op=0x05 cur=00 dfl=None  Enable or disable Power Sensors Routing Select
+        choices: WALLE lite PM log=0* | MP2 FW Selection=1
+  off=  85 op=0x07 cur=03 dfl=None  Vari-Bright level for Better Battery on DC: 0 - 4
+  off=  86 op=0x07 cur=03 dfl=None  Vari-Bright level for Battery Saver on DC: 0 - 4
+  off=  87 op=0x05 cur=00 dfl=None  Select which APU eSPI port route to EC
+        choices: APU SMBUS0=0* | Special Display Features=1
+  off=  88 op=0x05 cur=01 dfl=None  Enable or Disable Wake On Voice
+        choices: Auto=0 | Enabled (x4)=1*
+  off=  89 op=0x05 cur=00 dfl=None  Enable or Disable ACP Power Gating
+        choices: Auto=0* | Enabled (x4)=1
+  off=  90 op=0x05 cur=01 dfl=None  Usage of GPP8/9
+        choices: SATA=1* | NVMe RAID mode=0
+  off=  91 op=0x05 cur=00 dfl=None  Enable or disable NVMe RAID mode. Please setting the 'PCIe/GFX Lanes Configuration' item according to the RAID configuration
+        choices: Auto=0* | Enabled (x4)=1
+  off=  92 op=0x05 cur=00 dfl=None  Enable/Disable Discrete GPU D3Cold HPD function
+        choices: Auto=0* | Enabled (x4)=1
+  off=  93 op=0x05 cur=01 dfl=None  Enable to support sending PME_Turn_Off message to Discrete GPU when going to D3Cold
+        choices: Auto=0 | Enabled (x4)=1*
+  off=  94 op=0x05 cur=00 dfl=None  DP0 Select only avaliable for Celadon Nova TBT/Non-TBT
+        choices: DP display=0* | HDMI display=1 | Discrete GPU _DSM Function A=2
+  off=  95 op=0x05 cur=00 dfl=None  DP1 Select only avaliable for Celadon Nova TBT/Non-TBT
+        choices: HDMI display=0* | Discrete GPU _DSM Function A=1
+  off=  96 op=0x05 cur=01 dfl=None  Enable or Disable ACP CLOCK Gating
+        choices: Auto=0 | Enabled (x4)=1*
+  off=  97 op=0x05 cur=01 dfl=None  Enable: Enable USB current resource for MS; Disable: Disable USB current resource for MS.
+        choices: Auto=0 | Enabled (x4)=1*
+  off=  98 op=0x05 cur=00 dfl=None  For NVIDIA mobile DGPU card only. Output DGPU_EN# A19 pin and DGPU_SEL# B17 pin to high at every power on state.
+        choices: Auto=0* | Enabled (x4)=1
+  off=  99 op=0x05 cur=00 dfl=None  Disable Discrete GPU's USB Port or keep default setting
+        choices: Discrete GPU's SSID/SVID=0* | Auto=1
+  off= 100 op=0x05 cur=00 dfl=None  UCSI tunnel can be put on ECRAM or MMIO space, this option specify which one is selected.
+        choices: UCSI tunnel at MMIO 0xFEEC2000=0* | Charger mode (NVDC vs. BYPASS)=1
+  off= 101 op=0x05 cur=01 dfl=None  Select Thunderbolt Host Card Chipset Name
+        choices: Titan Ridge=0 | TR HR FPB Capability=1*
+  off= 102 op=0x05 cur=02 dfl=None  Select Thunderbolt Wake Up Command
+        choices: Auto=0 | GO2SX_NO_WAKE Command=2* | Serial Debug Message Under OS=3
+  off= 103 op=0x05 cur=00 dfl=None  Enable/Disable Wireless Manageability support
+        choices: Auto=0* | Enabled (x4)=1
+  off= 104 op=0x05 cur=00 dfl=None  Force Discrete GPU to Gen1 before entering D3Cold (before sending PME_Turn_Off message)
+        choices: Auto=0* | Enabled (x4)=1
+  off= 105 op=0x05 cur=00 dfl=None  PCI-SIG ECN _DSM Function A for Discrete GPU's GPP bridge.
+        choices: Auto=0* | Enabled (x4)=1
+  off= 106 op=0x05 cur=00 dfl=None  PCI-SIG ECN _DSM Function B for Discrete GPU's GPP bridge.
+        choices: Auto=0* | Enabled (x4)=1
+  off= 107 op=0x05 cur=00 dfl=None  Enable or disable Titan Ridge Host Card PCIe FPB Capability
+        choices: Auto=0* | Enabled (x4)=1
+  off= 108 op=0x05 cur=01 dfl=None  Program Discrete GPU's SSID/SVID depends on HybridGraphics setting
+        choices: Discrete GPU's SSID/SVID=0 | Discrete GPU's VGA SSID/SVID=1*
+  off= 110 op=0x05 cur=00 dfl=None  Enable/Disable ATCS Function 9 Support
+        choices: Auto=0* | Enabled (x4)=1
+  off= 111 op=0x07 cur=00 dfl=None  Power limit adjustment percent for [Maximum Performance] on AC: 0 - 100
+  off= 112 op=0x07 cur=00 dfl=None  Power limit adjustment percent for [Better Performance] on AC: 0 - 100
+  off= 113 op=0x07 cur=00 dfl=None  Power limit adjustment percent for [Better Battery] on AC: 0 - 100
+  off= 114 op=0x07 cur=00 dfl=None  Power limit adjustment percent for [Maximum Performance] on DC: 0 - 100
+  off= 115 op=0x07 cur=00 dfl=None  Power limit adjustment percent for [Better Performance] on DC: 0 - 100
+  off= 116 op=0x07 cur=00 dfl=None  Power limit adjustment percent for [Better Battery] on DC: 0 - 100
+  off= 117 op=0x07 cur=00 dfl=None  Power limit adjustment percent for [Battery Saver] on DC: 0 - 100
+  off= 120 op=0x07 cur=00 dfl=None  Overwrite Discrete GPU's VGA SSID/SVID. Default value 0 means depends on HybridGraphics setting.
+  off= 124 op=0x07 cur=00 dfl=None  Overwrite Discrete GPU's AUDIO SSID/SVID. Default value 0 means depends on HybridGraphics setting.
+  off= 128 op=0x07 cur=80 dfl=None  VDDIO voltage  Setting. VDDIO=1.2v+(N-128)*5mv  N=0~255
+  off= 129 op=0x05 cur=00 dfl=None  Enable or disable the Wlan Power In S3/S4 state
+        choices: Auto=0* | Enable Wlan Power In S4=1 | Enable Wlan Power In S3 And S4=2 | WWAN Power Enable=3
+  off= 130 op=0x05 cur=01 dfl=None  Disable the Xtal during S3/S5
+        choices: Auto=0 | Enabled (x4)=1*
+  off= 131 op=0x05 cur=0f dfl=None  Enable option to allocate 100KB for MP2 customize request
+        choices: WALLE lite PDT=15* | Enabled (x4)=1 | Auto=0
+  off= 132 op=0x05 cur=00 dfl=None  Enable/Disable Wireless Botton
+        choices: Auto=0* | =3
+  off= 133 op=0x07 cur=5e dfl=None  This filed used for specify the fake battery percentage, it will take effect if AC/DC switch enabled w/o real battery
+
+===== AOD_SETUP  (1020 B, 5ed15dc0-edef-4161-9151-6014c4cc630c)  module=AodSetupDxe  live=NO  default=no =====
+  off=  38 op=0x07 cur=None dfl=None  Specifies a custom CPU core frequency. Should be combined with a custom CPU voltage. Power saving features for idle cores (e.g. cc6 sleep) remain active.
+  off=  42 op=0x07 cur=None dfl=None  Specifies a custom CPU core voltage (mV). Should be combined with a custom CPU core frequency. Power saving features for idle cores (e.g. cc6 sleep) remain active.
+  off=  48 op=0x05 cur=None dfl=None  Can be used to disable symmetric multithreading. To re-enable SMT, a POWER CYCLE is needed after selecting the 'Auto' option. WARNING - S3 is NOT SUPPORTED on systems where SMT is disabled.
+        choices: DownCore Bitmap=0 | Advanced=1*
+  off=  72 op=0x05 cur=None dfl=None  Memory Overclock Settings
+        choices: Advanced=255* | Disabled=1
+  off=  73 op=0x05 cur=None dfl=None  Specifies the memory clock frequency.
+        choices: Advanced=255* | 933MHz=24 | 1067MHz=28 | 1200MHz=32 | 1333MHz=36 | 1367MHz=40 | 1400MHz=41 | 1433MHz=42
+  off=  74 op=0x05 cur=None dfl=None  Specifies the CAS latency.
+        choices: Advanced=255* | 9 Clk=8 | 0Ah Clk=9 | 0Bh Clk=10 | 0Ch Clk=11 | 0Dh Clk=12 | 0Eh Clk=13 | 0Fh Clk=14
+  off=  75 op=0x05 cur=None dfl=None  Specifies the RAS# Active to CAS# Read Delay Time.
+        choices: Advanced=255* | 9 Clk=8 | 0Ah Clk=9 | 0Bh Clk=10 | 0Ch Clk=11 | 0Dh Clk=12 | 0Eh Clk=13 | 0Fh Clk=14
+  off=  76 op=0x05 cur=None dfl=None  Specifies the RAS# Active to CAS# Write Delay Time.
+        choices: Advanced=255* | 9 Clk=8 | 0Ah Clk=9 | 0Bh Clk=10 | 0Ch Clk=11 | 0Dh Clk=12 | 0Eh Clk=13 | 0Fh Clk=14
+  off=  77 op=0x05 cur=None dfl=None  Specifies Row Precharge Delay Time.
+        choices: Advanced=255* | 9 Clk=8 | 0Ah Clk=9 | 0Bh Clk=10 | 0Ch Clk=11 | 0Dh Clk=12 | 0Eh Clk=13 | 0Fh Clk=14
+  off=  78 op=0x05 cur=None dfl=None  Specifies the Active to Precharge Delay Time.
+        choices: Advanced=255* | 16h Clk=21 | 17h Clk=22 | 18h Clk=23 | 19h Clk=24 | 1Ah Clk=25 | 1Bh Clk=26 | 1Ch Clk=27
+  off=  79 op=0x05 cur=None dfl=None  Specify Trc
+        choices: Advanced=0* | Enabled=1
+  off=  80 op=0x07 cur=None dfl=None  Specifies Active to Active/Refresh Delay Time. Valid values 87h-1Dh.
+  off=  81 op=0x05 cur=None dfl=None  Specifies the Activate to Activate Delay Time, different bank group (tRRD_S)
+        choices: Advanced=255* | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7 | 9 Clk=8 | 0Ah Clk=9 | 0Bh Clk=10
+  off=  82 op=0x05 cur=None dfl=None  Specifies the Activate to Activate Delay Time, same bank group (tRRD_L)
+        choices: Advanced=255* | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7 | 9 Clk=8 | 0Ah Clk=9 | 0Bh Clk=10
+  off=  83 op=0x05 cur=None dfl=None  Specify Tfaw
+        choices: Advanced=0* | Enabled=1
+  off=  84 op=0x07 cur=None dfl=None  Specifies the Four Activate Window Time. Valid values 36h-6h.
+  off=  85 op=0x05 cur=None dfl=None  Specifies the Minimum Write to Read Time, different bank group
+        choices: Advanced=255* | 3 Clk=2 | TwtrL=3 | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7 | 9 Clk=8
+  off=  86 op=0x05 cur=None dfl=None  Specifies the Minimum Write to Read Time, same bank group
+        choices: Advanced=255* | 3 Clk=2 | TwtrL=3 | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7 | 9 Clk=8
+  off=  87 op=0x05 cur=None dfl=None  Specify Twr
+        choices: Advanced=0* | Enabled=1
+  off=  88 op=0x07 cur=None dfl=None  Specifies the Minimum Write Recovery Time. Valid value 51h-Ah
+  off=  89 op=0x05 cur=None dfl=None  Specify Trcpage
+        choices: Advanced=0* | Enabled=1
+  off=  90 op=0x07 cur=None dfl=None  SDRAM Optional Features (tMAW, MAC). Valid value 3FFh - 0h
+  off=  92 op=0x05 cur=None dfl=None  Specify TrdrdScL
+        choices: Advanced=0* | Enabled=1
+  off=  93 op=0x07 cur=None dfl=None  Specifies the CAS to CAS Delay Time, same bank group. Valid values Fh-1h
+  off=  94 op=0x05 cur=None dfl=None  Specify TwrwrScL
+        choices: Advanced=0* | Enabled=1
+  off=  95 op=0x07 cur=None dfl=None  Specifies the CAS to CAS Delay Time, same bank group. Valid values 3Fh-1h
+  off=  96 op=0x05 cur=None dfl=None  Specify Trfc
+        choices: Advanced=0* | Enabled=1
+  off=  97 op=0x07 cur=None dfl=None  Specifies the Refresh Recovery Delay Time (tRFC1). Valid values 3DEh-3Ch
+  off=  99 op=0x05 cur=None dfl=None  Specify Trfc2
+        choices: Advanced=0* | Enabled=1
+  off= 100 op=0x07 cur=None dfl=None  Specifies the Refresh Recovery Delay Time (tRFC2).  Valid values 3DEh-3Ch
+  off= 102 op=0x05 cur=None dfl=None  Specify Trfc4
+        choices: Advanced=0* | Enabled=1
+  off= 103 op=0x07 cur=None dfl=None  Specifies the Refresh Recovery Delay Time (tRFC4). Valid values 3DEh-3Ch
+  off= 106 op=0x05 cur=None dfl=None  Specifies the Processor ODT
+        choices: Advanced=255* | 480 ohm=0 | 240 ohm=1 | 160 ohm=2 | 120 ohm=3 | 96 ohm=8 | 80 ohm=9 | 68.6 ohm=10
+  off= 107 op=0x05 cur=None dfl=None  Specifies the CAS Write Latency
+        choices: Advanced=255* | 0Ah Clk=9 | 0Bh Clk=10 | 0Ch Clk=11 | 0Dh Clk=12 | 0Fh Clk=14 | 11h Clk=16 | 13h Clk=18
+  off= 108 op=0x05 cur=None dfl=None  Specifies the Read CAS# to Precharge Delay Time.
+        choices: Advanced=255* | 6 Clk=5 | 7 Clk=6 | TrrdL=7 | 9 Clk=8 | 0Ah Clk=9 | 0Bh Clk=10 | 0Ch Clk=11
+  off= 109 op=0x05 cur=None dfl=None  Specifies the CKE minimum high and low pulse width in memory clock cycles.
+        choices: Advanced=255* | Trdwr=1 | 3 Clk=2 | TwtrL=3 | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7
+  off= 110 op=0x05 cur=None dfl=None  Specifies the Read to Read turnaround timing in the same chipselect.
+        choices: Advanced=255* | Trdwr=1 | 3 Clk=2 | TwtrL=3 | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7
+  off= 111 op=0x05 cur=None dfl=None  Specifies the Read to Read turnaround timing in the same DIMM.
+        choices: Advanced=255* | Trdwr=1 | 3 Clk=2 | TwtrL=3 | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7
+  off= 112 op=0x05 cur=None dfl=None  Specifies the Read to Read turnaround timing in a different DIMM.
+        choices: Advanced=255* | Trdwr=1 | 3 Clk=2 | TwtrL=3 | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7
+  off= 113 op=0x05 cur=None dfl=None  Specifies the Write to Write turnaround timing in the same chipselect.
+        choices: Advanced=255* | Trdwr=1 | 3 Clk=2 | TwtrL=3 | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7
+  off= 114 op=0x05 cur=None dfl=None  Specifies the Write to Write turnaround timing in the same DIMM.
+        choices: Advanced=255* | Trdwr=1 | 3 Clk=2 | TwtrL=3 | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7
+  off= 115 op=0x05 cur=None dfl=None  Specifies the Write to Write turnaround timing in a different DIMM.
+        choices: Advanced=255* | Trdwr=1 | 3 Clk=2 | TwtrL=3 | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7
+  off= 116 op=0x05 cur=None dfl=None  Specifies the Read to Write turnaround timing.
+        choices: Advanced=255* | Trdwr=1 | 3 Clk=2 | TwtrL=3 | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7
+  off= 117 op=0x05 cur=None dfl=None  Specifies the Write to Read turnaround timing.
+        choices: Advanced=255* | Trdwr=1 | 3 Clk=2 | TwtrL=3 | 5 Clk=4 | 6 Clk=5 | 7 Clk=6 | TrrdL=7
+  off= 118 op=0x05 cur=None dfl=None  Select between 1T and 2T mode on ADDR/CMD
+        choices: 2T=0 | Gear Down Mode=1 | Advanced=255*
+  off= 119 op=0x05 cur=None dfl=None  No help string
+        choices: Auto=0 | Disabled=1 | Advanced=255*
+  off= 121 op=0x05 cur=None dfl=None  Enable or disable DDR power down mode
+        choices: Auto=0 | Disabled=1 | Advanced=255*
+  off= 122 op=0x05 cur=None dfl=None  Setup time on CAD bus signals to Auto or Manual
+        choices: Advanced=255* | Enabled=1
+  off= 123 op=0x07 cur=None dfl=None  Setup time on CAD bus signals. Valid values 3Fh-0h.
+  off= 124 op=0x07 cur=None dfl=None  Setup time on CAD bus signals. Valid values 3Fh-0h.
+  off= 125 op=0x07 cur=None dfl=None  Setup time on CAD bus signals. Valid values 3Fh-0h.
+  off= 126 op=0x05 cur=None dfl=None  Drive Strength on CAD bus signals to Auto or Manual
+        choices: Advanced=255* | Enabled=1
+  off= 127 op=0x05 cur=None dfl=None  No help string
+        choices: Advanced=255* | 60.0 Ohm=0 | 40.0 Ohm=1 | 30.0 Ohm=3 | 24.0 Ohm=7 | 20.0 Ohm=15 | AddrCmdDrvStren=31
+  off= 128 op=0x05 cur=None dfl=None  No help string
+        choices: Advanced=255* | 60.0 Ohm=0 | 40.0 Ohm=1 | 30.0 Ohm=3 | 24.0 Ohm=7 | 20.0 Ohm=15 | AddrCmdDrvStren=31
+  off= 129 op=0x05 cur=None dfl=None  No help string
+        choices: Advanced=255* | 60.0 Ohm=0 | 40.0 Ohm=1 | 30.0 Ohm=3 | 24.0 Ohm=7 | 20.0 Ohm=15 | AddrCmdDrvStren=31
+  off= 130 op=0x05 cur=None dfl=None  No help string
+        choices: Advanced=255* | 60.0 Ohm=0 | 40.0 Ohm=1 | 30.0 Ohm=3 | 24.0 Ohm=7 | 20.0 Ohm=15 | AddrCmdDrvStren=31
+  off= 131 op=0x05 cur=None dfl=None  Specify the mode for drive strength to Auto or Manual
+        choices: Advanced=255* | Enabled=1
+  off= 132 op=0x05 cur=None dfl=None  No help string
+        choices: RZQ/4=0 | RZQ/2=1 | RZQ/6=2 | RZQ/1=3 | RZQ/5=4 | RZQ/3=5 | RZQ/7=6 | RttWr=7
+  off= 133 op=0x05 cur=None dfl=None  No help string
+        choices: Hi-Z=0 | RZQ/6=1 | RZQ/5=2 | RttPark=3 | RZQ/7=4 | Advanced=255*
+  off= 134 op=0x05 cur=None dfl=None  No help string
+        choices: Infinity Fabric Frequency and Dividers=0 | RZQ/2=1 | RZQ/6=2 | RZQ/1=3 | RZQ/5=4 | RZQ/3=5 | RZQ/7=6 | RttWr=7
+  off= 135 op=0x05 cur=None dfl=None  Infinity Fabric frequency (FCLK) is automatically synchronized 1:1 with memory frequency (MCLK) for best performance
+        choices: Advanced=255*
+  off= 135 op=0x05 cur=None dfl=None  Infinity Fabric frequency (FCLK) is automatically synchronized 1:1 with memory frequency (MCLK) for best performance
+        choices: Advanced=255* | 800MHz=0 | 933MHz=1 | 1067MHz=2 | 1200MHz=3 | 1333MHz=4 | 1367MHz=5 | 1400MHz=6
+  off= 138 op=0x05 cur=None dfl=None  Forces CPU SoC/uncore components (e.g. Infinity Fabric, memory, and integrated graphics) to run at their maximum specified frequency at all times. May improve performance at the expense of idle power savings.
+        choices: Disabled=1 | Auto=0*
+  off= 142 op=0x05 cur=None dfl=None  Precision Boost Overdrive:
+  Enabled: Allows Processor to run beyond defined values for PPT, VDD_CPU EDC, VDD_CPU TDC, VDD_SOC EDC, VDD_SOC TDC to the limits of the board, and allows it to boost at higher voltages for longer durations than default operation.
+        choices: Advanced=15* | DownCore Bitmap=0 | Disabled=1 | Motherboard=2
+  off= 143 op=0x05 cur=None dfl=None  Default: Loads AMD default socket power (PPT), electrically-limited VRM current (EDC), and thermally-limited VRM current (TDC) limits. Motherboard: Allows the processor to run according to increased PPT, EDC, and TDC limits defined by your motherboard. Manual: Allows the processor to ignore AMD default limits for PPT, EDC, and TDC and instead use manual values (up to the maximum capabilities of the of the motherboard).
+        choices: Advanced=15* | DownCore Bitmap=0 | WARNING - DAMAGE CAUSED BY USE OF YOUR AMD PROCESSOR OUTSIDE OF SPECIFICATION OR IN EXCESS OF FACTORY SETTINGS ARE NOT COVERED UNDER YOUR AMD PRODUCT WARRANTY AND MAY NOT BE COVERED BY YOUR SYSTEM MANUFACTURER'S WARRANTY.
+Operating your AMD processor outside of specification or in excess of factory settings, including but not limited to overclocking, and undervolting, may damage or shorten the life of your processor or other system components, create system instabilities (e.g., data loss and corrupted images) and in extreme cases may result in total system failure. AMD does not provide support or service for issues or damages related to use of an AMD processor outside of processor specifications or in excess of factory settings.=1 | Enabled=2
+  off= 144 op=0x07 cur=None dfl=None  Adjust total CPU socket power delivery capability. Adjustable up to the limit supported by your motherboard.
+  off= 148 op=0x07 cur=None dfl=None  Adjust peak current from your motherboard’s CPU core VRM phases in thermally-limited scenarios. Adjustable up to the limit supported by your motherboard.
+  off= 152 op=0x07 cur=None dfl=None  Adjust peak current from your motherboard’s SoC/uncore VRM phases in thermally-limited scenarios. Adjustable up to the limit supported by your motherboard.
+  off= 156 op=0x07 cur=None dfl=None  Adjust peak current from your motherboard’s CPU core VRM phases in electrically-limited scenarios. Adjustable up to the limit supported by your motherboard.
+  off= 160 op=0x07 cur=None dfl=None  Adjust peak current from your motherboard’s SoC/uncore VRM phases in electrically-limited scenarios. Adjustable up to the limit supported by your motherboard.
+  off= 164 op=0x05 cur=None dfl=None  (hidden)
+        choices: Advanced=15* | Enabled=1
+  off= 165 op=0x05 cur=None dfl=None  Overrides the AMD default silicon health management to potentially achieve higher sustained frequencies under CPU load.
+        choices: 2X=100* | 3X=200 | 4X=300 | 5X=400 | 6X=500 | 7X=600 | 8X=700 | 9X=800
+  off= 169 op=0x05 cur=None dfl=None  Increases the maximum CPU frequency that may be automatically achieved by the Precision Boost 2 algorithm.
+        choices: 25MHz=0* | 50MHz=25 | 75MHz=50 | 100MHz=75 | 125MHz=100 | 150MHz=125 | 175MHz=150 | 200MHz=175
+  off= 173 op=0x05 cur=None dfl=None  Increases the maximum GPU frequency that may be automatically achieved by the GPU boost algorithm.
+        choices: 25MHz=0* | 50MHz=25 | 75MHz=50 | 100MHz=75 | 125MHz=100 | 150MHz=125 | 175MHz=150 | 200MHz=175
+  off= 177 op=0x07 cur=None dfl=None  Allows the user to decrease the maximum allowed processor temperature (celsius).
+  off= 181 op=0x05 cur=None dfl=None  Allows the user to decrease the maximum allowed processor temperature (celsius).
+        choices: Enabled=1 | Advanced=0*
+  off= 182 op=0x05 cur=None dfl=None  Increases the maximum CPU frequency that may be automatically achieved by the CPU boost algorithm
+        choices: Disabled=1 | Auto=0*
+  off= 183 op=0x05 cur=None dfl=None  Increases the maximum GPU frequency that may be automatically achieved by the GPU boost algorithm
+        choices: Disabled=1 | Auto=0*
+  off= 184 op=0x05 cur=None dfl=None  VDDP is a voltage for the DDR4 bus signaling (PHY), and it is derived from your DRAM Voltage (VDDIO_Mem). As a result, VDDP voltage in mV can approach but not exceed your DRAM Voltage
+        choices: Advanced=0* | Enabled=1
+  off= 185 op=0x07 cur=None dfl=None  VDDP is a voltage for the DDR4 bus signaling (PHY), and it is derived from your DRAM Voltage (VDDIO_Mem). As a result, VDDP voltage in mV can approach but not exceed your DRAM Voltage
+  off= 189 op=0x05 cur=None dfl=None  VDDG represents voltage for the data portion of the Infinity Fabric. It is derived from the CPU SoC/Uncore Voltage (VDD_SOC). VDDG can approach but not exceed VDD_SOC.
+        choices: Advanced=0* | Enabled=1
+  off= 190 op=0x07 cur=None dfl=None  VDDG IOD Voltage Control
+  off= 194 op=0x05 cur=None dfl=None  Increase VDDIO
+        choices: Auto=0* | Decrease VDDIO=1 | Adjust MEM VDDIO, stepping is 5mV. VddIo = 1.2V +/- N * 5 mV, input rang is 0-127.=2
+  off= 195 op=0x07 cur=None dfl=None  Current VDDIO Value (mV)
+  off= 199 op=0x07 cur=None dfl=None  Current VDDIO Value (mV)
+  off= 221 op=0x07 cur=None dfl=None  (hidden)
+  off= 222 op=0x07 cur=None dfl=None  (hidden)
+  off= 223 op=0x07 cur=None dfl=None  (hidden)
+  off= 224 op=0x07 cur=None dfl=None  (hidden)
+  off= 225 op=0x07 cur=None dfl=None  (hidden)
+  off= 226 op=0x07 cur=None dfl=None  (hidden)
+  off= 227 op=0x07 cur=None dfl=None  (hidden)
+  off= 231 op=0x07 cur=None dfl=None  (hidden)
+  off= 232 op=0x07 cur=None dfl=None  (hidden)
+  off= 233 op=0x07 cur=None dfl=None  (hidden)
+  off= 234 op=0x07 cur=None dfl=None  (hidden)
+  off= 235 op=0x07 cur=None dfl=None  (hidden)
+  off= 236 op=0x07 cur=None dfl=None  (hidden)
+  off= 237 op=0x07 cur=None dfl=None  (hidden)
+  off= 238 op=0x07 cur=None dfl=None  (hidden)
+  off= 240 op=0x07 cur=None dfl=None  (hidden)
+  off= 241 op=0x07 cur=None dfl=None  (hidden)
+  off= 242 op=0x07 cur=None dfl=None  (hidden)
+  off= 243 op=0x07 cur=None dfl=None  (hidden)
+  off= 244 op=0x07 cur=None dfl=None  (hidden)
+  off= 245 op=0x07 cur=None dfl=None  (hidden)
+  off= 246 op=0x07 cur=None dfl=None  (hidden)
+  off= 247 op=0x07 cur=None dfl=None  (hidden)
+  off= 248 op=0x07 cur=None dfl=None  (hidden)
+  off= 249 op=0x07 cur=None dfl=None  (hidden)
+  off= 250 op=0x07 cur=None dfl=None  (hidden)
+  off= 251 op=0x07 cur=None dfl=None  (hidden)
+  off= 252 op=0x07 cur=None dfl=None  (hidden)
+  off= 253 op=0x07 cur=None dfl=None  (hidden)
+  off= 254 op=0x07 cur=None dfl=None  (hidden)
+  off= 255 op=0x07 cur=None dfl=None  (hidden)
+  off= 256 op=0x07 cur=None dfl=None  (hidden)
+  off= 257 op=0x07 cur=None dfl=None  (hidden)
+  off= 258 op=0x07 cur=None dfl=None  (hidden)
+  off= 259 op=0x07 cur=None dfl=None  (hidden)
+  off= 260 op=0x07 cur=None dfl=None  (hidden)
+  off= 261 op=0x07 cur=None dfl=None  (hidden)
+  off= 262 op=0x07 cur=None dfl=None  (hidden)
+  off= 263 op=0x07 cur=None dfl=None  (hidden)
+  off= 264 op=0x07 cur=None dfl=None  (hidden)
+  off= 265 op=0x07 cur=None dfl=None  (hidden)
+  off= 266 op=0x07 cur=None dfl=None  (hidden)
+  off= 267 op=0x07 cur=None dfl=None  (hidden)
+  off= 268 op=0x07 cur=None dfl=None  (hidden)
+  off= 269 op=0x07 cur=None dfl=None  (hidden)
+  off= 270 op=0x07 cur=None dfl=None  (hidden)
+  off= 271 op=0x07 cur=None dfl=None  (hidden)
+  off= 272 op=0x07 cur=None dfl=None  (hidden)
+  off= 273 op=0x07 cur=None dfl=None  (hidden)
+  off= 274 op=0x07 cur=None dfl=None  (hidden)
+  off= 275 op=0x07 cur=None dfl=None  (hidden)
+  off= 276 op=0x07 cur=None dfl=None  (hidden)
+  off= 277 op=0x07 cur=None dfl=None  (hidden)
+  off= 278 op=0x07 cur=None dfl=None  (hidden)
+  off= 279 op=0x07 cur=None dfl=None  (hidden)
+  off= 280 op=0x07 cur=None dfl=None  (hidden)
+  off= 281 op=0x07 cur=None dfl=None  (hidden)
+  off= 282 op=0x07 cur=None dfl=None  (hidden)
+  off= 283 op=0x07 cur=None dfl=None  (hidden)
+  off= 284 op=0x07 cur=None dfl=None  (hidden)
+  off= 285 op=0x07 cur=None dfl=None  (hidden)
+  off= 286 op=0x07 cur=None dfl=None  (hidden)
+  off= 287 op=0x07 cur=None dfl=None  (hidden)
+  off= 288 op=0x07 cur=None dfl=None  (hidden)
+  off= 289 op=0x07 cur=None dfl=None  (hidden)
+  off= 290 op=0x07 cur=None dfl=None  (hidden)
+  off= 291 op=0x07 cur=None dfl=None  (hidden)
+  off= 292 op=0x07 cur=None dfl=None  (hidden)
+  off= 293 op=0x07 cur=None dfl=None  (hidden)
+  off= 294 op=0x07 cur=None dfl=None  (hidden)
+  off= 295 op=0x07 cur=None dfl=None  (hidden)
+  off= 296 op=0x07 cur=None dfl=None  (hidden)
+  off= 297 op=0x07 cur=None dfl=None  (hidden)
+  off= 298 op=0x07 cur=None dfl=None  (hidden)
+  off= 299 op=0x07 cur=None dfl=None  (hidden)
+  off= 300 op=0x07 cur=None dfl=None  (hidden)
+  off= 301 op=0x07 cur=None dfl=None  (hidden)
+  off= 302 op=0x07 cur=None dfl=None  (hidden)
+  off= 303 op=0x07 cur=None dfl=None  (hidden)
+  off= 304 op=0x07 cur=None dfl=None  (hidden)
+  off= 305 op=0x07 cur=None dfl=None  (hidden)
+  off= 306 op=0x07 cur=None dfl=None  (hidden)
+  off= 307 op=0x07 cur=None dfl=None  (hidden)
+  off= 308 op=0x07 cur=None dfl=None  (hidden)
+  off= 309 op=0x07 cur=None dfl=None  (hidden)
+  off= 310 op=0x07 cur=None dfl=None  (hidden)
+  off= 311 op=0x07 cur=None dfl=None  (hidden)
+  off= 312 op=0x07 cur=None dfl=None  (hidden)
+  off= 313 op=0x07 cur=None dfl=None  (hidden)
+  off= 314 op=0x07 cur=None dfl=None  (hidden)
+  off= 316 op=0x07 cur=None dfl=None  (hidden)
+  off= 317 op=0x07 cur=None dfl=None  (hidden)
+  off= 318 op=0x07 cur=None dfl=None  (hidden)
+  off= 319 op=0x07 cur=None dfl=None  (hidden)
+  off= 320 op=0x07 cur=None dfl=None  (hidden)
+  off= 321 op=0x07 cur=None dfl=None  (hidden)
+  off= 322 op=0x07 cur=None dfl=None  (hidden)
+  off= 323 op=0x07 cur=None dfl=None  (hidden)
+  off= 324 op=0x07 cur=None dfl=None  (hidden)
+  off= 325 op=0x07 cur=None dfl=None  (hidden)
+  off= 326 op=0x07 cur=None dfl=None  (hidden)
+  off= 327 op=0x07 cur=None dfl=None  Specifies a custom GFX core frequency. Must be combined with a custom GFX voltage. Power saving features (like GFX Pstates) remain active
+  off= 331 op=0x07 cur=None dfl=None  Specifies a custom GFX core voltage (mV). Must be combined with a custom GFX frequency. GFX voltage is derived from SOC / uncore voltage rail. Power saving features (like GFX Pstates) remain active.
+  off= 335 op=0x07 cur=None dfl=None  Specifies the SoC/uncore voltage (VDD_SOC) in mV to support memory and Infinity Fabric overclocking. VDD_SOC also determines the GPU voltage on processors with integrated graphics. 'SoC/Uncore OC Mode' needs to be enabled to force this voltage.
+  off= 339 op=0x05 cur=None dfl=None  ECO Mode:65W Matisse is Group B: TDC=60A/EDC=90A/PPT=87.8W;45W Matisse is Group H: TDC=45A/EDC=65A/PPT=60.8W
+        choices: DownCore Bitmap=0* | Eco-Mode (45W)=2
+  off= 339 op=0x05 cur=None dfl=None  ECO Mode:65W Matisse is Group B: TDC=60A/EDC=90A/PPT=87.8W;45W Matisse is Group H: TDC=45A/EDC=65A/PPT=60.8W
+        choices: DownCore Bitmap=0* | 1X=1
+  off= 346 op=0x07 cur=None dfl=None  (hidden)
+  off= 347 op=0x05 cur=None dfl=None  Enables settings that provide additional stability at extreme cold operating temperatures
+        choices: Advanced=15* | DownCore Bitmap=0 | Disabled=1
+  off= 352 op=0x07 cur=None dfl=None  VDDG IOD represents voltage for the data portion of the Infinity Fabric. It is derived from the CPU SoC/Uncore Voltage (VDD_SOC). VDDG can approach but not exceed VDD_SOC.
+  off= 356 op=0x07 cur=None dfl=None  (hidden)
+  off= 357 op=0x07 cur=None dfl=None  (hidden)
+  off= 358 op=0x05 cur=None dfl=None  Limitation: 1. Once user set the Gaming Mode as Enable, the CCD control option will not work any more; 2. if user want to use the CCD control under AOD, make sure set Gaming Mode as Disable
+        choices: DownCore Bitmap=0* | Disabled=1
+  off= 360 op=0x05 cur=None dfl=None  Specifies the number of desired NUMA nodes per socket.  Zero will attempt to interleave the two sockets together.
+        choices: Advanced=7* | NPS1=0 | NPS2=1 | NPS4=2 | DRAM Latency Enhance=3
+  off= 361 op=0x07 cur=None dfl=None  (hidden)
+  off= 365 op=0x07 cur=None dfl=None  (hidden)
+  off= 366 op=0x07 cur=None dfl=None  (hidden)
+  off= 367 op=0x07 cur=None dfl=None  (hidden)
+  off= 368 op=0x05 cur=None dfl=None  Allows the user to shift the Voltage / Frequency (AVFS) curve to include higher voltages (positive values) or lower voltages (negative values). The larger the value entered the larger the magnitude of the voltage shift
+        choices: Auto=0* | Per Core=1 | All Core Curve Optimizer Sign=2
+  off= 369 op=0x05 cur=None dfl=None  Determines the direction of the curve shift on all cores. Positive shifts the curve up to use higher voltages. Negative shifts the curve down to use lower voltages
+        choices: Negative=0* | Core 0 Curve Optimizer Sign=1
+  off= 370 op=0x07 cur=None dfl=None  Determines the magnitude of the curve shift to be made (entered in whole numbers) the larger the value entered the larger the magnitude of the shift
+  off= 564 op=0x05 cur=None dfl=None  DRAM Latency Enhance.
+        choices: DownCore Bitmap=0* | Disabled=1
+  off= 566 op=0x07 cur=None dfl=None  (hidden)

@@ -14,6 +14,14 @@ img_smokelessUMAF/
 *.dsl
 nvram-dump.txt
 
+# Firmware analysis tooling + UEFIExtract output (regenerated from the .bin)
+evidence/ifr-static/tools/
+evidence/ifr-static/*.zip
+evidence/ifr-static/*.dump/
+evidence/ifr-static/088D1.bin.*
+evidence/ifr-static/out/
+evidence/ifr-static/bridge/out/
+
 # Snapshot files produced by evidence/setupdiff.py and evidence/tpmstate.py.
 # The ones worth keeping live in evidence/tpm-experiment/ and ARE versioned.
 /setupdiff-*.json

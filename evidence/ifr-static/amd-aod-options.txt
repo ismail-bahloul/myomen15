@@ -1,0 +1,211 @@
+# AodSetupDxe — varstore offset -> option name (static, from the firmware image)
+# varstore 'AOD_SETUP' size=1020 5ed15dc0-edef-4161-9151-6014c4cc630c
+off=  38 op=0x07 qid=   17 | Specifies a custom CPU core frequency. Should be combined with a custom CPU voltage. Power saving features for idle cores (e.g. cc6 sleep) remain active.
+off=  42 op=0x07 qid=   18 | Specifies a custom CPU core voltage (mV). Should be combined with a custom CPU core frequency. Power saving features for idle cores (e.g. cc6 sleep) remain active.
+off=  48 op=0x05 qid=   24 | Can be used to disable symmetric multithreading. To re-enable SMT, a POWER CYCLE is needed after selecting the 'Auto' option. WARNING - S3 is NOT SUPPORTED on systems where SMT is disabled.
+off=  72 op=0x05 qid=   34 | Memory Overclock Settings
+off=  73 op=0x05 qid=   36 | Specifies the memory clock frequency.
+off=  74 op=0x05 qid=   37 | Specifies the CAS latency.
+off=  75 op=0x05 qid=   38 | Specifies the RAS# Active to CAS# Read Delay Time.
+off=  76 op=0x05 qid=   39 | Specifies the RAS# Active to CAS# Write Delay Time.
+off=  77 op=0x05 qid=   40 | Specifies Row Precharge Delay Time.
+off=  78 op=0x05 qid=   41 | Specifies the Active to Precharge Delay Time.
+off=  79 op=0x05 qid=   42 | Specify Trc
+off=  80 op=0x07 qid=   43 | Specifies Active to Active/Refresh Delay Time. Valid values 87h-1Dh.
+off=  81 op=0x05 qid=   44 | Specifies the Activate to Activate Delay Time, different bank group (tRRD_S)
+off=  82 op=0x05 qid=   45 | Specifies the Activate to Activate Delay Time, same bank group (tRRD_L)
+off=  83 op=0x05 qid=   46 | Specify Tfaw
+off=  84 op=0x07 qid=   47 | Specifies the Four Activate Window Time. Valid values 36h-6h.
+off=  85 op=0x05 qid=   48 | Specifies the Minimum Write to Read Time, different bank group
+off=  86 op=0x05 qid=   49 | Specifies the Minimum Write to Read Time, same bank group
+off=  87 op=0x05 qid=   50 | Specify Twr
+off=  88 op=0x07 qid=   51 | Specifies the Minimum Write Recovery Time. Valid value 51h-Ah
+off=  89 op=0x05 qid=   52 | Specify Trcpage
+off=  90 op=0x07 qid=   53 | SDRAM Optional Features (tMAW, MAC). Valid value 3FFh - 0h
+off=  92 op=0x05 qid=   54 | Specify TrdrdScL
+off=  93 op=0x07 qid=   55 | Specifies the CAS to CAS Delay Time, same bank group. Valid values Fh-1h
+off=  94 op=0x05 qid=   56 | Specify TwrwrScL
+off=  95 op=0x07 qid=   57 | Specifies the CAS to CAS Delay Time, same bank group. Valid values 3Fh-1h
+off=  96 op=0x05 qid=   58 | Specify Trfc
+off=  97 op=0x07 qid=   59 | Specifies the Refresh Recovery Delay Time (tRFC1). Valid values 3DEh-3Ch
+off=  99 op=0x05 qid=   60 | Specify Trfc2
+off= 100 op=0x07 qid=   61 | Specifies the Refresh Recovery Delay Time (tRFC2).  Valid values 3DEh-3Ch
+off= 102 op=0x05 qid=   62 | Specify Trfc4
+off= 103 op=0x07 qid=   63 | Specifies the Refresh Recovery Delay Time (tRFC4). Valid values 3DEh-3Ch
+off= 106 op=0x05 qid=   75 | Specifies the Processor ODT
+off= 107 op=0x05 qid=   64 | Specifies the CAS Write Latency
+off= 108 op=0x05 qid=   65 | Specifies the Read CAS# to Precharge Delay Time.
+off= 109 op=0x05 qid=   66 | Specifies the CKE minimum high and low pulse width in memory clock cycles.
+off= 110 op=0x05 qid=   72 | Specifies the Read to Read turnaround timing in the same chipselect.
+off= 111 op=0x05 qid=   73 | Specifies the Read to Read turnaround timing in the same DIMM.
+off= 112 op=0x05 qid=   74 | Specifies the Read to Read turnaround timing in a different DIMM.
+off= 113 op=0x05 qid=   69 | Specifies the Write to Write turnaround timing in the same chipselect.
+off= 114 op=0x05 qid=   70 | Specifies the Write to Write turnaround timing in the same DIMM.
+off= 115 op=0x05 qid=   71 | Specifies the Write to Write turnaround timing in a different DIMM.
+off= 116 op=0x05 qid=   67 | Specifies the Read to Write turnaround timing.
+off= 117 op=0x05 qid=   68 | Specifies the Write to Read turnaround timing.
+off= 118 op=0x05 qid=   77 | Select between 1T and 2T mode on ADDR/CMD
+off= 119 op=0x05 qid=   78 | No help string
+off= 121 op=0x05 qid=   79 | Enable or disable DDR power down mode
+off= 122 op=0x05 qid=   80 | Setup time on CAD bus signals to Auto or Manual
+off= 123 op=0x07 qid=   81 | Setup time on CAD bus signals. Valid values 3Fh-0h.
+off= 124 op=0x07 qid=   82 | Setup time on CAD bus signals. Valid values 3Fh-0h.
+off= 125 op=0x07 qid=   83 | Setup time on CAD bus signals. Valid values 3Fh-0h.
+off= 126 op=0x05 qid=   84 | Drive Strength on CAD bus signals to Auto or Manual
+off= 127 op=0x05 qid=   85 | No help string
+off= 128 op=0x05 qid=   86 | No help string
+off= 129 op=0x05 qid=   87 | No help string
+off= 130 op=0x05 qid=   88 | No help string
+off= 131 op=0x05 qid=   89 | Specify the mode for drive strength to Auto or Manual
+off= 132 op=0x05 qid=   90 | No help string
+off= 133 op=0x05 qid=   91 | No help string
+off= 134 op=0x05 qid=   92 | No help string
+off= 135 op=0x05 qid=   32 | Infinity Fabric frequency (FCLK) is automatically synchronized 1:1 with memory frequency (MCLK) for best performance
+off= 135 op=0x05 qid=   33 | Infinity Fabric frequency (FCLK) is automatically synchronized 1:1 with memory frequency (MCLK) for best performance
+off= 138 op=0x05 qid=  111 | Forces CPU SoC/uncore components (e.g. Infinity Fabric, memory, and integrated graphics) to run at their maximum specified frequency at all times. May improve performance at the expense of idle power savings.
+off= 142 op=0x05 qid=   94 | Precision Boost Overdrive:
+  Enabled: Allows Processor to run beyond defined values for PPT, VDD_CPU EDC, VDD_CPU TDC, VDD_SOC EDC, VDD_SOC TDC to the limits of the board, and allows it to boost at higher voltages for longer durations than default operation.
+off= 143 op=0x05 qid=   95 | Default: Loads AMD default socket power (PPT), electrically-limited VRM current (EDC), and thermally-limited VRM current (TDC) limits. Motherboard: Allows the processor to run according to increased PPT, EDC, and TDC limits defined by your motherboard. Manual: Allows the processor to ignore AMD default limits for PPT, EDC, and TDC and instead use manual values (up to the maximum capabilities of the of the motherboard).
+off= 144 op=0x07 qid=   96 | Adjust total CPU socket power delivery capability. Adjustable up to the limit supported by your motherboard.
+off= 148 op=0x07 qid=   97 | Adjust peak current from your motherboard’s CPU core VRM phases in thermally-limited scenarios. Adjustable up to the limit supported by your motherboard.
+off= 152 op=0x07 qid=   99 | Adjust peak current from your motherboard’s SoC/uncore VRM phases in thermally-limited scenarios. Adjustable up to the limit supported by your motherboard.
+off= 156 op=0x07 qid=   98 | Adjust peak current from your motherboard’s CPU core VRM phases in electrically-limited scenarios. Adjustable up to the limit supported by your motherboard.
+off= 160 op=0x07 qid=  100 | Adjust peak current from your motherboard’s SoC/uncore VRM phases in electrically-limited scenarios. Adjustable up to the limit supported by your motherboard.
+off= 164 op=0x05 qid=  101 | (no prompt / hidden)
+off= 165 op=0x05 qid=  102 | Overrides the AMD default silicon health management to potentially achieve higher sustained frequencies under CPU load.
+off= 169 op=0x05 qid=  104 | Increases the maximum CPU frequency that may be automatically achieved by the Precision Boost 2 algorithm.
+off= 173 op=0x05 qid=  105 | Increases the maximum GPU frequency that may be automatically achieved by the GPU boost algorithm.
+off= 177 op=0x07 qid=  107 | Allows the user to decrease the maximum allowed processor temperature (celsius).
+off= 181 op=0x05 qid=  106 | Allows the user to decrease the maximum allowed processor temperature (celsius).
+off= 182 op=0x05 qid=  108 | Increases the maximum CPU frequency that may be automatically achieved by the CPU boost algorithm
+off= 183 op=0x05 qid=  109 | Increases the maximum GPU frequency that may be automatically achieved by the GPU boost algorithm
+off= 184 op=0x05 qid=  112 | VDDP is a voltage for the DDR4 bus signaling (PHY), and it is derived from your DRAM Voltage (VDDIO_Mem). As a result, VDDP voltage in mV can approach but not exceed your DRAM Voltage
+off= 185 op=0x07 qid=  113 | VDDP is a voltage for the DDR4 bus signaling (PHY), and it is derived from your DRAM Voltage (VDDIO_Mem). As a result, VDDP voltage in mV can approach but not exceed your DRAM Voltage
+off= 189 op=0x05 qid=  114 | VDDG represents voltage for the data portion of the Infinity Fabric. It is derived from the CPU SoC/Uncore Voltage (VDD_SOC). VDDG can approach but not exceed VDD_SOC.
+off= 190 op=0x07 qid=  115 | VDDG IOD Voltage Control
+off= 194 op=0x05 qid= 2001 | Increase VDDIO
+off= 195 op=0x07 qid= 2002 | Current VDDIO Value (mV)
+off= 199 op=0x07 qid=   16 | Current VDDIO Value (mV)
+off= 221 op=0x07 qid=  227 | (no prompt / hidden)
+off= 222 op=0x07 qid=  225 | (no prompt / hidden)
+off= 223 op=0x07 qid=  224 | (no prompt / hidden)
+off= 224 op=0x07 qid=  222 | (no prompt / hidden)
+off= 225 op=0x07 qid=  221 | (no prompt / hidden)
+off= 226 op=0x07 qid=  220 | (no prompt / hidden)
+off= 227 op=0x07 qid=  219 | (no prompt / hidden)
+off= 231 op=0x07 qid=  215 | (no prompt / hidden)
+off= 232 op=0x07 qid=  212 | (no prompt / hidden)
+off= 233 op=0x07 qid=  211 | (no prompt / hidden)
+off= 234 op=0x07 qid=  209 | (no prompt / hidden)
+off= 235 op=0x07 qid=  208 | (no prompt / hidden)
+off= 236 op=0x07 qid=  207 | (no prompt / hidden)
+off= 237 op=0x07 qid=  206 | (no prompt / hidden)
+off= 238 op=0x07 qid=  159 | (no prompt / hidden)
+off= 240 op=0x07 qid=  210 | (no prompt / hidden)
+off= 241 op=0x07 qid=  202 | (no prompt / hidden)
+off= 242 op=0x07 qid=  201 | (no prompt / hidden)
+off= 243 op=0x07 qid=  199 | (no prompt / hidden)
+off= 244 op=0x07 qid=  198 | (no prompt / hidden)
+off= 245 op=0x07 qid=  197 | (no prompt / hidden)
+off= 246 op=0x07 qid=  196 | (no prompt / hidden)
+off= 247 op=0x07 qid=  195 | (no prompt / hidden)
+off= 248 op=0x07 qid=  194 | (no prompt / hidden)
+off= 249 op=0x07 qid=  193 | (no prompt / hidden)
+off= 250 op=0x07 qid=  191 | (no prompt / hidden)
+off= 251 op=0x07 qid=  190 | (no prompt / hidden)
+off= 252 op=0x07 qid=  189 | (no prompt / hidden)
+off= 253 op=0x07 qid=  187 | (no prompt / hidden)
+off= 254 op=0x07 qid=  186 | (no prompt / hidden)
+off= 255 op=0x07 qid=  185 | (no prompt / hidden)
+off= 256 op=0x07 qid=  183 | (no prompt / hidden)
+off= 257 op=0x07 qid=  181 | (no prompt / hidden)
+off= 258 op=0x07 qid=  179 | (no prompt / hidden)
+off= 259 op=0x07 qid=  177 | (no prompt / hidden)
+off= 260 op=0x07 qid=  175 | (no prompt / hidden)
+off= 261 op=0x07 qid=  173 | (no prompt / hidden)
+off= 262 op=0x07 qid=  171 | (no prompt / hidden)
+off= 263 op=0x07 qid=  170 | (no prompt / hidden)
+off= 264 op=0x07 qid=  169 | (no prompt / hidden)
+off= 265 op=0x07 qid=  168 | (no prompt / hidden)
+off= 266 op=0x07 qid=  167 | (no prompt / hidden)
+off= 267 op=0x07 qid=  166 | (no prompt / hidden)
+off= 268 op=0x07 qid=  165 | (no prompt / hidden)
+off= 269 op=0x07 qid=  164 | (no prompt / hidden)
+off= 270 op=0x07 qid=  163 | (no prompt / hidden)
+off= 271 op=0x07 qid=  162 | (no prompt / hidden)
+off= 272 op=0x07 qid=  161 | (no prompt / hidden)
+off= 273 op=0x07 qid=  160 | (no prompt / hidden)
+off= 274 op=0x07 qid=  158 | (no prompt / hidden)
+off= 275 op=0x07 qid=  157 | (no prompt / hidden)
+off= 276 op=0x07 qid=  156 | (no prompt / hidden)
+off= 277 op=0x07 qid=  155 | (no prompt / hidden)
+off= 278 op=0x07 qid=  151 | (no prompt / hidden)
+off= 279 op=0x07 qid=  150 | (no prompt / hidden)
+off= 280 op=0x07 qid=  149 | (no prompt / hidden)
+off= 281 op=0x07 qid=  148 | (no prompt / hidden)
+off= 282 op=0x07 qid=  147 | (no prompt / hidden)
+off= 283 op=0x07 qid=  146 | (no prompt / hidden)
+off= 284 op=0x07 qid=  145 | (no prompt / hidden)
+off= 285 op=0x07 qid=  144 | (no prompt / hidden)
+off= 286 op=0x07 qid=  143 | (no prompt / hidden)
+off= 287 op=0x07 qid=  139 | (no prompt / hidden)
+off= 288 op=0x07 qid=  138 | (no prompt / hidden)
+off= 289 op=0x07 qid=  132 | (no prompt / hidden)
+off= 290 op=0x07 qid=  131 | (no prompt / hidden)
+off= 291 op=0x07 qid=  127 | (no prompt / hidden)
+off= 292 op=0x07 qid=  122 | (no prompt / hidden)
+off= 293 op=0x07 qid=  217 | (no prompt / hidden)
+off= 294 op=0x07 qid=  216 | (no prompt / hidden)
+off= 295 op=0x07 qid=  192 | (no prompt / hidden)
+off= 296 op=0x07 qid=  188 | (no prompt / hidden)
+off= 297 op=0x07 qid=  184 | (no prompt / hidden)
+off= 298 op=0x07 qid=  182 | (no prompt / hidden)
+off= 299 op=0x07 qid=  180 | (no prompt / hidden)
+off= 300 op=0x07 qid=  178 | (no prompt / hidden)
+off= 301 op=0x07 qid=  176 | (no prompt / hidden)
+off= 302 op=0x07 qid=  174 | (no prompt / hidden)
+off= 303 op=0x07 qid=  172 | (no prompt / hidden)
+off= 304 op=0x07 qid=  154 | (no prompt / hidden)
+off= 305 op=0x07 qid=  153 | (no prompt / hidden)
+off= 306 op=0x07 qid=  152 | (no prompt / hidden)
+off= 307 op=0x07 qid=  137 | (no prompt / hidden)
+off= 308 op=0x07 qid=  136 | (no prompt / hidden)
+off= 309 op=0x07 qid=  135 | (no prompt / hidden)
+off= 310 op=0x07 qid=  134 | (no prompt / hidden)
+off= 311 op=0x07 qid=  133 | (no prompt / hidden)
+off= 312 op=0x07 qid=  129 | (no prompt / hidden)
+off= 313 op=0x07 qid=  128 | (no prompt / hidden)
+off= 314 op=0x07 qid=  126 | (no prompt / hidden)
+off= 316 op=0x07 qid=  203 | (no prompt / hidden)
+off= 317 op=0x07 qid=  218 | (no prompt / hidden)
+off= 318 op=0x07 qid=  125 | (no prompt / hidden)
+off= 319 op=0x07 qid=  124 | (no prompt / hidden)
+off= 320 op=0x07 qid=  226 | (no prompt / hidden)
+off= 321 op=0x07 qid=  214 | (no prompt / hidden)
+off= 322 op=0x07 qid=  213 | (no prompt / hidden)
+off= 323 op=0x07 qid=  123 | (no prompt / hidden)
+off= 324 op=0x07 qid=  141 | (no prompt / hidden)
+off= 325 op=0x07 qid=  140 | (no prompt / hidden)
+off= 326 op=0x07 qid=  142 | (no prompt / hidden)
+off= 327 op=0x07 qid=   20 | Specifies a custom GFX core frequency. Must be combined with a custom GFX voltage. Power saving features (like GFX Pstates) remain active
+off= 331 op=0x07 qid=   21 | Specifies a custom GFX core voltage (mV). Must be combined with a custom GFX frequency. GFX voltage is derived from SOC / uncore voltage rail. Power saving features (like GFX Pstates) remain active.
+off= 335 op=0x07 qid=  110 | Specifies the SoC/uncore voltage (VDD_SOC) in mV to support memory and Infinity Fabric overclocking. VDD_SOC also determines the GPU voltage on processors with integrated graphics. 'SoC/Uncore OC Mode' needs to be enabled to force this voltage.
+off= 339 op=0x05 qid= 2003 | ECO Mode:65W Matisse is Group B: TDC=60A/EDC=90A/PPT=87.8W;45W Matisse is Group H: TDC=45A/EDC=65A/PPT=60.8W
+off= 339 op=0x05 qid= 2004 | ECO Mode:65W Matisse is Group B: TDC=60A/EDC=90A/PPT=87.8W;45W Matisse is Group H: TDC=45A/EDC=65A/PPT=60.8W
+off= 346 op=0x07 qid=  223 | (no prompt / hidden)
+off= 347 op=0x05 qid=   93 | Enables settings that provide additional stability at extreme cold operating temperatures
+off= 352 op=0x07 qid=  116 | VDDG IOD represents voltage for the data portion of the Infinity Fabric. It is derived from the CPU SoC/Uncore Voltage (VDD_SOC). VDDG can approach but not exceed VDD_SOC.
+off= 356 op=0x07 qid=  121 | (no prompt / hidden)
+off= 357 op=0x07 qid=  120 | (no prompt / hidden)
+off= 358 op=0x05 qid=  117 | Limitation: 1. Once user set the Gaming Mode as Enable, the CCD control option will not work any more; 2. if user want to use the CCD control under AOD, make sure set Gaming Mode as Disable
+off= 360 op=0x05 qid=  118 | Specifies the number of desired NUMA nodes per socket.  Zero will attempt to interleave the two sockets together.
+off= 361 op=0x07 qid=  119 | (no prompt / hidden)
+off= 365 op=0x07 qid=  130 | (no prompt / hidden)
+off= 366 op=0x07 qid=  205 | (no prompt / hidden)
+off= 367 op=0x07 qid=  204 | (no prompt / hidden)
+off= 368 op=0x05 qid=   29 | Allows the user to shift the Voltage / Frequency (AVFS) curve to include higher voltages (positive values) or lower voltages (negative values). The larger the value entered the larger the magnitude of the voltage shift
+off= 369 op=0x05 qid=   30 | Determines the direction of the curve shift on all cores. Positive shifts the curve up to use higher voltages. Negative shifts the curve down to use lower voltages
+off= 370 op=0x07 qid=   31 | Determines the magnitude of the curve shift to be made (entered in whole numbers) the larger the value entered the larger the magnitude of the shift
+off= 564 op=0x05 qid=   35 | DRAM Latency Enhance.
+off= 566 op=0x07 qid=  200 | (no prompt / hidden)
+

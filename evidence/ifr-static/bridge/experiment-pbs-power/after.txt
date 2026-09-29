@@ -1,0 +1,13 @@
+# 2026-09-29T21:09:36+00:00
+platform_profile: balanced
+ac_online: 0  (1=AC, 0=battery)
+# ryzenadj --info (limits only)
+| STAPM LIMIT         |    15.000 | stapm-limit        |
+| PPT LIMIT FAST      |    18.000 | fast-limit         |
+| PPT LIMIT SLOW      |    15.000 | slow-limit         |
+| PPT LIMIT APU       |    15.000 | apu-slow-limit     |
+| TDC LIMIT VDD       |    58.000 | vrm-current        |
+| TDC LIMIT SOC       |    15.000 | vrmsoc-current     |
+| EDC LIMIT VDD       |   110.000 | vrmmax-current     |
+| EDC LIMIT SOC       |    20.000 | vrmsocmax-current  |
+| THM LIMIT CORE      |    65.000 | tctl-temp          |

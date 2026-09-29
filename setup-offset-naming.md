@@ -50,6 +50,25 @@ the list drifts as the setup is saved, which is itself §7's point.)
   bad `Setup` value (even one that stops the OS booting) is always revertible
   from it. Put the revert file on the key *before* every poke.
 
+## Method 0 — static IFR (no reboots, preferred)
+
+**Do this first.** The setup HII forms are in the clear in the image already on
+the ESP, so an offset can be named **without touching the machine at all**.
+`efi-nvram.md` §10 used to say the IFR was in an encrypted volume; it is not —
+the search that concluded so was ASCII, and IFR strings are UTF-16LE.
+
+```bash
+sudo cp /boot/EFI/HP/BIOS/Current/088D1.bin evidence/ifr-static/088D1.bin
+cd evidence/ifr-static && ./tools/uefiextract 088D1.bin
+python3 ifr_map.py "088D1.bin.dump/<path to the main FV>/76 Setup/..."
+```
+
+Output: every option and its varstore offset, for `Setup`, `AMD_PBS_SETUP`,
+`AmdSetup` and `AOD_SETUP`. Tooling and results: [`evidence/ifr-static/`](evidence/ifr-static/).
+It is validated two independent ways (`AMD_PBS_SETUP` 82 → "USB CAMERA";
+`AOD_SETUP` = 1020 bytes). Use Method A/B only to confirm a name by its effect,
+which is now the *second* question, not the first.
+
 ## Method A — menu-driven two-leg (safe, names by *meaning*)
 
 This is the method `efi-nvram.md` §7 validated. It is slow — two reboots per

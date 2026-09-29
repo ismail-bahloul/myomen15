@@ -114,12 +114,12 @@ different fixable reasons. Full correction: [`firmware-limits.md`](firmware-limi
 - Only `0x1e4000` **is** still genuinely high entropy (7.4–8.0 bits/byte,
   confirmed by re-scanning) and still fully unidentified — no `$PSP`/`$BHD`/
   `$BL2`/`$PL2`/`_FVH` magic anywhere in it, no hypothesis left standing.
-- Searches for `Custom Core Pstates`, `Curve Optimize`, `PBO`, `SureStart`, and
-  `OMEN` in the 16 MiB dump return **nothing** — and for `0xb00000`/`0xef0000`
-  that absence is now a real one, not an artifact of encryption: those regions
-  are plaintext, and they still don't contain those literal strings (Sure
-  Start's actual code is there, under names like `HPCrisisRecovery`, just not
-  spelled that way).
+- ~~Searches for `Custom Core Pstates`, `Curve Optimize`, `PBO`, `SureStart`, and
+  `OMEN` in the 16 MiB dump return **nothing**~~ — **corrected**: that search was
+  **ASCII**, and UEFI/IFR strings are **UTF-16LE**, so it could never have found
+  them. In UTF-16 the strings *are* there and the whole IFR parses: `Custom Core
+  Pstates`/`STAPM` in `CbsSetupDxeRN`, `Curve Optimize` in `AodSetupDxe`, `USB
+  Camera` in `AmdPbsSetupDxe`. → [`evidence/ifr-static/`](evidence/ifr-static/)
 - **That is still not evidence the menus are absent**, for the one region that
   remains opaque. The README's conclusion that `Custom Core Pstates` "contains
   no questions at all" is based on the *live setup browser* under
@@ -445,8 +445,13 @@ the runtime one.
 
 **Consequence:** the "one differing byte between the two copies" is real and
 reproducible, but it cannot be read as *an offset into the same table* without
-first understanding the two encodings. Mapping question names to offsets needs
-the IFR, and the IFR is in the encrypted volume.
+first understanding the two encodings.
+
+**Correction (later pass):** the sentence that used to close this section —
+*"the IFR is in the encrypted volume"* — was wrong. The IFR is in the clear in
+the image already on the ESP, and parses completely; the search that concluded
+otherwise was ASCII, and IFR strings are UTF-16LE. Question names now map to
+offsets **statically, with no reboots**. → [`evidence/ifr-static/`](evidence/ifr-static/)
 
 ## 11. How this was read (reproducible)
 
@@ -512,7 +517,14 @@ writing is guarded by Sure Start and a signature that cannot be reproduced.
 
 ## 14. Next steps, in order of value
 
-1. **Name the offsets.** Two of the eleven are now named: **offset 9** was
+1. **Name the offsets.** *Closed, statically:* the IFR is readable, so the
+   offsets are named from the image with no reboots at all —
+   [`evidence/ifr-static/`](evidence/ifr-static/). What that pass found is that
+   most off-default bytes are **not menu items** (hidden questions with an empty
+   prompt, or no question at all), which is why toggling menus named so few.
+   The method kept below still applies for confirming a name by effect.
+
+   Two of the eleven are now named: **offset 9** was
    ruled out as a TPM effect (§7 — it moves during the TPM cycle, but as
    noise, not signal), and offsets 276-284 are confirmed **untouched** by the
    TPM toggle at all (checked directly against the `twoleg` triple, zero
@@ -529,8 +541,10 @@ writing is guarded by Sure Start and a signature that cannot be reproduced.
    (`disabled`). It does not touch offsets 276-284 at all, which was the
    original guess for "the cheapest candidate": that guess is now closed,
    not open.
-3. **Decide the encoding question of §8.** Either locate the IFR in the
-   encrypted volume (hard), or find a second variable whose live and flash forms
-   are both known, so the transformation between them can be inferred (cheap).
+3. **Decide the encoding question of §8.** The IFR route is now open (it is in
+   the clear — [`evidence/ifr-static/`](evidence/ifr-static/)), so the question
+   is only whether the flash copies' byte layout can be derived from it; the
+   cheaper fallback remains a second variable whose live and flash forms are
+   both known.
 4. **The memory side** — the firmware's own SPD table names a module that is not
    installed; the lever is `AMD CBS > UMC Common Options`.

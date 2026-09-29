@@ -1,0 +1,121 @@
+# AmdPbsSetupDxe — varstore offset -> option name (static, from the firmware image)
+# varstore 'AMD_PBS_SETUP' size=136 a339d746-f678-49b3-9fc7-54ce0f9df226
+off=   2 op=0x07 qid=   99 | (no prompt / hidden)
+off=   4 op=0x05 qid= 2014 | Enable/Disable HybridGraphics
+off=   5 op=0x05 qid=   24 | Disable Discrete GPU's Audio or keep its ROM strap setting
+off=   6 op=0x05 qid=   45 | Select Internal/External Graphics
+off=   7 op=0x05 qid= 2037 | Enable/Disable exposing of _HID(PNP0C50) in ACPI ASL code to OS
+off=   8 op=0x05 qid= 2038 | Enable/Disable exposing of _HID(PNP0C50) in ACPI ASL code to OS
+off=   9 op=0x05 qid= 2039 | Enable/Disable exposing of _HID(BCM2F25) in ACPI ASL code to OS
+off=  10 op=0x05 qid= 2040 | Enable/Disable exposing of _HID(CPLM3218) in ACPI ASL code to OS
+off=  11 op=0x05 qid=   50 | HDMI over USB-C1
+off=  12 op=0x05 qid=   51 | Force HDMI signals route over USB Type C port
+off=  13 op=0x05 qid=    2 | Enable or disable the power of HDD
+off=  14 op=0x05 qid= 2028 | Enable or disable the power of ODD
+off=  15 op=0x05 qid=    3 | Enable/Disable Zero-Power ODD Feature
+off=  16 op=0x05 qid= 2023 | Enable or disable the power of SSD
+off=  17 op=0x05 qid=   65 | Enable Serial Debug Message Under OS
+off=  18 op=0x05 qid= 2013 | Enable or disable the power of DT SLOT
+off=  19 op=0x05 qid=    6 | Enable or disable the power of WLAN/WIFI
+off=  20 op=0x05 qid=    5 | Enable or disable LAN Power
+off=  21 op=0x05 qid=    4 | Enable or disable the power of WWAN
+off=  22 op=0x05 qid=   11 | Enable or disable the power of EVAL Slot
+off=  23 op=0x05 qid=    8 | Enable or disable the power of FRONT CAMERA 0
+off=  24 op=0x05 qid=    9 | Enable or disable the power of FRONT CAMERA 1
+off=  25 op=0x05 qid=   70 | Enable/Disable UCSI (USB Type-C Connector System Software Interface)
+off=  26 op=0x05 qid=   72 | Enable/Disable charger BYPASS mode.
+off=  27 op=0x05 qid=   77 | MITT Only
+off=  28 op=0x05 qid=   78 | Turn Unused GPP Clocks Off
+off=  29 op=0x05 qid=   79 | Enable or disable CLK_REQ0# for MXM x8 Slot J10
+off=  30 op=0x05 qid=   80 | Enable or disable CLK_REQ1# for Onboard LAN U55
+off=  31 op=0x05 qid=   81 | Enable or disable CLK_REQ2# for M.2 WWAN Slot J90
+off=  32 op=0x05 qid=   82 | Enable or disable CLK_REQ3# for Thunderbolt CON1
+off=  33 op=0x05 qid=   83 | Enable or disable CLK_REQ4# for DT x4 Slot J79
+off=  34 op=0x05 qid=   84 | Enable or disable CLK_REQ5# for M.2 SSD Slot J19
+off=  35 op=0x05 qid=   85 | Enable or disable CLK_REQ6# for M.2 WLAN Slot J92
+off=  36 op=0x05 qid=   86 | Enable/Disable KBC Support under OS
+off=  37 op=0x05 qid=   87 | Enable/disable AcDcSwitch.
+off=  38 op=0x07 qid=   88 | AmdDcTimer Setting.
+off=  39 op=0x07 qid=   89 | AmdAcTimer Setting.
+off=  41 op=0x05 qid=   91 | VDDP voltage  Setting.
+off=  42 op=0x05 qid=   92 | VDD18 voltage  Setting.
+off=  43 op=0x05 qid=   94 | Dynamic Power and Thermal Control Interface Enable/Disable
+off=  44 op=0x05 qid=   95 | Enable temperature report or STT through APML
+off=  46 op=0x05 qid=   16 | Select Discrete GPU Hotplug Mode - HotplugEnhanced or HotplugBasic
+off=  47 op=0x05 qid=   23 | Enable/Disable Discrete GPU Display HPD Circuitry
+off=  48 op=0x05 qid= 2020 | Enable/Disable Discrete GPU BOMACO Support
+off=  49 op=0x07 qid=   28 | MACO-PWR Timing: MACO_EN assert to PWR_EN deassert
+off=  50 op=0x07 qid=   29 | PWROFF-RST Timing: PWR_EN deassert to PERSTb assert
+off=  51 op=0x07 qid=   30 | PWRON-RST Timing: PWR_EN assert to PERSTb deassert
+off=  52 op=0x07 qid=   31 | RST-MACO Timing: PERSTb deassert to MACO_EN deassert
+off=  53 op=0x05 qid=   93 | Swtich KVM Mouse Protocol between Absolut/Simple
+off=  54 op=0x05 qid=   96 | Enable/Disable BLINK LED to identify S3/S4 state
+off=  56 op=0x05 qid= 2036 | Switch S3/Modern Standby
+off=  57 op=0x07 qid=   98 | (no prompt / hidden)
+off=  58 op=0x05 qid=   67 | Bluetooth PLDR support Enable/Disable
+off=  59 op=0x05 qid=   40 | Enable/Disable ATIF Function 23 Support
+off=  60 op=0x05 qid= 2035 | Enable/Disable Reduce Hardware Support. Please disable PME wakeup, when Reduce Hardware enabled.
+off=  61 op=0x05 qid=   48 | Select Above 4GB MMIO Limit to 35~48bits limit.
+off=  62 op=0x05 qid=   14 | Enable/Disable PCIe x8 Slot D3Cold
+off=  63 op=0x05 qid=   76 | Enable/Disable Sensor Fusion User Mode Driver
+off=  64 op=0x05 qid=   22 | Enable to support Non-Eval Discrete GPU that doesn't have specific EVAL_PWRGD(B30), EVAL_PRESENT#(A5)
+off=  65 op=0x05 qid= 2061 | Select which MP2 FW to load
+off=  66 op=0x05 qid=   73 | Select S0I2 or S0I3 type for Modern Standby.
+off=  67 op=0x05 qid=   75 | Determines the action taken when the system power is off and a PCI Power Management Enable wake up event occurs.
+off=  68 op=0x05 qid= 2016 | Enable Thunderbolt Support
+off=  69 op=0x05 qid=   56 | Select Thunderbolt Security Level
+off=  70 op=0x05 qid=   57 | Enable Thunderbolt Force PWR
+off=  71 op=0x05 qid=   58 | Do Thunderbolt (Boot On) Command Before/After PCI Enumeration
+off=  72 op=0x05 qid=   59 | Do Thunderbolt (USB On) Command Before/After PCI Enumeration
+off=  73 op=0x05 qid=   60 | Assign Thunderbolt Resource Before/After PCI Enumeration
+off=  74 op=0x05 qid=   61 | Select Thunderbolt PCIE MMIO Resource
+off=  75 op=0x05 qid= 2015 | Select Thunderbolt Slot
+off=  76 op=0x05 qid=   62 | Select Thunderbolt Legacy/Native/RTD3 Mode
+off=  77 op=0x05 qid=   63 | Select Thunderbolt PCIE L1SS Support
+off=  78 op=0x05 qid=   97 | Reserved 1M bytes MMIO space on 1M boundary when iLA TraceMemoryEn enabled
+off=  79 op=0x07 qid=   41 | Vari-Bright level for Maximum Performance on DC: 0 - 4
+off=  80 op=0x07 qid=   42 | Vari-Bright level for Better Performance on DC: 0 - 4
+off=  81 op=0x05 qid=   66 | Wireless LAN Recovery suppport Enable/Disable
+off=  82 op=0x05 qid=   10 | Enable or disable the power of USB CAMERA
+off=  83 op=0x05 qid= 2060 | Enable or disable Power Sensors Routing Select
+off=  85 op=0x07 qid=   43 | Vari-Bright level for Better Battery on DC: 0 - 4
+off=  86 op=0x07 qid=   44 | Vari-Bright level for Battery Saver on DC: 0 - 4
+off=  87 op=0x05 qid=   13 | Select which APU eSPI port route to EC
+off=  88 op=0x05 qid= 2041 | Enable or Disable Wake On Voice
+off=  89 op=0x05 qid=   46 | Enable or Disable ACP Power Gating
+off=  90 op=0x05 qid= 2042 | Usage of GPP8/9
+off=  91 op=0x05 qid=   49 | Enable or disable NVMe RAID mode. Please setting the 'PCIe/GFX Lanes Configuration' item according to the RAID configuration
+off=  92 op=0x05 qid=   17 | Enable/Disable Discrete GPU D3Cold HPD function
+off=  93 op=0x05 qid=   18 | Enable to support sending PME_Turn_Off message to Discrete GPU when going to D3Cold
+off=  94 op=0x05 qid=   52 | DP0 Select only avaliable for Celadon Nova TBT/Non-TBT
+off=  95 op=0x05 qid=   53 | DP1 Select only avaliable for Celadon Nova TBT/Non-TBT
+off=  96 op=0x05 qid=   47 | Enable or Disable ACP CLOCK Gating
+off=  97 op=0x05 qid=   74 | Enable: Enable USB current resource for MS; Disable: Disable USB current resource for MS.
+off=  98 op=0x05 qid=   15 | For NVIDIA mobile DGPU card only. Output DGPU_EN# A19 pin and DGPU_SEL# B17 pin to high at every power on state.
+off=  99 op=0x05 qid=   25 | Disable Discrete GPU's USB Port or keep default setting
+off= 100 op=0x05 qid=   71 | UCSI tunnel can be put on ECRAM or MMIO space, this option specify which one is selected.
+off= 101 op=0x05 qid= 2017 | Select Thunderbolt Host Card Chipset Name
+off= 102 op=0x05 qid=   64 | Select Thunderbolt Wake Up Command
+off= 103 op=0x05 qid=   68 | Enable/Disable Wireless Manageability support
+off= 104 op=0x05 qid=   19 | Force Discrete GPU to Gen1 before entering D3Cold (before sending PME_Turn_Off message)
+off= 105 op=0x05 qid=   20 | PCI-SIG ECN _DSM Function A for Discrete GPU's GPP bridge.
+off= 106 op=0x05 qid=   21 | PCI-SIG ECN _DSM Function B for Discrete GPU's GPP bridge.
+off= 107 op=0x05 qid=   55 | Enable or disable Titan Ridge Host Card PCIe FPB Capability
+off= 108 op=0x05 qid= 2050 | Program Discrete GPU's SSID/SVID depends on HybridGraphics setting
+off= 110 op=0x05 qid=   32 | Enable/Disable ATCS Function 9 Support
+off= 111 op=0x07 qid=   33 | Power limit adjustment percent for [Maximum Performance] on AC: 0 - 100
+off= 112 op=0x07 qid=   34 | Power limit adjustment percent for [Better Performance] on AC: 0 - 100
+off= 113 op=0x07 qid=   35 | Power limit adjustment percent for [Better Battery] on AC: 0 - 100
+off= 114 op=0x07 qid=   36 | Power limit adjustment percent for [Maximum Performance] on DC: 0 - 100
+off= 115 op=0x07 qid=   37 | Power limit adjustment percent for [Better Performance] on DC: 0 - 100
+off= 116 op=0x07 qid=   38 | Power limit adjustment percent for [Better Battery] on DC: 0 - 100
+off= 117 op=0x07 qid=   39 | Power limit adjustment percent for [Battery Saver] on DC: 0 - 100
+off= 120 op=0x07 qid=   26 | Overwrite Discrete GPU's VGA SSID/SVID. Default value 0 means depends on HybridGraphics setting.
+off= 124 op=0x07 qid=   27 | Overwrite Discrete GPU's AUDIO SSID/SVID. Default value 0 means depends on HybridGraphics setting.
+off= 128 op=0x07 qid= 2070 | VDDIO voltage  Setting. VDDIO=1.2v+(N-128)*5mv  N=0~255
+off= 129 op=0x05 qid=    7 | Enable or disable the Wlan Power In S3/S4 state
+off= 130 op=0x05 qid=   54 | Disable the Xtal during S3/S5
+off= 131 op=0x05 qid=   12 | Enable option to allocate 100KB for MP2 customize request
+off= 132 op=0x05 qid=   69 | Enable/Disable Wireless Botton
+off= 133 op=0x07 qid=   90 | This filed used for specify the fake battery percentage, it will take effect if AC/DC switch enabled w/o real battery
+

@@ -162,6 +162,16 @@ difference — which is itself the confirmation. Don't spend time on that menu; 
 firmware-level limits are ever needed for Windows, the lever to look at is HP's
 own thermal mode, not AMD CBS.
 
+**A second AMD-side power knob was tested later and is inert too.** AMD PBS
+(`AMD_PBS_SETUP`) exposes *"Power limit adjustment percent"* for each AMD
+profile, on AC and DC (offsets 111–117). Setting the four DC fields to `+30`,
+rebooting, and reading the PM table: the SMU limits did not move (`STAPM 15 /
+PPT FAST 18` on battery). Repeating on AC with the three AC fields at `+30`: the
+same (`STAPM 28 / PPT FAST 36` unchanged). Both writes *did* land — the live
+variable showed the new values — so it is the firmware's *use* of them that is
+inert, not the write. Both results, with the probe and the `.dat`:
+[`evidence/ifr-static/bridge/experiment-pbs-power/`](evidence/ifr-static/bridge/experiment-pbs-power/).
+
 ## Undervolt / Curve Optimizer: locked on the SMU path (dead end *there*)
 
 Not possible through the **SMU mailbox** on this machine — on **either** OS. Seven

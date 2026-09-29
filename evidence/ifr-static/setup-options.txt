@@ -1,0 +1,504 @@
+# Setup — varstore offset -> option name (static, from the firmware image)
+# varstore 'PlatformLang' size=2 8be4df61-93ca-11d2-aa0d-00e098032b8c
+off=   0 op=0x05 qid=    7 | BIOS Information
+off=   0 op=0x05 qid=  236 | Select the display language for the BIOS.
+off=   0 op=0x05 qid=  264 | Select the display language for the BIOS.
+off=   0 op=0x16 qid=  706 | Boot option File Path
+off=   6 op=0x16 qid=  741 | Boot option File Path
+off= 742 op=0x16 qid=  741 | Boot option File Path
+off= 743 op=0x17 qid=  741 | Boot option File Path
+off= 744 op=0x17 qid=  741 | Boot option File Path
+off= 746 op=0x17 qid=  745 | Boot option File Path
+off= 747 op=0x17 qid=  745 | Boot option File Path
+off= 750 op=0x17 qid=    2 | Boot option File Path
+off= 751 op=0x17 qid=    2 | Boot option File Path
+off=1113 op=0x16 qid= 1052 | Boot option File Path
+off=1113 op=0x16 qid= 1052 | Boot option File Path
+off=1114 op=0x16 qid= 1053 | Boot option File Path
+off=1114 op=0x16 qid= 1053 | Boot option File Path
+off=1115 op=0x16 qid= 1054 | Boot option File Path
+off=1115 op=0x16 qid= 1054 | Boot option File Path
+off=1287 op=0x16 qid= 1286 | Boot option File Path
+off=1287 op=0x16 qid= 1286 | Boot option File Path
+off=1288 op=0x17 qid= 1286 | Boot option File Path
+off=1288 op=0x17 qid= 1286 | Boot option File Path
+off=1289 op=0x17 qid= 1286 | Boot option File Path
+off=1289 op=0x17 qid= 1286 | Boot option File Path
+
+# varstore 'Setup' size=322 ec87d643-eba4-4bb5-a1e5-3f3e36b20da9
+off=   0 op=0x05 qid=  208 | Select the keyboard NumLock state
+off=   1 op=0x05 qid=   30 | TCM State
+off=   1 op=0x05 qid=   33 | TPM Embedded Security Device
+off=   2 op=0x05 qid=   31 | Pending operation
+off=   2 op=0x05 qid=   34 | Pending operation
+off=   2 op=0x05 qid=   42 | Configuration
+off=   4 op=0x07 qid=  371 | (no prompt / hidden)
+off=   6 op=0x05 qid=   27 | Security Device Support
+off=   6 op=0x05 qid=   29 | Security Device Support
+off=   6 op=0x05 qid=   32 | Pwd Authentication
+off=   6 op=0x05 qid=   36 | Security Device Support
+off=   7 op=0x07 qid=  370 | (no prompt / hidden)
+off=   8 op=0x07 qid=  369 | (no prompt / hidden)
+off=   9 op=0x07 qid=  375 | (no prompt / hidden)
+off=  11 op=0x07 qid=  377 | (no prompt / hidden)
+off=  13 op=0x07 qid=  376 | (no prompt / hidden)
+off=  14 op=0x05 qid=   46 | Select the TCG2 Spec Version Support,
+
+TCG_1_2: the Compatible mode for Win8/Win10,
+
+TCG_2: Support new TCG2 protocol and event format for Win10 or later
+off=  15 op=0x05 qid=   43 | Enable or Disable Platform Hierarchy
+off=  16 op=0x05 qid=   44 | Enable or Disable Storage Hierarchy
+off=  17 op=0x05 qid=   45 | Enable or Disable Endorsement Hierarchy
+off=  18 op=0x05 qid=   48 | Select the Communication Interface to TPM 20 Device.
+off=  19 op=0x05 qid=   35 | TPM 1.2
+off=  19 op=0x05 qid=   49 | TPM 1.2
+off=  21 op=0x07 qid=  368 | (no prompt / hidden)
+off=  22 op=0x07 qid=  367 | (no prompt / hidden)
+off=  23 op=0x07 qid=  366 | (no prompt / hidden)
+off=  24 op=0x07 qid=  365 | (no prompt / hidden)
+off=  25 op=0x07 qid=  364 | (no prompt / hidden)
+off=  26 op=0x05 qid=   37 | Enable or Disable SHA-1 PCR Bank
+off=  27 op=0x05 qid=   38 | Enable or Disable SHA256 PCR Bank
+off=  28 op=0x05 qid=   39 | Enable or Disable SHA384 PCR Bank
+off=  29 op=0x05 qid=   40 | Enable or Disable SHA512 PCR Bank
+off=  30 op=0x05 qid=   41 | Enable or Disable SM3_256 PCR Bank
+off=  32 op=0x05 qid=   47 | Select to Tell O.S. to support PPI Spec Version 1.2 or 1.3. Note some HCK tests might not support 1.3.
+off=  33 op=0x05 qid=   28 | Override to allow SID authentication in TCG Storage device
+off=  33 op=0x05 qid=   50 | Override to allow SID authentication in TCG Storage device
+off=  35 op=0x05 qid=   51 | To select.0:AMD CPU fTPM. 1:AMD CPU fTPM Disabled.
+off=  36 op=0x05 qid=   52 | When New CPU is installed, Select "Enabled" to reset fTPM, if you have BitLocker or encryption-enabled system, the system will not boot without a recovery key. Select "Disabled" to keep previous fTPM record and continue system boot, fTPM will NOT be enabled with new CPU unless fTPM is reset (reinitialized), you could swap back to the old CPU to recover TPM related keys and data.
+off=  37 op=0x06 qid=   53 | Enables or Disables BIOS ACPI Auto Configuration.
+off=  38 op=0x05 qid=   55 | Select the highest ACPI sleep state the system will enter when the SUSPEND button is pressed.
+off=  40 op=0x06 qid=   56 | Enables or Disables Lock of Legacy Resources
+off=  41 op=0x06 qid=   54 | Enables or Disables System ability to Hibernate (OS/S4 Sleep State). This option may not be effective with some operating systems.
+off=  45 op=0x05 qid=  134 | OnChip SATA Type
+off=  46 op=0x05 qid=  135 | Native IDE /n RAID /n AHCI /n AHCI /n Legacy IDE /n IDE->AHCI /n HyperFlash
+off=  47 op=0x05 qid=  136 | RAID Or RAID5
+off=  59 op=0x05 qid=10021 | Enabled/Disabled XHCI0 Port 0(XHCI/EHCI)
+off=  60 op=0x05 qid=  137 | Enabled/Disabled XHCI0 Port 1(XHCI/EHCI)
+off=  61 op=0x05 qid=  138 | Enabled/Disabled XHCI0 Port 2(EHCI)
+off=  62 op=0x05 qid=  139 | Enabled/Disabled XHCI0 Port 3(EHCI)
+off=  63 op=0x05 qid=10022 | Enabled/Disabled XHCI1 Port 0(XHCI/EHCI)
+off=  64 op=0x05 qid=  140 | Enabled/Disabled XHCI1 Port 1(XHCI/EHCI)
+off=  65 op=0x05 qid=  141 | Enabled/Disabled XHCI1 Port 2(EHCI)
+off=  66 op=0x05 qid=  142 | Enabled/Disabled XHCI1 Port 3(EHCI)
+off=  68 op=0x05 qid=  143 | Infrared (IR) Configuration
+off=  69 op=0x05 qid=  144 | SD Mode Configuration
+off=  76 op=0x05 qid=  157 | Enable/Disable GPIO ACPI Devices Support, disable it will disable i2C and uart interface device.
+off=  77 op=0x05 qid=  147 | I2C 0 Enable
+off=  78 op=0x05 qid=  148 | I2C 1 Enable
+off=  79 op=0x05 qid=  149 | I2C 2 Enable
+off=  80 op=0x05 qid=  150 | I2C 3 Enable
+off=  81 op=0x05 qid=  145 | Uart 0 Enable
+off=  82 op=0x05 qid=  146 | Uart 1 Enable
+off=  83 op=0x05 qid=  151 | Enable/Disable AB Internal Clock Gating
+off=  84 op=0x05 qid=  152 | Enable The Auto Clkrun Functionality
+off= 112 op=0x05 qid=  158 | Set Sata Max Gen2 Mode
+off= 113 op=0x05 qid=  159 | SATA Reference Clock Selector And Divider
+off= 114 op=0x05 qid=  160 | Indicates Whether Host Bus Adapter (HBA) Can Support Auto-Generating Link Requests To The Partial Or Slumber States When There Are No Commands To Process
+off= 115 op=0x05 qid=  161 | Indicates Whether Host Bus Adapter (HBA) Can Support A Port Multiplier
+off= 116 op=0x05 qid=  162 | EnableDisable SATA Ports Auto Clock Control
+off= 117 op=0x05 qid=  163 | Indicates Whether SATA Host Bus Adapter (HBA) Can Support Transitions To The Partial State
+off= 118 op=0x05 qid=  164 | Indicates Whether SATA Host Bus Adapter (HBA) Can Support Port Multiplier FIS-Based Switching
+off= 119 op=0x05 qid=  165 | Indicates Whether SATA Host Bus Adapter (HBA) Can Support Command Completion Coalescing
+off= 120 op=0x05 qid=  166 | Indicates Whether SATA Host Bus Adapter (HBA) Can Support Transitions To The Slumber State
+off= 121 op=0x05 qid=  167 | SATA Controller Message-Based Interrupts Capability Support
+off= 122 op=0x05 qid=  168 | Indicates Whether SATA Target Support 8 Devices Function
+off= 123 op=0x05 qid=  169 | Sata Disable Generic Mode
+off= 124 op=0x05 qid=  170 | SATA AHCI Enclosure Management
+off= 125 op=0x05 qid=  171 | Enable/Disable SATA Serial General Purpose Input/Output (SGPIO) 0
+off= 130 op=0x05 qid=  172 | Mark The Periodic Timer Interrupt
+off= 135 op=0x05 qid=  173 | Qual IO 1-4-4
+off= 136 op=0x05 qid=  174 | SPI Burst Write
+off= 137 op=0x05 qid=  175 | 100MHz
+off= 140 op=0x05 qid=  176 | I2C 0 D3 Support
+off= 141 op=0x05 qid=  177 | I2C 1 D3 Support
+off= 142 op=0x05 qid=  178 | I2C 2 D3 Support
+off= 143 op=0x05 qid=  179 | I2C 3 D3 Support
+off= 144 op=0x05 qid=  180 | I2C 4 D3 Support
+off= 145 op=0x05 qid=  181 | I2C 5 D3 Support
+off= 146 op=0x05 qid=  182 | UART 0 D3 Support
+off= 147 op=0x05 qid=  183 | UART 1 D3 Support
+off= 148 op=0x05 qid=  184 | UART 2 D3 Support
+off= 149 op=0x05 qid=  185 | UART 3 D3 Support
+off= 150 op=0x05 qid=  186 | SATA D3 Support
+off= 151 op=0x05 qid=  187 | EHCI D3 Support
+off= 152 op=0x05 qid=  188 | XHCI D3 Support
+off= 153 op=0x05 qid=  189 | SD D3 Support
+off= 154 op=0x05 qid=  190 | S0I3 flag
+off= 156 op=0x05 qid=  191 | Enable/Disable CG1_PLL Spread Spectrum
+off= 157 op=0x05 qid=  192 | HPET Function Switch
+off= 158 op=0x05 qid=  193 | Expose MSI capability in HPET Capbility register
+off= 159 op=0x05 qid=  194 | PCIe NativePcieSupport - Debug function.
+off= 169 op=0x05 qid=  156 | Restore Status On AC Power Loss
+off= 170 op=0x05 qid=  195 | GPP Serial Debug Bus Enable
+off= 172 op=0x06 qid=   57 | Run SMART Self Test on all HDDs during POST.
+off= 173 op=0x05 qid=   58 | Enable/disable the generation of ACPI _PPC, _PSS, and _PCT objects.
+off= 174 op=0x07 qid=  362 | (no prompt / hidden)
+off= 175 op=0x05 qid=   59 | Provide to adjust _PPC object.
+off= 175 op=0x05 qid=   60 | Provide to adjust _PPC object.
+off= 175 op=0x05 qid=   61 | Provide to adjust _PPC object.
+off= 175 op=0x05 qid=   62 | Provide to adjust _PPC object.
+off= 175 op=0x05 qid=   63 | Provide to adjust _PPC object.
+off= 175 op=0x05 qid=   64 | Provide to adjust _PPC object.
+off= 175 op=0x05 qid=   65 | Provide to adjust _PPC object.
+off= 175 op=0x05 qid=   66 | Provide to adjust _PPC object.
+off= 176 op=0x05 qid=   68 | Enable/disable CPU Virtualization
+off= 176 op=0x06 qid=  237 | Hardware VT enables a processor feature for running multiple simultaneous Virtual Machines allowing specialized software applications to run in full isolation of each other.
+off= 176 op=0x05 qid=  265 | Hardware VT enables a processor feature for running multiple simultaneous Virtual Machines allowing specialized software applications to run in full isolation of each other.
+off= 177 op=0x05 qid=   67 | Enable/disable No-execute page protection Function
+off= 178 op=0x05 qid=  196 | Sample Code
+off= 179 op=0x05 qid=  197 | Priority2
+off= 183 op=0x05 qid=  198 | Priority3
+off= 187 op=0x05 qid=  199 | Priority4
+off= 191 op=0x05 qid=  200 | Priority5
+off= 195 op=0x05 qid=  201 | Priority6
+off= 199 op=0x05 qid=  202 | For Multi Connector Display Priority
+off= 203 op=0x07 qid=  203 | Lcd Only, Range 0 - 255
+off= 210 op=0x05 qid=10044 | Output Interface
+off= 210 op=0x05 qid=10045 | Output Interface
+off= 210 op=0x05 qid=10046 | Output Interface
+off= 210 op=0x05 qid=10047 | Output Interface
+off= 210 op=0x05 qid=10048 | Output Interface
+off= 210 op=0x05 qid=10049 | Output Interface
+off= 210 op=0x05 qid=10050 | Output Interface
+off= 210 op=0x05 qid=10051 | Output Interface
+off= 211 op=0x05 qid=   70 | Debug Port Table
+off= 212 op=0x05 qid=   71 | Debug Port Table 2
+off= 218 op=0x05 qid=  121 | The Onboard PCIE LAN PXE ROM
+off= 221 op=0x05 qid=  233 | If the item is set to Hidden, the TPM device is not visible in the operating system.
+off= 221 op=0x05 qid=  260 | If the item is set to Hidden, the TPM device is not visible in the operating system.
+off= 222 op=0x05 qid=  261 | If the TPM Device setting is set to Hidden, the BIOS hides this item. If the TPM Device setting changes from Hidden to Available, the BIOS makes this item visible immediately without a restart. The TPM State setting is saved when the TPM Device setting changes to Hidden and is restored when it is changed back to Available. The TPM State setting can change only if you confirm the request prompted by the BIOS during the next startup.
+off= 223 op=0x05 qid=  262 | Clearing the TPM causes you to lose all created keys associated with the TPM, and data protected by those keys, such as a virtual smart card or a login PIN. Make sure that you have a backup and recovery method for any data that is protected or encrypted by the TPM.
+ 
+TPM can be cleared only when you confirm the request via the Physical Presence check prompted by the BIOS during the next startup. If you select Yes, TPM security setting and content will be cleared.
+ 
+After the BIOS clears the TPM or you reject clearing the TPM during the physical presence check in POST, this setting is reverted to No.
+off= 223 op=0x05 qid=60003 | Clearing the TPM causes you to lose all created keys associated with the TPM, and data protected by those keys, such as a virtual smart card or a login PIN. Make sure that you have a backup and recovery method for any data that is protected or encrypted by the TPM.
+ 
+TPM can be cleared only when you confirm the request via the Physical Presence check prompted by the BIOS during the next startup. If you select Yes, TPM security setting and content will be cleared.
+ 
+After the BIOS clears the TPM or you reject clearing the TPM during the physical presence check in POST, this setting is reverted to No.
+off= 224 op=0x06 qid=  232 | Enable or disable HP SpareKey support. Before you use [SpareKey Enroll], please set password and enable support.
+off= 224 op=0x05 qid=  258 | Enable or disable HP SpareKey support. Before you use [SpareKey Enroll], please set password and enable support.
+off= 225 op=0x06 qid=  238 | Set the Fan Always On
+off= 225 op=0x05 qid=  266 | Set the Fan Always On
+off= 226 op=0x06 qid=  239 | Disabled: Requires pressing fn key + f1 through f12 to activate action keys
+Enabled: Requires pressing only f1 through f12 to activate action keys
+off= 226 op=0x05 qid=  267 | Disabled: Requires pressing fn key + f1 through f12 to activate action keys
+Enabled: Requires pressing only f1 through f12 to activate action keys
+off= 227 op=0x05 qid=10573 | Enable/Disable CDROM boot during boot time.
+off= 227 op=0x06 qid=10596 | Enable/Disable CDROM boot during boot time.
+off= 228 op=0x05 qid=10574 | Enable/Disable floppy boot during boot time.
+off= 228 op=0x06 qid=10597 | Enable/Disable floppy boot during boot time.
+off= 229 op=0x05 qid=10575 | Enable/Disable USB boot.
+off= 229 op=0x06 qid=10598 | Enable/Disable USB boot.
+off= 230 op=0x05 qid=10576 | Network Boot allows boot to the Network via F12 or boot order.
+off= 230 op=0x06 qid=10599 | Network Boot allows boot to the Network via F12 or boot order.
+off= 231 op=0x05 qid=  248 | Select Network Boot Protocol using IPv4, IPv6 or IPv4+IPV6. When IPV4+IPV6 is selected, BIOS will use IPv4 first.
+off= 231 op=0x05 qid=  274 | Select Network Boot Protocol using IPv4, IPv6 or IPv4+IPV6. When IPV4+IPV6 is selected, BIOS will use IPv4 first.
+off= 232 op=0x05 qid=10577 | When Legacy Support is enabled, BIOS will load Compatibility Support Module (CSM) to support Legacy OS such as Windows 7, Windows Vista, Windows XP and DOS.When Legacy Support is disabled, BIOS will boot in UEFI Mode without CSM to support newer OS such as Windows 8.System might be unable to boot into operating system after changing this setting.
+off= 232 op=0x05 qid=60000 | When Legacy Support is enabled, BIOS will load Compatibility Support Module (CSM) to support Legacy OS such as Windows 7, Windows Vista, Windows XP and DOS.When Legacy Support is disabled, BIOS will boot in UEFI Mode without CSM to support newer OS such as Windows 8.System might be unable to boot into operating system after changing this setting.
+off= 233 op=0x06 qid=  249 | When Secure Boot is enabled, BIOS performs cryptographic check during bootup, for the integrity of the software image. It prevents unauthorized or maliciously modified software from running.
+off= 233 op=0x05 qid=  275 | When Secure Boot is enabled, BIOS performs cryptographic check during bootup, for the integrity of the software image. It prevents unauthorized or maliciously modified software from running.
+off= 234 op=0x07 qid=  286 | (no prompt / hidden)
+off= 235 op=0x06 qid=  240 | Allow the system to charge the USB device such as mobile phone in S4 (Hibernation) or S5 (off) state.
+off= 235 op=0x05 qid=  268 | Allow the system to charge the USB device such as mobile phone in S4 (Hibernation) or S5 (off) state.
+off= 236 op=0x05 qid= 4096 | Enabled
+off= 238 op=0x05 qid= 8192 | Enabled
+off= 240 op=0x05 qid=12288 | Enabled
+off= 242 op=0x05 qid=16384 | Enabled
+off= 244 op=0x05 qid=20480 | Enabled
+off= 246 op=0x05 qid=24576 | Enabled
+off= 276 op=0x05 qid=36864 | Enabled
+off= 278 op=0x05 qid=40960 | Enabled
+off= 280 op=0x05 qid=45056 | Enabled
+off= 282 op=0x05 qid=49152 | Enabled
+off= 284 op=0x05 qid=53248 | Enabled
+off= 316 op=0x06 qid=  241 | This item enables or disables the reporting of battery remaining time from the BIOS to the operating system. If disabled, the operating system displays battery life in a percentage only.
+off= 316 op=0x05 qid=  269 | This item enables or disables the reporting of battery remaining time from the BIOS to the operating system. If disabled, the operating system displays battery life in a percentage only.
+off= 317 op=0x05 qid=  242 | Battery Care Function (100%): The battery charge stops at 91~100%.
+Battery Care Function (80%): The battery charge stops at 76~80%.
+Battery Care Function (50%): The battery charge stops at 46~50%.
+off= 317 op=0x05 qid=  270 | Battery Care Function (100%): The battery charge stops at 91~100%.
+Battery Care Function (80%): The battery charge stops at 76~80%.
+Battery Care Function (50%): The battery charge stops at 46~50%.
+off= 318 op=0x05 qid=  243 | Dynamic battery protection to optimize battery pack longevity.
+off= 318 op=0x05 qid=  271 | Dynamic battery protection to optimize battery pack longevity.
+off= 319 op=0x06 qid=  244 | Permits the user to control whether the system should wake from S3 or S4/S5 if a magic packet is received by the NIC.
+off= 319 op=0x05 qid=  272 | Permits the user to control whether the system should wake from S3 or S4/S5 if a magic packet is received by the NIC.
+off= 320 op=0x05 qid=10564 | This option can provide RAID0 support when two identical NVMe SSDs are used.
+off= 320 op=0x05 qid=10591 | This option can provide RAID0 support when two identical NVMe SSDs are used.
+off= 321 op=0x05 qid=10605 | (no prompt / hidden)
+
+# varstore 'SetupMode' size=1 8be4df61-93ca-11d2-aa0d-00e098032b8c
+off=   0 op=0x07 qid=  316 | (no prompt / hidden)
+off=   0 op=0x16 qid=34322 | Boot option File Path
+off=   0 op=0x16 qid=34322 | Boot option File Path
+off=   0 op=0x16 qid=34322 | Boot option File Path
+off=   0 op=0x16 qid=34322 | Boot option File Path
+off=   0 op=0x16 qid=34322 | Boot option File Path
+off=   0 op=0x16 qid=34322 | Boot option File Path
+
+# varstore 'UsbSupport' size=49 ec87d643-eba4-4bb5-a1e5-3f3e36b20da9
+off=   0 op=0x05 qid=   72 | USB Support Parameters
+off=   1 op=0x05 qid=   73 | Enable or disable legacy USB support
+off=   2 op=0x05 qid=   76 | This is a workaround for OSes without EHCI hand-off support. The EHCI ownership change should be claimed by EHCI driver.
+off=   8 op=0x05 qid=   79 | USB mass storage device Start Unit command time-out.
+off=   9 op=0x05 qid=   78 | The time-out value for Control, Bulk, and Interrupt transfers.
+off=  10 op=0x05 qid=   82 | N/A
+off=  11 op=0x05 qid=   83 | N/A
+off=  12 op=0x05 qid=   84 | N/A
+off=  13 op=0x05 qid=   85 | N/A
+off=  14 op=0x05 qid=   86 | N/A
+off=  15 op=0x05 qid=   87 | N/A
+off=  16 op=0x05 qid=   88 | N/A
+off=  17 op=0x05 qid=   89 | N/A
+off=  18 op=0x05 qid=   90 | N/A
+off=  19 op=0x05 qid=   91 | N/A
+off=  20 op=0x05 qid=   92 | N/A
+off=  21 op=0x05 qid=   93 | N/A
+off=  22 op=0x05 qid=   94 | N/A
+off=  23 op=0x05 qid=   95 | N/A
+off=  24 op=0x05 qid=   96 | N/A
+off=  25 op=0x05 qid=   97 | N/A
+off=  26 op=0x05 qid=   98 | N/A
+off=  27 op=0x05 qid=   99 | N/A
+off=  28 op=0x05 qid=  100 | N/A
+off=  29 op=0x05 qid=  101 | N/A
+off=  30 op=0x05 qid=  102 | N/A
+off=  31 op=0x05 qid=  103 | N/A
+off=  32 op=0x05 qid=  104 | N/A
+off=  33 op=0x05 qid=  105 | N/A
+off=  34 op=0x05 qid=  106 | N/A
+off=  35 op=0x05 qid=  107 | N/A
+off=  36 op=0x05 qid=  108 | N/A
+off=  37 op=0x05 qid=  109 | N/A
+off=  38 op=0x05 qid=  110 | N/A
+off=  39 op=0x05 qid=  111 | N/A
+off=  40 op=0x05 qid=  112 | N/A
+off=  41 op=0x05 qid=  113 | Mass Storage Devices:
+off=  42 op=0x05 qid=   74 | Enable/Disable XHCI Controller Legacy support.
+off=  43 op=0x05 qid=   75 | This is a workaround for OSes without XHCI hand-off support. The XHCI ownership change should be claimed by XHCI driver.
+off=  44 op=0x05 qid=   80 | Maximum time the device will take before it properly reports itself to the Host Controller. 'Auto' uses default value: for a Root port it is 100 ms, for a Hub port the delay is taken from Hub descriptor.
+off=  45 op=0x07 qid=   81 | Delay range is 1..40 seconds, in one second increments
+off=  47 op=0x05 qid=   77 | Enable/Disable USB Mass Storage Driver Support.
+
+# varstore 'NetworkStackVar' size=8 d1405d16-7afc-4695-bb12-41459d3695a2
+off=   0 op=0x05 qid=  114 | Enable/Disable UEFI Network Stack
+off=   1 op=0x05 qid=  115 | Enable/Disable IPv4 PXE boot support. If disabled, IPv4 PXE boot support will not be available.
+off=   2 op=0x05 qid=  117 | Enable/Disable IPv6 PXE boot support. If disabled, IPv6 PXE boot support will not be available.
+off=   4 op=0x07 qid=  119 | Wait time in seconds to press ESC key to abort the PXE boot. Use either +/- or numeric keys to set the value.
+off=   5 op=0x07 qid=  120 | Number of times the presence of media will be checked. Use either +/- or numeric keys to set the value.
+off=   6 op=0x05 qid=  116 | Enable/Disable IPv4 HTTP boot support. If disabled, IPv4 HTTP boot support will not be available.
+off=   7 op=0x05 qid=  118 | Enable/Disable IPv6 HTTP boot support. If disabled, IPv6 HTTP boot support will not be available.
+
+# varstore 'AMITSESetup' size=65 c811fa38-42c8-4579-a9bb-60e94eddfb34
+off=   0 op=0x08 qid=  206 | Set User Password
+off=   0 op=0x08 qid=  231 | Notebook Hard Drive
+off=   0 op=0x08 qid=  257 | Notebook Hard Drive
+off=  32 op=0x08 qid=  205 | Administrator Password prevents unauthorized access to the Setup Utilities.
+To disable the audible password prompt (beeping sound), set the POST Hotkey Delay (sec) option to 0. This also disables the audible prompt for Power-On Password.
+off=  32 op=0x08 qid=  230 | Administrator Password prevents unauthorized access to the Setup Utilities.
+To disable the audible password prompt (beeping sound), set the POST Hotkey Delay (sec) option to 0. This also disables the audible prompt for Power-On Password.
+off=  32 op=0x08 qid=  256 | Administrator Password prevents unauthorized access to the Setup Utilities.
+To disable the audible password prompt (beeping sound), set the POST Hotkey Delay (sec) option to 0. This also disables the audible prompt for Power-On Password.
+off=  64 op=0x06 qid=  209 | Enables or disables Quiet Boot option
+
+# varstore 'SecureBootSetup' size=7 7b59104a-c00d-4158-87ff-f04d6396a915
+off=   0 op=0x05 qid=10266 | When Secure Boot is enabled, BIOS performs cryptographic check during bootup, for the integrity of the software image. It prevents unauthorized or maliciously modified software from running.
+off=   1 op=0x05 qid=10267 | Secure Boot mode options:
+Standard or Custom.
+In Custom mode, Secure Boot Policy variables can be configured by a physically present user without full authentication
+off=   2 op=0x05 qid=10275 | Install factory default Secure Boot keys after the platform reset and while the System is in Setup mode
+
+# varstore 'Timeout' size=2 8be4df61-93ca-11d2-aa0d-00e098032b8c
+off=   0 op=0x07 qid=  207 | Number of seconds to wait for setup activation key. 65535(0xFFFF) means indefinite waiting.
+off=   0 op=0x05 qid=  247 | POST Hotkey Delay (sec) controls the amount of time given to press the function key to enter the Setup Utilities when the system starts.
+To disable the audible password prompt (beeping sound) for both the Administrator Password and Power-On Password, set the POST Hotkey Delay (sec) option to 0.
+off=   0 op=0x05 qid=  273 | POST Hotkey Delay (sec) controls the amount of time given to press the function key to enter the Setup Utilities when the system starts.
+To disable the audible password prompt (beeping sound) for both the Administrator Password and Power-On Password, set the POST Hotkey Delay (sec) option to 0.
+
+# varstore 'BootOrder' size=2 8be4df61-93ca-11d2-aa0d-00e098032b8c
+off=   0 op=0x05 qid=  210 | Boot Option #%d
+
+# varstore 'DriverOrder' size=2 8be4df61-93ca-11d2-aa0d-00e098032b8c
+off=   0 op=0x05 qid=  211 | Sets the system driver order
+
+# varstore 'LegacyDevOrder' size=2 a56074db-65fe-45f7-bd21-2d2bdd8e9652
+off=   0 op=0x05 qid=  213 | Up and Down arrow keys select a device. <F5> and <F6> keys move the device down or up.
+The boot capability will be disabled if the Device is marked with an exclamation mark.
+When Legacy Support is enabled, UEFI boot order and Legacy boot order are both available and UEFI boot order has higher priority than Legacy boot order.
+
+# varstore 'TpmStateFlag' size=1 0ee72c08-8185-427a-a58a-855b78b7ba0b
+off=   0 op=0x06 qid=60002 | If the TPM Device setting is set to Hidden, the BIOS hides this item. If the TPM Device setting changes from Hidden to Available, the BIOS makes this item visible immediately without a restart. The TPM State setting is saved when the TPM Device setting changes to Hidden and is restored when it is changed back to Available. The TPM State setting can change only if you confirm the request prompted by the BIOS during the next startup.
+
+# varstore 'HpBootOrder' size=16 0ee72c08-8185-427a-a58a-855b78b7ba0b
+off=   0 op=0x23 qid=  250 | Order system searches drivers for a boot disk
+
+# varstore 'AMICallback' size=2 9cf0f18e-7c7d-49de-b5aa-bbbad6b21007
+off=   0 op=0x07 qid=  279 | (no prompt / hidden)
+
+# varstore 'FixedBootNum' size=2 0ee72c08-8185-427a-a58a-855b78b7ba0b
+off=   0 op=0x07 qid=  280 | (no prompt / hidden)
+
+# varstore 'UefiFixedBootNum' size=2 0ee72c08-8185-427a-a58a-855b78b7ba0b
+off=   0 op=0x07 qid=  281 | (no prompt / hidden)
+
+# varstore 'WindowsToGo' size=1 0ee72c08-8185-427a-a58a-855b78b7ba0b
+off=   0 op=0x07 qid=  282 | (no prompt / hidden)
+
+# varstore 'PendingAction' size=1 0ee72c08-8185-427a-a58a-855b78b7ba0b
+off=   0 op=0x07 qid=  283 | (no prompt / hidden)
+
+# varstore 'PlatformKey' size=1 0ee72c08-8185-427a-a58a-855b78b7ba0b
+off=   0 op=0x07 qid=  284 | (no prompt / hidden)
+
+# varstore 'MSFTDebugPolicy' size=1 0ee72c08-8185-427a-a58a-855b78b7ba0b
+off=   0 op=0x07 qid=  285 | (no prompt / hidden)
+
+# varstore 'HideCdromBootOption' size=1 0ee72c08-8185-427a-a58a-855b78b7ba0b
+off=   0 op=0x07 qid=  287 | (no prompt / hidden)
+
+# varstore 'HideFanAlwaysOn' size=1 0ee72c08-8185-427a-a58a-855b78b7ba0b
+off=   0 op=0x07 qid=  288 | (no prompt / hidden)
+
+# varstore 'PlatformLangCodes' size=2 8be4df61-93ca-11d2-aa0d-00e098032b8c
+off=   0 op=0x07 qid=  289 | (no prompt / hidden)
+
+# varstore 'ResetSecurityFlag' size=1 0ee72c08-8185-427a-a58a-855b78b7ba0b
+off=   0 op=0x07 qid=  290 | (no prompt / hidden)
+
+# varstore 'InternalDisallowTpmFlag' size=1 70fff0ff-a543-45b9-8be3-1bdb90412080
+off=   0 op=0x07 qid=  291 | (no prompt / hidden)
+
+# varstore 'HideVBIOSRevision' size=1 0ee72c08-8185-427a-a58a-855b78b7ba0b
+off=   0 op=0x07 qid=  292 | (no prompt / hidden)
+
+# varstore 'GOPCount' size=1 0ee72c08-8185-427a-a58a-855b78b7ba0b
+off=   0 op=0x07 qid=  293 | (no prompt / hidden)
+
+# varstore 'HideGOPRevision' size=1 0ee72c08-8185-427a-a58a-855b78b7ba0b
+off=   0 op=0x07 qid=  294 | (no prompt / hidden)
+
+# varstore 'HideFccId' size=1 0ee72c08-8185-427a-a58a-855b78b7ba0b
+off=   0 op=0x07 qid=  295 | (no prompt / hidden)
+
+# varstore 'OEMDeviceStatus' size=8 0ee72c08-8185-427a-a58a-855b78b7ba0b
+off=   2 op=0x07 qid=  298 | (no prompt / hidden)
+off=   3 op=0x07 qid=  296 | (no prompt / hidden)
+off=   5 op=0x07 qid=  297 | (no prompt / hidden)
+
+# varstore 'HideBornOnDate' size=1 0ee72c08-8185-427a-a58a-855b78b7ba0b
+off=   0 op=0x07 qid=  299 | (no prompt / hidden)
+
+# varstore 'NewSystemFamily' size=1 0ee72c08-8185-427a-a58a-855b78b7ba0b
+off=   0 op=0x07 qid=  300 | (no prompt / hidden)
+
+# varstore 'HpShowSpareKeyItem' size=1 0ee72c08-8185-427a-a58a-855b78b7ba0b
+off=   0 op=0x07 qid=  301 | (no prompt / hidden)
+
+# varstore 'BootNowCount' size=2 052e6eb0-f240-42c5-8309-45874545c6b4
+off=   0 op=0x07 qid=  302 | (no prompt / hidden)
+
+# varstore 'LegacyGroup' size=2 a56074db-65fe-45f7-bd21-2d2bdd8e9652
+off=   0 op=0x07 qid=  303 | (no prompt / hidden)
+
+# varstore 'LegacyDev' size=2 a56074db-65fe-45f7-bd21-2d2bdd8e9652
+off=   0 op=0x07 qid=  304 | (no prompt / hidden)
+
+# varstore 'DriverManager' size=2 c0b4fb05-15e5-4588-9fe9-b3d39c067715
+off=   0 op=0x07 qid=  305 | (no prompt / hidden)
+
+# varstore 'BootManager' size=2 b4909cf3-7b93-4751-9bd8-5ba8220b9bb2
+off=   0 op=0x07 qid=  306 | (no prompt / hidden)
+
+# varstore 'SecureVarPresent' size=6 7b59104a-c00d-4158-87ff-f04d6396a915
+off=   0 op=0x07 qid=  310 | (no prompt / hidden)
+off=   1 op=0x07 qid=  309 | (no prompt / hidden)
+off=   2 op=0x07 qid=  308 | (no prompt / hidden)
+off=   3 op=0x07 qid=  307 | (no prompt / hidden)
+off=   4 op=0x07 qid=  311 | (no prompt / hidden)
+off=   5 op=0x07 qid=  312 | (no prompt / hidden)
+
+# varstore 'VendorKeys' size=1 8be4df61-93ca-11d2-aa0d-00e098032b8c
+off=   0 op=0x07 qid=  313 | (no prompt / hidden)
+
+# varstore 'SystemAccess' size=1 e770bb69-bcb4-4d04-9e97-23ff9456feac
+off=   0 op=0x07 qid=  314 | (no prompt / hidden)
+
+# varstore 'SecureBoot' size=1 8be4df61-93ca-11d2-aa0d-00e098032b8c
+off=   0 op=0x07 qid=  315 | (no prompt / hidden)
+
+# varstore 'AuditMode' size=1 8be4df61-93ca-11d2-aa0d-00e098032b8c
+off=   0 op=0x07 qid=  317 | (no prompt / hidden)
+
+# varstore 'DeployedMode' size=1 8be4df61-93ca-11d2-aa0d-00e098032b8c
+off=   0 op=0x07 qid=  318 | (no prompt / hidden)
+
+# varstore 'AmiAmdSbSuppressIfSetupData' size=1 b66b8637-96c0-4615-b8bd-d98efd5d3b17
+off=   0 op=0x07 qid=  320 | (no prompt / hidden)
+
+# varstore 'AmiSbXhciSwitchSuppressIfSetupData' size=1 c0f8bda9-52c8-40dd-92fc-6efffef9524a
+off=   0 op=0x07 qid=  321 | (no prompt / hidden)
+
+# varstore 'DrvHealthCtrlCnt' size=2 58279c2d-fb19-466e-b42e-cd437016dc25
+off=   0 op=0x07 qid=  322 | (no prompt / hidden)
+
+# varstore 'DriverHealthCount' size=2 7459a7d4-6533-4480-bba7-79e25a4443c9
+off=   0 op=0x07 qid=  323 | (no prompt / hidden)
+
+# varstore 'UsbMassDevValid' size=32 ec87d643-eba4-4bb5-a1e5-3f3e36b20da9
+off=   0 op=0x07 qid=  355 | (no prompt / hidden)
+off=   1 op=0x07 qid=  354 | (no prompt / hidden)
+off=   2 op=0x07 qid=  353 | (no prompt / hidden)
+off=   3 op=0x07 qid=  352 | (no prompt / hidden)
+off=   4 op=0x07 qid=  351 | (no prompt / hidden)
+off=   5 op=0x07 qid=  350 | (no prompt / hidden)
+off=   6 op=0x07 qid=  349 | (no prompt / hidden)
+off=   7 op=0x07 qid=  348 | (no prompt / hidden)
+off=   8 op=0x07 qid=  347 | (no prompt / hidden)
+off=   9 op=0x07 qid=  346 | (no prompt / hidden)
+off=  10 op=0x07 qid=  345 | (no prompt / hidden)
+off=  11 op=0x07 qid=  344 | (no prompt / hidden)
+off=  12 op=0x07 qid=  343 | (no prompt / hidden)
+off=  13 op=0x07 qid=  342 | (no prompt / hidden)
+off=  14 op=0x07 qid=  341 | (no prompt / hidden)
+off=  15 op=0x07 qid=  340 | (no prompt / hidden)
+off=  16 op=0x07 qid=  339 | (no prompt / hidden)
+off=  17 op=0x07 qid=  338 | (no prompt / hidden)
+off=  18 op=0x07 qid=  337 | (no prompt / hidden)
+off=  19 op=0x07 qid=  336 | (no prompt / hidden)
+off=  20 op=0x07 qid=  335 | (no prompt / hidden)
+off=  21 op=0x07 qid=  334 | (no prompt / hidden)
+off=  22 op=0x07 qid=  333 | (no prompt / hidden)
+off=  23 op=0x07 qid=  332 | (no prompt / hidden)
+off=  24 op=0x07 qid=  331 | (no prompt / hidden)
+off=  25 op=0x07 qid=  330 | (no prompt / hidden)
+off=  26 op=0x07 qid=  329 | (no prompt / hidden)
+off=  27 op=0x07 qid=  328 | (no prompt / hidden)
+off=  28 op=0x07 qid=  327 | (no prompt / hidden)
+off=  29 op=0x07 qid=  326 | (no prompt / hidden)
+off=  30 op=0x07 qid=  325 | (no prompt / hidden)
+off=  31 op=0x07 qid=  324 | (no prompt / hidden)
+
+# varstore 'UsbMassDevNum' size=2 ec87d643-eba4-4bb5-a1e5-3f3e36b20da9
+off=   0 op=0x07 qid=  356 | (no prompt / hidden)
+
+# varstore 'UsbControllerNum' size=4 ec87d643-eba4-4bb5-a1e5-3f3e36b20da9
+off=   0 op=0x07 qid=  360 | (no prompt / hidden)
+off=   1 op=0x07 qid=  359 | (no prompt / hidden)
+off=   2 op=0x07 qid=  358 | (no prompt / hidden)
+off=   3 op=0x07 qid=  357 | (no prompt / hidden)
+
+# varstore 'AmiGopPolicySetupData' size=2 c143929c-bf5d-423b-999b-0f2dd2b61ff7
+off=   0 op=0x07 qid=  374 | (no prompt / hidden)
+off=   1 op=0x07 qid=  361 | (no prompt / hidden)
+
+# varstore 'DriverHlthEnable' size=2 0885f288-418c-4be1-a6af-8bad61da08fe
+off=   0 op=0x07 qid=  372 | (no prompt / hidden)
+
+# varstore 'DynamicPageCount' size=2 b63bf800-f267-4f55-9217-e97fb3b69846
+off=   0 op=0x07 qid=  373 | (no prompt / hidden)
+
