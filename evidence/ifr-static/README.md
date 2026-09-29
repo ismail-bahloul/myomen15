@@ -98,6 +98,13 @@ Two more GUIDs hold HP's own state, separate from the setup store: `0ee72c08`
 `206bc44a` (`HPSetupData`/`NewHPSetupData`/`HPAmiTse`/…). All 47 are immutable
 from Linux. Full inventory: [`hp-nvram-layer.md`](hp-nvram-layer.md).
 
+## AOD_SETUP is the AMD Overclocking menu
+
+One of the four mapped varstores, `AOD_SETUP` (1020 B), turns out to be the
+**AMD Overclocking menu** — PBO, PPT/TDC/EDC, custom CPU/GFX frequency/voltage,
+and Curve Optimizer — and it is read **at POST** by `AodPei`, not only by the
+`\AOD` SMM handler. → [`aod-setup.md`](aod-setup.md).
+
 ## What this does not change
 
 Reading the IFR names options; it does not unlock them. The Curve Optimizer is

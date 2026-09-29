@@ -5,6 +5,14 @@ named `AOD_SETUP` twice, which does not exist on this machine, and was "not
 chased further" in that session. This closes that thread and turns it into a
 concrete, reversible experiment.
 
+**Follow-up (static IFR):** `AOD_SETUP` is not an opaque buffer — it is the
+**AMD Overclocking menu** (207 options: PBO, PPT/TDC/EDC, custom CPU/GFX
+freq/voltage, Curve Optimizer, memory timings), and it is read **at POST** by
+`AodPei`, not only by the SMM handler. That reframes this experiment: it opened
+the *gate* with an all-zero buffer and tested the *runtime command path*, but
+never the *POST-time application of the menu's values*. →
+[`../ifr-static/aod-setup.md`](../ifr-static/aod-setup.md).
+
 ## Result
 
 **The gate was not the blocker.** `AOD_SETUP` was created for real (1020
