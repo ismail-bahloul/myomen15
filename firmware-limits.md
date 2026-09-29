@@ -172,6 +172,14 @@ variable showed the new values — so it is the firmware's *use* of them that is
 inert, not the write. Both results, with the probe and the `.dat`:
 [`evidence/ifr-static/bridge/experiment-pbs-power/`](evidence/ifr-static/bridge/experiment-pbs-power/).
 
+The **AMD CBS memory (UMC) lever** was tested the same way and is inert too:
+setting `AmdSetup` `off=75` (*memory clock frequency*) to 2600 MHz left SMBIOS
+`Configured Memory Speed` at 3200 — the value is stored and ignored, because the
+memory controller is programmed from the **signed `APCB`** blocks, not the
+variable. → [`evidence/ifr-static/bridge/experiment-cbs-memory/`](evidence/ifr-static/bridge/experiment-cbs-memory/).
+So the whole AMD CBS/PBS family is inert here; only the OS-side levers move
+anything.
+
 ## Undervolt / Curve Optimizer: locked on the SMU path (dead end *there*)
 
 Not possible through the **SMU mailbox** on this machine — on **either** OS. Seven

@@ -378,8 +378,13 @@ What has not been tried yet, ordered by how much it would unlock:
   [`setup-offset-naming.md`](setup-offset-naming.md), `evidence/setup-poke.py`.
 - **`postcode`.** `hp-wmi` exposes a firmware POST code that reads a stable
   `0x70`. Read, but not decoded any further.
-- **The memory side.** The firmware's own SPD table names a module that is not
-  installed; the lever is `AMD CBS > UMC Common Options`.
+- ~~**The memory side.** The firmware's own SPD table names a module that is
+  not installed; the lever is `AMD CBS > UMC Common Options`.~~ **Closed:** the
+  `AmdSetup` (CBS) memory lever is inert too — the value is stored and ignored,
+  because the memory controller is programmed from the signed `APCB`, not the
+  variable. Setting `memory clock frequency` to 2600 MHz left `Configured
+  Memory Speed` at 3200. →
+  [`evidence/ifr-static/bridge/experiment-cbs-memory/`](evidence/ifr-static/bridge/experiment-cbs-memory/)
 - **What `ROMPROTECT2` actually does.** CHIPSEC reads one FCH write-protect
   register as set (`WriteProtect=1`, a narrow, ambiguous range) — a real,
   measured data point, but not yet correlated to any actual write behaviour,

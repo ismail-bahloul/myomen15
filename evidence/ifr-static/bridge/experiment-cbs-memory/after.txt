@@ -1,0 +1,13 @@
+# 2026-09-29T21:33:43+00:00
+# dmidecode type 17: rated Speed vs Configured Memory Speed
+  Size: 16 GiB
+  Speed: 3200 MT/s
+  Configured Memory Speed: 3200 MT/s
+  Size: 16 GiB
+  Speed: 3200 MT/s
+  Configured Memory Speed: 3200 MT/s
+# lscpu (cpu-side only, for context)
+  Model name:                              AMD Ryzen 7 5800H with Radeon Graphics
+  CPU(s) scaling MHz:                      64%
+  CPU max MHz:                             4465,2612
+  CPU min MHz:                             403,4880
