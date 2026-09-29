@@ -1,0 +1,14 @@
+fs0:
+if exist fs0:\dumps\aod-delete.txt then
+dmpstore -d AOD_SETUP -guid 5ED15DC0-EDEF-4161-9151-6014C4CC630C > fs0:\dumps\aod-delete-result.txt
+del fs0:\dumps\aod-delete.txt
+endif
+if exist fs0:\dumps\aod-create.dat then
+dmpstore AOD_SETUP -guid 5ED15DC0-EDEF-4161-9151-6014C4CC630C -l fs0:\dumps\aod-create.dat > fs0:\dumps\aod-create-result.txt
+del fs0:\dumps\aod-create.dat
+endif
+if exist fs0:\dumps\stop.txt then
+echo shell staying up
+else
+reset -c
+endif

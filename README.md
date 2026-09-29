@@ -396,10 +396,12 @@ What has not been tried yet, ordered by how much it would unlock:
   power limits, the GPU clock, the fans and the profile, not three tools that
   ignore each other. → designed and implemented: [`governor.md`](governor.md)
   and `evidence/omen-governor`
-- **`AOD_SETUP`.** An EFI variable name found hard-coded in `AodSmmSsp` (two
-  `GetVariable` calls, both with correctly-checked `EFI_STATUS`), absent from
-  `/sys/firmware/efi/efivars/` on this machine and not in `efi-nvram.md`'s
-  catalogue. Not chased past finding it. → [`acpi-bridge.md`](acpi-bridge.md)
+- **`AOD_SETUP`.** *Closed.* It is the **AMD Overclocking menu** (207 options:
+  PBO, PPT/TDC/EDC, custom CPU/GFX freq/voltage, Curve Optimizer), read at POST
+  by `AodPei` and by the `\AOD` SMM handler. `aod-setup-probe` opened the SMM
+  gate with an all-zero buffer (the runtime command path was inert); populating
+  the menu and rebooting leaves the SMU limits unmoved too, so the POST path is
+  inert as well. → [`evidence/ifr-static/aod-setup.md`](evidence/ifr-static/aod-setup.md)
 - **Closed, do not chase:** Curve Optimizer, BIOS flashing, EFI setup-variable
   writes (`EPERM`), the `\AOD`/SMM road (driven and inert above), and the
   Curve Optimizer branch's unmasked array index inside `AodSmmSsp` (traced to

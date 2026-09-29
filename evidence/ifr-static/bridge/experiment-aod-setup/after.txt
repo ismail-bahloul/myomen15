@@ -1,0 +1,8 @@
+# 2026-09-29T21:43:53+00:00
+ac=1
+| STAPM LIMIT         |    28.000 | stapm-limit        |
+| PPT LIMIT FAST      |    36.000 | fast-limit         |
+| PPT LIMIT SLOW      |    28.000 | slow-limit         |
+| PPT LIMIT APU       |    22.000 | apu-slow-limit     |
+| THM LIMIT CORE      |    85.000 | tctl-temp          |
+CPU max MHz:                             4465,2612

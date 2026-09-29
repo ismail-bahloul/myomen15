@@ -36,6 +36,33 @@ The `AOD_SETUP` GUID appears in **`AodPei`** (a **PEI** module, i.e. POST), plus
 `AOD_SETUP`. So the menu's values are read **at boot**, not only when an OS sends
 an `\AOD` SW-SMI.
 
+## Result (2026-09-29) — the POST path is inert too
+
+`AOD_SETUP` was created **populated**, not all-zero, and the machine rebooted:
+
+| off | value | meaning |
+|---|---|---|
+| 142 | 1 | Precision Boost Overdrive = Enabled |
+| 143 | 2 | PBO limits = Manual |
+| 144/145 | 45000 | PPT limit = 45 W (u16) |
+| 368 / 370 | 2 / 10 | Curve Optimizer = All Core, magnitude 10 |
+
+All within the IFR domains (CO ≤ 30; PPT ≤ 65535). The write landed — `DataSize
+= 0x3FC`, visible in efivars — but the SMU did **not** move:
+
+```
+STAPM 28 | PPT FAST 36 | THM 85 | CPU max MHz 4465   (before)
+STAPM 28 | PPT FAST 36 | THM 85 | CPU max MHz 4465   (after)
+```
+
+**`AodPei` does not apply the AMD Overclocking menu at POST** — or if it does,
+the EC overrides the result. Either way the populated menu is inert: the last
+firmware-side lever is closed, exactly like CBS/PBS (power) and CBS (memory).
+
+Caveat, kept honest: this tests PPT/limits (readable) decisively. Curve Optimizer
+has no read-back, so "CO was applied" cannot be ruled out by this probe alone —
+but nothing else moved, which is the shape of "nothing was applied".
+
 ## What that changes about `aod-setup-probe`
 
 That experiment created `AOD_SETUP` as **1020 zeros** (deliberately, to size the
