@@ -144,14 +144,24 @@ The reference implementation is deliberately a single script so it can be read
 before it is trusted. To adopt it: install it beside `/usr/local/bin`, point one
 `systemd` unit at `watch`, and retire the three `power-profile*` units.
 
-## Adopted (2026-09-29)
+## Tried, then reverted (2026-09-29)
 
-Installed as the single writer on this machine: `/usr/local/bin/omen-governor`
-plus `omen-governor.service` (`ExecStart=… watch`), with `power-profile.service`,
-`power-profile.timer` and `power-profile-watch.service` **disabled**. `nbfc_service`
-stays the fan owner. Verified live: `active mode balanced`, limits held at
-`35/42/35 W`, cpufreq 3.2 GHz, dGPU locked, `watching; active mode balanced` in
-the journal. To roll back: `systemctl disable --now omen-governor.service` and
-re-enable the three `power-profile*` units. That
+Adopted briefly as the single writer (installed `omen-governor.service`, retiring
+the three `power-profile*` units), verified live — `apply balanced` held at
+`35/42/35 W`, 3.2 GHz, dGPU locked — and then **rolled back** to the three-process
+stack.
+
+Why: the consolidation is real (three units → one, the profile-before-limits
+ordering encoded in code instead of worked around by a watcher, a readable
+`status`), but it is a **refactor, not a gain** — `power-profile` already owned
+all four levers, including the dGPU clock lock. And the mode *values* are design
+choices: `auto` on AC picks `balanced` = **35/42 W**, hotter than the tuned AC
+profile the old script applies (**28/36 W** — the one `efficiency.md` credits
+with doing the cooling). So as-is it raised AC power.
+
+Net: worth adopting only after aligning `MODES` with the tuned numbers. Until
+then `power-profile` + `.timer` + `power-profile-watch` remain the writers;
+`omen-governor` and `omen-governor.service` are kept here as the (working,
+rehearsed) reference implementation. That
 migration is left to you on purpose — this is the design and the tool, not a
 change to a working setup.
