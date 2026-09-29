@@ -1,17 +1,6 @@
 fs1:
-if exist fs1:\dumps\armed.txt then
-if not exist fs1:\dumps\confirmed.txt then
-dmpstore @VARNAME@ -guid @GUID@ -l fs1:\dumps\revert-@VARNAME@.dat > fs1:\dumps\revert-result.txt
-del fs1:\dumps\armed.txt
-endif
-endif
-if exist fs1:\dumps\poke-@VARNAME@.dat then
-dmpstore @VARNAME@ -guid @GUID@ -l fs1:\dumps\poke-@VARNAME@.dat > fs1:\dumps\poke-result.txt
-echo armed > fs1:\dumps\armed.txt
-del fs1:\dumps\poke-@VARNAME@.dat
-endif
-if exist fs1:\dumps\stop.txt then
-echo shell staying up
-else
+dmpstore @VARNAME@ -guid @GUID@ -l fs1:\dumps\rev.dat > fs1:\dumps\rvres.txt
+del fs1:\dumps\rev.dat
+dmpstore @VARNAME@ -guid @GUID@ -l fs1:\dumps\poke.dat > fs1:\dumps\pkres.txt
+del fs1:\dumps\poke.dat
 reset -c
-endif

@@ -1,14 +1,19 @@
 #!/usr/bin/env bash
-# Stage a pre-boot apply for one setup varstore. Reads nothing privileged,
-# writes only to the ESP. Does NOT reboot and does NOT apply anything itself.
+# Stage a pre-boot apply (or revert) for one setup varstore on the ESP.
+# Writes only to the ESP; does not reboot and does not apply anything itself.
 #
-# Usage: arm.sh <VARSTORE> [ESP mount]
+# Usage: arm.sh <VARSTORE> [apply|revert] [ESP mount]
 #   VARSTORE: Setup | AMD_PBS_SETUP | AmdSetup
-# Build the .dat first:  BRIDGE_OUT=out python3 ../bridge.py build <VARSTORE> NAME=VALUE
+# Build the .dat first, e.g.:
+#   BRIDGE_OUT=out python3 ../bridge.py build Setup "CDROM boot=0"
+#
+# Files are staged under 8.3 names on purpose: this firmware's EDK2 Shell
+# cannot open long (LFN) names inside a subdirectory (see README.md).
 set -euo pipefail
 
 VAR="${1:?VARSTORE: Setup|AMD_PBS_SETUP|AmdSetup}"
-ESP="${2:-/boot}"
+MODE="${2:-apply}"
+ESP="${3:-/boot}"
 HERE="$(cd "$(dirname "$0")" && pwd)"
 
 case "$VAR" in
@@ -18,22 +23,20 @@ case "$VAR" in
   *) echo "unknown varstore: $VAR" >&2; exit 1 ;;
 esac
 
-test -f "$HERE/out/poke-$VAR.dat"   || { echo "missing out/poke-$VAR.dat" >&2; exit 1; }
-test -f "$HERE/out/revert-$VAR.dat" || { echo "missing out/revert-$VAR.dat" >&2; exit 1; }
-
 mkdir -p "$ESP/dumps"
-cp "$HERE/out/poke-$VAR.dat" "$HERE/out/revert-$VAR.dat" "$ESP/dumps/"
+rm -f "$ESP/dumps/poke.dat" "$ESP/dumps/rev.dat"
+case "$MODE" in
+  apply)  cp "$HERE/out/poke-$VAR.dat"   "$ESP/dumps/poke.dat" ;;
+  revert) cp "$HERE/out/revert-$VAR.dat" "$ESP/dumps/rev.dat"  ;;
+  *) echo "mode must be apply|revert" >&2; exit 1 ;;
+esac
 sed -e "s/@VARNAME@/$VAR/g" -e "s/@GUID@/$GUID/g" \
     "$HERE/startup.nsh.in" > "$ESP/startup.nsh"
-rm -f "$ESP/dumps/confirmed.txt" "$ESP/dumps/armed.txt"
 sync
 
-echo "staged on $ESP:"
-echo "  startup.nsh  -> $ESP/startup.nsh"
-echo "  dumps/       -> poke-$VAR.dat, revert-$VAR.dat"
+echo "staged ($MODE) on $ESP/dumps:"
+ls -l "$ESP/dumps"
 echo
-echo "NOT rebooting. Arm the one-shot boot to the UEFI Shell entry, then reboot:"
-echo "  efibootmgr                       # find the USB Shell entry number N"
-echo "  sudo efibootmgr -n N             # next boot = Shell"
-echo "  systemctl reboot"
-echo "(or use Boot Maintenance Manager -> Boot From File)"
+echo "NOT rebooting. Arm the one-shot boot to the Shell entry, then reboot:"
+echo "  sudo efibootmgr            # find the 'UEFI Shell (bridge)' entry number N"
+echo "  sudo efibootmgr -n N && sudo systemctl reboot"
