@@ -1,0 +1,14 @@
+[Unit]
+Description=omen-governor — one mode across CPU limits, cpufreq/EPP, dGPU lock, profile
+Documentation=file:///home/iswad/DATA/05_Code/Projects/myomen15/governor.md
+After=multi-user.target nbfc_service.service
+Wants=nbfc_service.service
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/omen-governor watch
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

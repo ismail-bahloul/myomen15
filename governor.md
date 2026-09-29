@@ -142,6 +142,16 @@ just a power setting, it owns the profile (`systemctl`-level ownership, rule 1).
 
 The reference implementation is deliberately a single script so it can be read
 before it is trusted. To adopt it: install it beside `/usr/local/bin`, point one
-`systemd` unit at `watch`, and retire the three `power-profile*` units. That
+`systemd` unit at `watch`, and retire the three `power-profile*` units.
+
+## Adopted (2026-09-29)
+
+Installed as the single writer on this machine: `/usr/local/bin/omen-governor`
+plus `omen-governor.service` (`ExecStart=… watch`), with `power-profile.service`,
+`power-profile.timer` and `power-profile-watch.service` **disabled**. `nbfc_service`
+stays the fan owner. Verified live: `active mode balanced`, limits held at
+`35/42/35 W`, cpufreq 3.2 GHz, dGPU locked, `watching; active mode balanced` in
+the journal. To roll back: `systemctl disable --now omen-governor.service` and
+re-enable the three `power-profile*` units. That
 migration is left to you on purpose — this is the design and the tool, not a
 change to a working setup.
