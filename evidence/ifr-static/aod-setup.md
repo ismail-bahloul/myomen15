@@ -59,9 +59,16 @@ STAPM 28 | PPT FAST 36 | THM 85 | CPU max MHz 4465   (after)
 the EC overrides the result. Either way the populated menu is inert: the last
 firmware-side lever is closed, exactly like CBS/PBS (power) and CBS (memory).
 
-Caveat, kept honest: this tests PPT/limits (readable) decisively. Curve Optimizer
-has no read-back, so "CO was applied" cannot be ruled out by this probe alone —
-but nothing else moved, which is the shape of "nothing was applied".
+**And the Curve Optimizer specifically is ruled out — by the SMU itself, not
+assumed.** With this populated `AOD_SETUP` present, `evidence/smu-gate-probe.py`
+still gets `0xFF Failed` for `set-coall`/`set-coper`/`set-cogfx` — byte-identical
+to the reading taken with `AOD_SETUP` absent. The `0xFF` is the SMU saying it
+recognises CO and refuses it *because the OC-enable state is off*; `AodPei` did
+not turn that state on. So CO was not applied, and the unchanged PPT was a true
+negative, not the EC masking power while CO slipped through.
+
+The negative is therefore solid on both axes, including the one with no
+read-back.
 
 ## What that changes about `aod-setup-probe`
 
