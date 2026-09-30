@@ -1,4 +1,4 @@
 threads=16
-iterations=129800000000
+iterations=90964000000
 measure_s=20.00
-throughput_Mi_s=6490.0
+throughput_Mi_s=4548.1

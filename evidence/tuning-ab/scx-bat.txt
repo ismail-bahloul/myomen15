@@ -1,0 +1,18 @@
+scx-A-r1 idle_W=10.76 policy=[default] soc_cpu_W=6.169
+scx-A-r1 wakes=40697 p50=515 p99=1577 p99.9=2489 max=4077 us
+scx-A-r1 load: throughput_Mi_s=4548.1
+scx-B-r1 idle_W=10.61 policy=[default] soc_cpu_W=6.133
+scx-B-r1 wakes=33313 p50=727 p99=2991 p99.9=3768 max=5334 us
+scx-B-r1 load: throughput_Mi_s=4592.3
+scx-A-r2 idle_W=10.75 policy=[default] soc_cpu_W=6.125
+scx-A-r2 wakes=41008 p50=514 p99=1587 p99.9=2692 max=7455 us
+scx-A-r2 load: throughput_Mi_s=4541.5
+scx-B-r2 idle_W=10.67 policy=[default] soc_cpu_W=6.110
+scx-B-r2 wakes=33193 p50=777 p99=2993 p99.9=3702 max=4954 us
+scx-B-r2 load: throughput_Mi_s=4545.3
+scx-A-r3 idle_W=10.74 policy=[default] soc_cpu_W=6.109
+scx-A-r3 wakes=40921 p50=518 p99=1607 p99.9=2599 max=29995 us
+scx-A-r3 load: throughput_Mi_s=4556.3
+scx-B-r3 idle_W=10.72 policy=[default] soc_cpu_W=6.103
+scx-B-r3 wakes=33398 p50=758 p99=2993 p99.9=3994 max=4364 us
+scx-B-r3 load: throughput_Mi_s=4544.1
