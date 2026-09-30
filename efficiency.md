@@ -182,10 +182,13 @@ the whole VFIO dGPU win and needs no reboot — but it is not free:
   400 MHz, and a 128 MiB `memcpy` drops **10.9 → 6.2 GiB/s**. So this is a
   *quiet/eco* mode, not a default: fine for reading and writing, wrong under a
   browser or anything moving pixels.
-- **It cannot be made selective.** Asking `manual` mode to hold `pp_dpm_mclk` /
-  `pp_dpm_fclk` at their top level does not take — read back after the phase, both
-  sit at their floor (400). So "pin the GPU low, keep the memory fast" is not
-  available through this interface; the only knob is the whole-SoC force level.
+- **It cannot be made selective, and the win is the memory, not the GPU.** Asking
+  `manual` mode to hold `pp_dpm_mclk` / `pp_dpm_fclk` at their top level does not
+  take (read back after the phase, both sit at 400). And `profile_min_sclk` — the
+  GPU core pinned at the floor with the memory left at 1600 — saves **nothing**
+  (14.54 W vs 14.62 W for `auto`). So the whole ~3 W is the memory/fabric/display
+  clocks (`mclk`/`fclk` 1600→400, `dcefclk` 847→400); there is no cheap half of
+  this lever to take.
 - **No measurable noise change in the window.** The fan is EC-controlled and slow;
   fan1/fan2 stayed within their spread (650–720). The win is draw, not dB, over
   a 20 s sample.
