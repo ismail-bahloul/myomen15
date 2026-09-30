@@ -195,7 +195,19 @@ the whole VFIO dGPU win and needs no reboot — but it is not free:
 - **It is not persistent.** The level resets to `auto` on reboot, so it is safe to
   try, and `auto` undoes it.
 
-Not adopted by default — recorded as the lever it is.
+What it does **not** cost, measured — which is what makes the trade defensible:
+
+- **Hardware video decode is untouched.** 1080p60 H.264 through VA-API (the VCN
+  block) ran **706–707 fps on `auto` and 705–707 on `low`** — identical. The
+  decoder is fixed-function and this content does not saturate the reduced memory
+  bandwidth.
+- **The panel keeps its mode.** The eDP output stayed on `1920x1080@144.00` under
+  `low` — `dcefclk` at 400 MHz still carries 1080p144.
+
+So the −43 % is a *CPU-side* bandwidth figure that ordinary desktop and video
+work does not reach; what does reach it is memory-heavy work — large builds, VMs,
+LLM inference. On battery that is usually not the workload, which is what makes
+`low` a reasonable **battery** default rather than an opt-in.
 
 ## Caveats
 
