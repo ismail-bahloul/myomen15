@@ -227,6 +227,28 @@ points 3–5 and with HP Sure Start.
 **Do not** install ZenTune (ex-UXTU4Linux) hoping for CO, and **do not** patch
 `ryzenadj` for it.
 
+### The BIOS voltage items themselves: they only go *up*
+
+The setup also carries the classic AMD voltage items — and **none of them is an
+undervolt**, which is a second reason the SMU gate above is not even the first
+obstacle. Read from the firmware image and from the live store:
+
+- **PBS** (`AMD_PBS_SETUP`): `VDDP voltage` (off=41) and `VDD18 voltage` (off=42)
+  are *increase-only* ladders — `+10…+80 mV` and `+40…+110 mV` — and both read
+  their **minimum** live (`0`). `VDDIO voltage` (off=128) is a true ± ladder
+  around 1.2 V and reads `0x80` = exactly 1.2 V.
+- **AOD** (`AOD_SETUP`, the AMD Overclocking menu): the real undervolt knobs —
+  *Custom CPU core voltage* (off=42), *VDD_SOC* (off=335), *VDDG* (off=352), the
+  *AVFS curve shift* (off=368/369) and *Curve Optimizer* (off=368/369/370) — all
+  live in this menu, which the POST test found **inert** →
+  [`evidence/ifr-static/aod-setup.md`](evidence/ifr-static/aod-setup.md).
+- **CBS** (`AmdSetup`) carries a *core voltage* field of its own (off=57, live
+  `0xFF` = auto), part of the same OC path.
+
+So the only rail the platform will move is *up* on the signalling side (VDDP /
+VDD18), and every knob that would move the core voltage **down** sits behind the
+AOD menu the SMU ignores.
+
 ### The second road, measured: it is inert
 
 Every confirmation above goes through the **SMU mailbox** (`ryzenadj` on Linux,

@@ -69,20 +69,45 @@ value to be 54 was the error. The `50 / 65 / 54` triple is
 `STAPM / PPT-fast / PPT-slow` — consistent all along. There was never a
 discrepancy to explain; there was a misread of which field held which value.
 
-## Also readable, not yet interpreted
+## The remaining floats, attributed by state (2026-09-30)
 
-```
-[0x68] 1919.879     (a clock? ~1.92 GHz)
-[0x6c] 0.543
-[0x70] 1.447
-[0x74] 1.079
-[0x78] 18.000
-[0x7c] 0.016
-[0x84] 100.000
-```
+The tail past `0x44` was left as "probably clocks or voltage planes". It can be
+attributed by *what each field tracks*: [`evidence/pmtable-attr.py`](evidence/pmtable-attr.py)
+reads the table at idle, under one loaded core and under all cores, and again with
+the whole CPU capped to a fixed clock — a field that moves with load is a reading,
+one that never moves is a limit, one that falls when the clock is capped is the
+operating point. Measured on the battery profile (15 W STAPM; the real clocks at
+`0x3c0`/`0x3e0` were 2.22 GHz under all-core load):
 
-`0x84` at 100.000 may be a second thermal limit. The four floats at
-`0x68`–`0x74` are probably clocks or voltage planes. Not attributed yet.
+| off | idle | 1 core | all cores | tracks |
+|---|---|---|---|---|
+| `0x48` | 65 | 65 | 65 | a **limit** |
+| `0x4c` | 46.1 | 45.8 | 47.8 | **temperature** (°C) |
+| `0x50` | 65 | 65 | 65 | a **limit** |
+| `0x54` | 46.2 | 46.1 | 48.4 | **temperature** (°C) |
+| `0x68` | 2200 | 1656 | 259.5 | **inverse to load** — *not* a clock (every core is at 2.22 GHz here) and not a limit. Unattributed |
+| `0x70` | 1.4625 | 1.4625 | 1.4625 | **constant in every state** — a fixed setpoint, not a reading |
+| `0x74` | 0.774 | 0.788 | 0.916 | **the operating point** — drops to 0.750 when the CPU is capped to 2.22 GHz. Voltage-like |
+| `0x78` | 18 | 18 | 18 | a **limit** (= PPT-fast) |
+| `0x84` | 100 | 100 | 100 | a **limit** (the 2nd thermal cap) |
+| `0x88` | 0.7 | 0.8 | 11.9 | **power**, rises with load |
+| `0x98` | 5.6 | 5.9 | 17.2 | **power** — reaches ~15 W = the STAPM cap under all-core |
+
+`0x6c`, `0x58`–`0x64`, `0x80` read 0 throughout, and `0x7c` is bursty (2–26, 0
+under sustained all-core) with no clean reading yet.
+
+What this settles, and what it does not:
+
+- the "second thermal limit" guess was right (`0x84` = 100; `0x48`/`0x50` = 65 = Tctl);
+- **`0x74` is the voltage-like plane this page was looking for** — it follows the
+  clock cap, so it is the nearest thing to a Vcore readout the machine has;
+- **`0x70` is not a reading at all** (it never moves) and **`0x68` is neither a
+  clock nor a limit** (`2200 → 259` as load *rises*, while every core sits at
+  2.22 GHz). Both stay unattributed: naming them needs a state that separates
+  them, not more guessing.
+
+The harness is read-only and reaps its own load (a leaked `yes` will silently turn
+an "idle" sample into an all-core one — it did, once, here).
 
 ## The per-core groups, decoded
 
@@ -173,4 +198,8 @@ v = struct.unpack('<%df' % (2372 // 4), open('/sys/kernel/ryzen_smu_drv/pm_table
 names = ['STAPM','PPT_FAST','PPT_SLOW','PPT_APU','TDC_VDD','TDC_SOC','EDC_VDD','EDC_SOC','THM']
 for n, i in zip(names, range(0, 18, 2)):
     print(f'{n:9s} limit={v[i]:8.3f}   live={v[i+1]:8.3f}')"
+
+# attribute the tail (0x48 on) by state
+sudo python3 evidence/pmtable-attr.py            # idle / 1 core / all cores
+sudo python3 evidence/pmtable-attr.py 2222000    # the same, capped to 2.222 GHz
 ```
