@@ -214,6 +214,39 @@ string at `0x06`–`0x0E`, then `0x16 0x1A` and a version byte at `0x04` (`0x31`
 — redacted here on the same principle as the machine serial in the README. It is
 reproducible from `ec_probe dump` on the machine that owns it.
 
+## The EC firmware, and its update path: not reachable from the host
+
+A read-only pass, because the EC is the one component that touches the flash
+(the fans share it) and nothing here had asked how its own firmware is reached.
+
+The EC is a **generic `PNP0C09`** (`\_SB.PCI0.SBRG.EC0`), driven through the ACPI
+EC at I/O **`0x72`/`0x73`** (`OperationRegion (ECMC, SystemIO, 0x72, 0x02)` —
+`ECMI`/`ECMD`), not the usual `0x62`/`0x66`. Everything the DSDT exposes on it is
+telemetry/control — the HP `SMRD (0x09, 0x16, idx, …)` shared-memory reads and
+the `FRTB`/`FRTP` window — and there is **no method that enters an
+update / ISP / boot-block mode** (searched the disassembled DSDT for `update`,
+`flash`, `firmware`, `isp`, `ECUP`, `FLSH`: none).
+
+The EC's own firmware identity reads `ON070XL-A983` (`0x06`–`0x11`); its
+part-number table (`KBC1126` / `NPCE985` / `IT5570`) is in the DMI area at
+`0x80`–`0x88`. *(The reference dump above shows `ON070XL-A` with trailing
+zeros; this read shows the fuller string — recorded as measured, not explained.)*
+
+Neither the ID string nor those part strings occur anywhere in the 16 MiB BIOS
+image (`088D1.bin`) or in `BIOS_Update.exe` — the AMI capsule holds exactly one
+UCP module (`@UII`), the BIOS. The AMI flasher's own region list *does* carry a
+separate `ID_SECFLASH_EMBEDDEDEC_CAPSULE` / `ID_SECFLASH_EMBEDDEDEC_RECOVERY`, so
+an "Embedded EC" flash region exists — it is just not in either artifact, and the
+host cannot read the flash at all (`SpiHostAccessRomEn=0` →
+[`evidence/spi-flash-host-access.txt`](evidence/spi-flash-host-access.txt)).
+
+**Negative result, kept:** the EC firmware is a genuinely separate region,
+reached neither through ACPI nor through the readable BIOS image. Dumping or
+changing it needs the update capsule's own EC component, a pre-boot actor, or
+physical SPI access — not the running OS. This is the same shape as the SPI row
+in [`access-surface.md`](access-surface.md): reachable *hardware*, but not a
+host lever.
+
 ## Which registers accept a write — measured per register
 
 There is **no blanket rule**. Writing a value and watching the register:
