@@ -1,0 +1,12 @@
+thp-A-r1 vm_bogo/s(real)=108603.46
+thp-A-r1 stream_bogo/s(real)=478.43
+thp-B-r1 vm_bogo/s(real)=72351.70
+thp-B-r1 stream_bogo/s(real)=480.97
+thp-A-r2 vm_bogo/s(real)=100199.38
+thp-A-r2 stream_bogo/s(real)=477.32
+thp-B-r2 vm_bogo/s(real)=78801.52
+thp-B-r2 stream_bogo/s(real)=484.62
+thp-A-r3 vm_bogo/s(real)=87494.64
+thp-A-r3 stream_bogo/s(real)=471.91
+thp-B-r3 vm_bogo/s(real)=79059.90
+thp-B-r3 stream_bogo/s(real)=481.93

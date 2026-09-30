@@ -1,0 +1,18 @@
+scx-A-r1 wakes=40392 p50=538 p99=1618 p99.9=2584 max=4890 us
+scx-A-r1 load: throughput_Mi_s=6490.0
+scx-A-r1 switch_bogo/s(real)=1040177.73
+scx-B-r1 wakes=33799 p50=718 p99=2986 p99.9=3614 max=4350 us
+scx-B-r1 load: throughput_Mi_s=6448.3
+scx-B-r1 switch_bogo/s(real)=1640905.97
+scx-A-r2 wakes=40359 p50=535 p99=1624 p99.9=2635 max=5084 us
+scx-A-r2 load: throughput_Mi_s=6462.6
+scx-A-r2 switch_bogo/s(real)=1036544.19
+scx-B-r2 wakes=33915 p50=707 p99=2985 p99.9=3716 max=4158 us
+scx-B-r2 load: throughput_Mi_s=6454.3
+scx-B-r2 switch_bogo/s(real)=1573057.42
+scx-A-r3 wakes=40158 p50=551 p99=1649 p99.9=2938 max=5861 us
+scx-A-r3 load: throughput_Mi_s=6441.9
+scx-A-r3 switch_bogo/s(real)=1036332.22
+scx-B-r3 wakes=33901 p50=694 p99=2992 p99.9=3352 max=4017 us
+scx-B-r3 load: throughput_Mi_s=6466.7
+scx-B-r3 switch_bogo/s(real)=1640382.06
