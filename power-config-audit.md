@@ -131,7 +131,7 @@ both boots, stable over 16 s:
 
 | | normal boot (nvidia driver) | **VFIO boot** |
 |---|---|---|
-| dGPU | `active`, ~10–12 W | `runtime_status=suspended` |
+| dGPU | `active`, ~10–12 W | `runtime_status=suspended`, **`power_state=D3cold`** |
 | whole-system draw | ~20 W | **~13.3 W** |
 | idle Tctl / fan1 | ~48 °C / ~660 rpm | 47.8 °C / 672 rpm |
 | external DP monitor | works | **dead** (DP is wired to the dGPU) |
@@ -141,11 +141,27 @@ So the VFIO entry removes **~6.7 W — 33 % of the battery draw**, about **1.5×
 runtime**. That is more than the whole CPU-profile story is worth, and it needs no
 policy: it is just "the dGPU is not there".
 
-**It is D3hot, not D3cold.** The GPU's ACPI node exposes **no `_PR3` power
-resource** (`firmware_node/power_resources` is empty), so the platform cannot cut
-its power; `vfio-pci` runtime-suspends it, which is D3hot / `suspended`. The win
-is real regardless — the mechanism is that the nvidia stack is gone and *nothing
-holds the device*, not that the silicon is unpowered.
+**It is D3cold, not D3hot — corrected 2026-09-30.** The earlier reading of this
+boot said D3hot, on the argument that the GPU's *own* ACPI node exposes no `_PR3`
+(`firmware_node/power_resources` is empty). That argument is about the endpoint,
+and it is the wrong node. Measured on the VFIO boot: `0000:01:00.0`,
+`0000:01:00.1` **and** the bridge `0000:00:01.1` all read `power_state=D3cold`,
+stable over 30 s (`runtime_active_time` frozen at 1191 ms), and the bridge's ACPI
+node reports `real_power_state=D3cold`.
+
+**The switch is the bridge, not the GPU.** `\_SB.PCI0.GPP0` (the bridge,
+`00:01.1`) is the ACPI node that owns the dGPU rail: its `_PR0`/`_PR2`/`_PR3` all
+point at `PowerResource (PG00)`, whose `_OFF` runs `SGPC(0)` and clears the EC bit
+`GFXT` — a real rail switch. It only releases once the dGPU **and** its audio
+function are suspended, so the bridge can itself drop to D3. With the nvidia
+driver loaded neither ever suspends, the bridge stays in `D0`, and the GPU sits in
+`D0`. Bind both functions to `vfio-pci` and the whole subtree falls to `D3cold`.
+
+So the win is not merely "the nvidia stack is gone and nothing holds the device":
+the silicon is **actually unpowered**, and the draw lands at ~14.5–15.7 W on this
+run against the ~20 W of the nvidia boot. The PBS `D3Cold Support` toggle is
+**not** what enables this — it is at its default (`Auto`) on this boot; that toggle
+is a separate HPD/PME knob, and *that* one hangs boot when enabled.
 
 Consequences: on this boot `nvidia-smi` does not exist, so `apply_battery`'s
 `-lgc` / `-lmc` lines are no-ops (the `|| true` keeps that safe), and
@@ -153,6 +169,15 @@ Consequences: on this boot `nvidia-smi` does not exist, so `apply_battery`'s
 EPP `power`, WiFi power-save — applies normally (verified: STAPM 15 W, Tctl 65,
 watcher/timer/nbfc active). This also makes the `KWIN_DRM_DEVICES` route *above*
 the second-best option, for sessions that need the dGPU present.
+
+One residual wake source, measured on this boot: `nvidia-persistenced.service` is
+`enabled` and **fails** here (`systemctl --failed`), but each start still loads
+the `nvidia` module, which probes — and momentarily powers up — the GPU before
+giving up (`NVRM: GPU 0000:01:00.0 is already bound to vfio-pci`). It is a
+boot-time burst of a few probes, not continuous (`runtime_active_time` is frozen
+once it settles), so it costs little; masking the unit on this boot would remove
+it entirely. `nbfc_service` already handles it correctly — it detects the VFIO
+passthrough and skips its nvidia-ml sensor.
 
 ## The two tradeoffs the config assumes
 

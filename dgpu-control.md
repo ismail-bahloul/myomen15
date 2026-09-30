@@ -133,6 +133,17 @@ this page already flagged before testing it ("NVIDIA + Linux + D3Cold is
 known-troublesome territory") — now measured, not just anticipated.
 **Closed: leave `D3Cold Support` on `Disabled`.**
 
+But that toggle is **not** the machine's D3cold capability, and D3cold is in fact
+reached here — just not through PBS. Measured 2026-09-30 on the `vfio-pci` boot
+entry: `0000:01:00.0`, its audio function, **and** the bridge `00:01.1` all sit in
+`power_state=D3cold` (stable over 30 s, ACPI `real_power_state=D3cold`). The
+switch is the platform's: `\_SB.PCI0.GPP0` carries `_PR3 -> PowerResource (PG00)`,
+and `PG00._OFF` cuts the rail (`SGPC(0)` + EC bit `GFXT`). It only fires once both
+dGPU functions are suspended — i.e. when no driver holds them. So on this machine
+D3cold is a *bridge* action, available whenever the GPU is driverless, and the
+`D3Cold Support` firmware item is a different (HPD/PME) knob that only breaks boot.
+Full detail: [`power-config-audit.md`](power-config-audit.md#the-other-boot-entry-already-does-it-measured).
+
 ## If anything is built, build it coherent
 
 The CPU side already has a governor (`power-profile-watch`) and a monitor
