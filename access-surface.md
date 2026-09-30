@@ -29,6 +29,7 @@ This page exists so the same ground is not re-covered, and so a surface that is
 | **Keyboard RGB (4 zones)** | Reported by the EC in `H2RA`, but there is **no Linux interface** and writes there do nothing | 🟡 **found, not controllable** |
 | EFI setup answers | `/sys/firmware/efi/efivars/` | 137 vars, read-only. See [`efi-nvram.md`](efi-nvram.md) |
 | DSDT / 16 SSDT | `/sys/firmware/acpi/tables/` | 95 KB DSDT, disassembles cleanly with `iasl` |
+| **iGPU / SoC DPM level** | `/sys/class/drm/card*/device/power_dpm_force_performance_level` | `low` on battery drops mclk/fclk 1600→400 and the idle draw ~14.5→11.5 W; video decode and the 144 Hz mode are unaffected. Costs CPU memory bandwidth (~−43 %). Driven per profile by `power-profile`. See [`efficiency.md`](efficiency.md) |
 | **dGPU clock lock** | `nvidia-smi --lock-gpu-clocks=min,max` (NVML, root) | The RTX 3070 Laptop. **Measured effective** — 80 W → 41 W under load at a 1000 MHz cap. Memory clock lock also accepted. See [`dgpu-control.md`](dgpu-control.md) |
 
 ## Reachable, NOT yet used
@@ -39,6 +40,9 @@ later pass has covered one, the row says so.
 | Surface | How | Why it might matter |
 |---|---|---|
 | `hp-wmi` `postcode` | `cat /sys/devices/platform/hp-wmi/postcode` | Reads a stable `0x70`. A firmware observation channel that costs nothing. |
+| **PCIe ASPM policy** | **not runtime-writable** (`EPERM` on `/sys/module/pcie_aspm/parameters/policy`) — kernel cmdline `pcie_aspm.policy=powersave` + reboot | The live policy is `default`, and 7 links sit at `ASPM Disabled`. Untested: needs a reboot, and ASPM-on-everything carries a stability risk. |
+| Screen | brightness is at 80 % (52428/65535); the panel also advertises adaptive backlight modulation (`kscreen-doctor`: set to 2) | The panel is a first-order battery load; brightness and refresh (144 → 60 Hz) are the classic levers, both user-facing. Unmeasured here. |
+| Fan curve | `nbfc` (`my-nbfc.json`) | Runs, but the curve itself has not been tuned against temps — the lever for **silence**, not draw. |
 | esrt / capsules | `/sys/firmware/efi/esrt/` | **Read:** one entry, `fw_class 8278833a-…`, type 1 (system firmware), fw_version `0x0F300000` (= F.30). `OsIndications` = `0x7`, `BootCurrent` = `0006`. No capsule applied. |
 | PCI config, root complex | `setpci` / `lspci -xxx -s 00:00.0` | **Done:** the `0x40`–`0x100` zone captured (`evidence/deep-recon/pci-sysfs-256.txt`); it also carries the SMN index/data window at `0xB8`/`0xBC`. On the FCH (`00:14.3`), `0x50`–`0x5C` (`ROMPROTECT`) and `0xA0` (`SPIBASEADDR`) are interpreted; the rest is still raw. |
 | IOMMU + vfio | 24 groups, `vfio-pci` registered | **Enumerated:** booted `iommu=pt`; the 24 groups are the PCI functions, nothing bound to `vfio-pci` yet. Relevant to the VFIO passthrough setup. |
