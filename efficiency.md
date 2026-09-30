@@ -163,6 +163,37 @@ the power cap binds only under load, the frequency cap binds always. The profile
 now deployed as AC applies exactly this: **28 W, no frequency cap**
 (`TDP_AC=28000`, `FREQ_AC=4465000`).
 
+## The iGPU / SoC DPM level: a ~3 W idle lever (measured)
+
+Everything above moves the **CPU** package. The SoC rail is shared with the
+Radeon, and `amdgpu` exposes the iGPU's DPM levels — a lever no other page here
+had touched. `power_dpm_force_performance_level` alone moves the idle draw:
+
+| level | battery draw | Tctl | edge | fan1/fan2 | clocks |
+|---|---|---|---|---|---|
+| `auto` | **14.3–14.4 W** | 44–45 °C | 44 °C | 684/658 | sclk 400–716, socclk 400–975, fclk 1600, mclk 1600, dcefclk 847 |
+| `low` | **11.4–11.5 W** | 44.5 °C | 43.5 °C | 650–700 | everything at its floor: 200 / 400 / 400 / 400 / 400 |
+
+**−2.9 W, −20 % of the idle draw**, reproduced across four `auto`/`low`/`auto`
+runs ([`evidence/igpu-dpm.py`](evidence/igpu-dpm.py)). That is a large fraction of
+the whole VFIO dGPU win and needs no reboot — but it is not free:
+
+- **The memory/fabric clocks go with it.** `low` takes `mclk`/`fclk` from 1600 to
+  400 MHz, and a 128 MiB `memcpy` drops **10.9 → 6.2 GiB/s**. So this is a
+  *quiet/eco* mode, not a default: fine for reading and writing, wrong under a
+  browser or anything moving pixels.
+- **It cannot be made selective.** Asking `manual` mode to hold `pp_dpm_mclk` /
+  `pp_dpm_fclk` at their top level does not take — read back after the phase, both
+  sit at their floor (400). So "pin the GPU low, keep the memory fast" is not
+  available through this interface; the only knob is the whole-SoC force level.
+- **No measurable noise change in the window.** The fan is EC-controlled and slow;
+  fan1/fan2 stayed within their spread (650–720). The win is draw, not dB, over
+  a 20 s sample.
+- **It is not persistent.** The level resets to `auto` on reboot, so it is safe to
+  try, and `auto` undoes it.
+
+Not adopted by default — recorded as the lever it is.
+
 ## Caveats
 
 - **One workload.** A branchy FP loop. Efficiency ordering is workload-dependent.
@@ -185,6 +216,7 @@ python3 evidence/eff-analyze.py ac nocap perf gov-quiet gov-balanced gov-perform
 ./evidence/burst-peak.sh        # burst peak power/heat, capped vs uncapped
 ./evidence/thermal-ab.sh        # thermal A/B across idle / 1 thread / 14 threads
 python3 evidence/thermal-analyze.py old new
+sudo python3 evidence/igpu-dpm.py auto low auto   # the iGPU DPM idle A/B
 ```
 
 Tooling: `evidence/load.c`, `evidence/powsample.py`, `evidence/eff-test.sh`,
