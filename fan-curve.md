@@ -42,6 +42,20 @@ The lever that removes the *heat* is the power cap
 draw. The fan curve only decides how loudly the machine holds whatever the SMU
 allows.
 
+## Decision (2026-09-30): the original curve stays
+
+The lower-duty curve was deployed, measured, and then **reverted**. It only buys
+noise, and it buys it exactly where the noise was already acceptable; what it
+costs is thermal headroom. The original holds **54 °C** under a 65 °C cap — ~11 °C
+of reserve, which is what a single-thread burst on battery spends (a burst heats a
+core far more than the all-core test here; [`efficiency.md`](efficiency.md)). The
+quiet one sits at 60–61 °C and gives that reserve up. Both idle at the same 12 %
+floor, so there is nothing to gain at the quiet end either.
+
+What stays is the *finding*, not the curve: a temperature-driven loop settles at a
+temperature, so a threshold buys nothing and only a duty moves the rpm. That is
+what makes the question decidable.
+
 ## Reproducing
 
 ```bash
