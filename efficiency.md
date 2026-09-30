@@ -209,6 +209,26 @@ work does not reach; what does reach it is memory-heavy work — large builds, V
 LLM inference. On battery that is usually not the workload, which is what makes
 `low` a reasonable **battery** default rather than an opt-in.
 
+## The screen: a small lever, measured (~1 W, not worth the comfort)
+
+The panel is the classic first lever, so it was measured the same way
+([`evidence/screen-ab.py`](evidence/screen-ab.py), on battery, DPM already at
+`low`):
+
+| state | draw |
+|---|---|
+| 80 %, 144 Hz (as shipped) | 11.47 W |
+| 50 %, 144 Hz | 11.15 W |
+| 50 %, 60 Hz | 10.80 W |
+| 100 %, 60 Hz | 11.86 W |
+
+So the measured band -- 50 → 100 % brightness at a fixed refresh -- is **~1.1 W**,
+and **144 → 60 Hz is ~0.35 W**. Against the ~3 W the SoC DPM level buys, that is
+small: dropping to 60 Hz is not worth the smoothness, and brightness is a comfort
+choice rather than a battery strategy. (Mode via `kscreen-doctor`, brightness via
+the backlight sysfs, 20 s means; run-to-run spread here is ~±0.3 W, so the 60 Hz
+delta sits near the noise floor.)
+
 ## Caveats
 
 - **One workload.** A branchy FP loop. Efficiency ordering is workload-dependent.
