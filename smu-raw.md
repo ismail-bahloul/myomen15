@@ -241,6 +241,15 @@ equivalent of "read a known register, confirm the value" to de-risk a write,
 because a wrong SMN address isn't a register with a known meaning to check
 against first.
 
+One named reason to *want* an SMN write is now closed from the other side. The
+Curve Optimizer gate this page measured (`0xFF Failed`) lives in an SMU-internal
+config bit, and that bit's source register sits **outside the host's SMN window**
+— `0x115d64c` reads `0` from the host while `0x3B10058` returns the SMU version.
+So for the one target that mattered, the write is not merely un-de-risked: the
+address is not the host's to write, and the bit is consumed before the host runs.
+See [`psp-firmware.md`](psp-firmware.md), and §7 of
+[`evidence/psp-firmware/curve-optimizer-handler.txt`](evidence/psp-firmware/curve-optimizer-handler.txt).
+
 Tooling: `evidence/smuraw.py` — `mailbox`, `smn <addr>`, `version`, `pmver`,
 `drambase`, `stapmtest`; and `evidence/smu-gate-probe.py` — `controls`, `gate`,
 `all` (the masking correction, and the gate discriminator above).

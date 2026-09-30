@@ -367,7 +367,11 @@ What has not been tried yet, ordered by how much it would unlock:
   fabric, with no per-command validation the way a mailbox message gets — the
   one part of the raw SMU layer still genuinely untouched, now that the
   mailbox itself has been both read and (carefully) written. →
-  [`smu-raw.md`](smu-raw.md)
+  [`smu-raw.md`](smu-raw.md). **Narrowed:** the one target that would have
+  mattered, the Curve Optimizer gate, is closed from this side too — its source
+  register (`0x115d64c` bit 2) is outside the host's SMN window, so there is no
+  host-writable address to aim at. →
+  [`psp-firmware.md`](psp-firmware.md)
 - **Name the remaining setup offsets.** *Closed, statically:* the IFR is in the
   clear, so every `Setup` / AMD PBS / CBS / AOD option is named to its offset
   from the image alone, no reboots — [`evidence/ifr-static/`](evidence/ifr-static/).

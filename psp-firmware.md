@@ -225,6 +225,18 @@ guard byte `0x10`); and the only **unguarded** writer (`byte[0x6a]`) sits on
 handlers are unrelated). So the gate is a state the SMU establishes for itself at
 boot, and the host has **no unguarded message that changes it**.
 
+**And the gate bit's source is not a fuse — it is a register the host cannot
+reach.** Disassembling `FUN_0001ce2c` and its helper `FUN_0001e8bc` pins the
+"config bit" to an address: the bit (`byte[2]`, id `0x3262`) is read from the
+SMU-internal block at `0x115d000`/`0x115d004`, which resolves to **bit 2 of the
+dword at SMU address `0x115d64c`**. A read through the host's own SMN window
+(`00:00.0` B8/BC) returns `0` for the whole `0x115dxxx` block while `0x3B10058`
+returns the SMU version — so the register is in the SMU's address space, outside
+the host aperture, and it is read at bring-up. The raw-SMN write `smu-raw.md`
+left open cannot open CO: there is no host-writable register, and no window
+before the SMU consumes it. Full disassembly and live reads:
+[`evidence/psp-firmware/curve-optimizer-handler.txt`](evidence/psp-firmware/curve-optimizer-handler.txt) §7.
+
 One honesty note: `global.d0` (`0x73b0`) has no resolved writer in either image,
 yet the live SMU returns 0xFF; since the image value is zero, some runtime init
 must fill that struct through a computed pointer that static reference-tracking
@@ -249,7 +261,9 @@ than papered over.
   the host can send flips the CO gate: the flag writers are SMU-init code or
   guard-rejected, and the one unguarded writer is on a queue that is not MP1.
   Curve Optimizer is not reachable through the mailbox on this machine — now
-  shown, not assumed.
+  shown, not assumed. The gate bit's source register (`0x115d64c` bit 2) is not
+  in the host's SMN window either, so the raw-SMN route is closed with it (§7 of
+  [`evidence/psp-firmware/curve-optimizer-handler.txt`](evidence/psp-firmware/curve-optimizer-handler.txt)).
 
 ## Reproducing
 

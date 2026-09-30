@@ -225,3 +225,73 @@ Conclusion stands, now down to the bit: Curve Optimizer is not reachable through
 the mailbox on this machine because its enable state is a boot configuration bit
 plus a set of messages the host cannot send (guard-rejected or on another queue).
 The only remaining untried lever is outside software.
+
+================================================================================
+7. byte[2] is a register, not a fuse -- and it is outside the host's SMN window
+================================================================================
+
+(Added after the SMU images were re-extracted and FUN_0001ce2c / its helper
+FUN_0001e8bc disassembled again. This pins the "internal table" of section 6 to
+an address, and the address is the answer.)
+
+FUN_0001ce2c loads the config bit id as an in-image literal, and writes the
+helper's result to the SMU global struct:
+
+  0x1ce2f  l32r a10, 0x176c0   ; [0x176c0] = 0x3262   -- the config bit id
+  0x1ce34  call8 0x1e8bc       ; bitmap read
+  0x1ce3f  s8i   a10, a4, 2    ; a4 = [0x176c4] = 0x72e0 -> global.byte[2] @ 0x72e2
+
+The helper loads its two table bases from in-image literals -- the *literals* are
+in the image, but the *addresses they hold* are runtime addresses far above the
+0x40000 image size, so the "table" is not in the image:
+
+  0x1e8bf  l32r a7, 0x17954    ; [0x17954] = 0x115d004   -- table B
+  0x1e8d1  l32r a6, 0x17958    ; [0x17958] = 0x115d000   -- table A
+
+So the "internal table" is the SMU-internal register block at 0x115d000/0x115d004
+-- a hardware address in the SMU's own space, not an in-image table and not a
+fuse. Working the index through the helper (a10 = (id >> 3) & ~3;
+bit = id - (a10 << 3)):
+
+  id 0x3262 -> byte offset 0x64C -> word A 0x115d64c, word B 0x115d650, bit 2
+
+i.e. the "OC enabled" state the CO handlers test is **bit 2 of the configuration
+dword at SMU address 0x115d64c**.
+
+Is that address host-reachable? Read through the host's own SMN window
+(00:00.0 B8/BC, the same path smu-raw.md uses), read-only:
+
+  0x3B10058 = 0x00404A00   SMU version -- the read path works
+  0x00000000 = 0x0005B234  a real value
+  0x00001000 = 0xFFFFFFFF  not decoded
+  0x115d000 = 0x00000000   \
+  0x115d400 = 0x00000000    |  the whole 0x115dxxx block reads 0
+  0x115d64c = 0x00000000    |  from the host
+  0x115d650 = 0x00000000    |
+  0x115e000 = 0x00000000   /
+
+The config register whose bit 2 gates OC is therefore **not in the host-visible
+SMN aperture** -- it is in the SMU's own address space. (It reads all-zero, which
+a decoded-but-SMU-only window and a zero-valued register both explain; the two
+are not distinguished here, and need not be -- both leave the host no lever.)
+
+This closes the last theoretical software path, and closes it for a stronger
+reason than the mailbox argument of section 5. The raw-SMN write smu-raw.md left
+as "the one part still untouched" cannot open Curve Optimizer: the register that
+carries the gate is (a) in SMU-internal address space, outside the host's SMN
+window, and (b) read once at SMU bring-up, which completes before the x86 host
+runs. There is no host-writable register to set, and no window in which to set
+it. "The only remaining untried lever is outside software" is now "outside
+software, and not because the write was tried -- because the address is not the
+host's to write."
+
+Reproducing:
+
+  # re-extract (see psp-firmware.md), then disassemble with an Xtensa decoder
+  # (radare2; capstone has no Xtensa) -- image loaded at base 0
+  r2 -q -e scr.color=0 -a xtensa -b 32 -c "s 0x1ce2c; pd 80" SMU_OFFCHIP_FW.bin
+  r2 -q -e scr.color=0 -a xtensa -b 32 -c "s 0x1e8bc; pd 44" SMU_OFFCHIP_FW.bin
+
+  # the host side of the question: the block is not in the host's SMN window
+  sudo python3 evidence/smuraw.py smn 0x115d64c   # -> 0x00000000
+  sudo python3 evidence/smuraw.py smn 0x3B10058   # -> 0x00404A00 (control)
