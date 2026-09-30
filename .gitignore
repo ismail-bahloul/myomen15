@@ -39,6 +39,7 @@ __pycache__/
 
 # Compiled CPU load harness -- built from load.c, whose source IS versioned.
 /evidence/load
+/evidence/wakelat
 
 # Compiled AMD-TEE TA-signature test harness -- built from teeopen.c by run.sh.
 /evidence/psp-tee-empirical/teeopen
